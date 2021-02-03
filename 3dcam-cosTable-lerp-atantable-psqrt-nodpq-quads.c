@@ -142,6 +142,7 @@ int camMode = 2;
 long timeB = 0;
 
 u_long triCount = 0;
+
 // Prototypes
 
 // Sin/Cos Table
@@ -155,16 +156,25 @@ int patan(int x, int y);
 //sqrt
 u_int psqrt(u_int n);
 
+// PSX setup
 void init(void);
 void display(void);
+
+// Utils
+void LoadTexture(u_long * tim, TIM_IMAGE * tparam);
+int cliptest3(short * v1);
+int lerp(int start, int end, int factor); // FIXME : not working as it should
+SVECTOR SVlerp(SVECTOR start, SVECTOR end, int factor); // FIXME 
+
+// Camera 
 void getCameraXZ(int * x, int * z, int actorX, int actorZ, int angle, int distance);
 void applyCamera(CAMERA * cam);
 void setCameraPos(VECTOR pos, SVECTOR rot);
-void LoadTexture(u_long * tim, TIM_IMAGE * tparam);
-int lerp(int start, int end, int factor);
-SVECTOR SVlerp(SVECTOR start, SVECTOR end, int factor);
+
+// Physics
 VECTOR getCollision(BODY one, BODY two);
-int cliptest3(short * v1);
+void applyAcceleration(BODY * actor);
+
 void callback();
 
 int main() {
@@ -441,17 +451,17 @@ int main() {
                     
                     if ( *meshes[k]->isRigidBody == 1 ) {
                     
-                        dt = 1;
+                        //~ dt = 1;
 
-                        VECTOR acceleration = {meshes[k]->body->gForce.vx / meshes[k]->body->mass, meshes[k]->body->gForce.vy / meshes[k]->body->mass, meshes[k]->body->gForce.vz / meshes[k]->body->mass};
+                        //~ VECTOR acceleration = {meshes[k]->body->gForce.vx / meshes[k]->body->mass, meshes[k]->body->gForce.vy / meshes[k]->body->mass, meshes[k]->body->gForce.vz / meshes[k]->body->mass};
                         
-                        meshes[k]->body->velocity.vx += acceleration.vx * dt;
-                        meshes[k]->body->velocity.vy += acceleration.vy * dt;
-                        meshes[k]->body->velocity.vz += acceleration.vz * dt;
+                        //~ meshes[k]->body->velocity.vx += acceleration.vx * dt;
+                        //~ meshes[k]->body->velocity.vy += acceleration.vy * dt;
+                        //~ meshes[k]->body->velocity.vz += acceleration.vz * dt;
                         
-                        meshes[k]->body->position.vx += meshes[k]->body->velocity.vx * dt;
-                        meshes[k]->body->position.vy += meshes[k]->body->velocity.vy * dt;
-                        meshes[k]->body->position.vz += meshes[k]->body->velocity.vz * dt;
+                        //~ meshes[k]->body->position.vx += meshes[k]->body->velocity.vx * dt;
+                        //~ meshes[k]->body->position.vy += meshes[k]->body->velocity.vy * dt;
+                        //~ meshes[k]->body->position.vz += meshes[k]->body->velocity.vz * dt;
 
                         //~ d1x = (meshes[k]->body->position.vx - meshes[k]->body->max.vx) - (modelgnd_body.position.vx + modelgnd_body.min.vx);
                         //~ d1y = (meshes[k]->body->position.vy - meshes[k]->body->min.vy) - (modelgnd_body.position.vy + modelgnd_body.min.vy);
@@ -460,7 +470,7 @@ int main() {
                         //~ d2x = (modelgnd_body.position.vx + modelgnd_body.max.vx) - (meshes[k]->body->position.vx + meshes[k]->body->max.vx);
                         //~ d2y = (modelgnd_body.position.vy + modelgnd_body.max.vy) - (meshes[k]->body->position.vy + meshes[k]->body->max.vy);
                         //~ d2z = (modelgnd_body.position.vz + modelgnd_body.max.vz) - (meshes[k]->body->position.vz + meshes[k]->body->max.vz);
-                        
+                        applyAcceleration(meshes[k]->body);
                         
                         VECTOR col;
                         
@@ -1061,8 +1071,21 @@ VECTOR getCollision(BODY one, BODY two){
 
     }
 
+void applyAcceleration(BODY * actor){
+    
+    short dt = 1;
 
-
+    VECTOR acceleration = {actor->gForce.vx / actor->mass, actor->gForce.vy / actor->mass, actor->gForce.vz / actor->mass};
+    
+    actor->velocity.vx += acceleration.vx * dt;
+    actor->velocity.vy += acceleration.vy * dt;
+    actor->velocity.vz += acceleration.vz * dt;
+    
+    actor->position.vx += actor->velocity.vx * dt;
+    actor->position.vy += actor->velocity.vy * dt;
+    actor->position.vz += actor->velocity.vz * dt;
+    
+    }
 
 // A few notes on the following code :
 
