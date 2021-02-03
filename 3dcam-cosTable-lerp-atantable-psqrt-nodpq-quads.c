@@ -172,7 +172,9 @@ void applyCamera(CAMERA * cam);
 void setCameraPos(VECTOR pos, SVECTOR rot);
 
 // Physics
-VECTOR getCollision(BODY one, BODY two);
+VECTOR getIntCollision(BODY one, BODY two);
+VECTOR getExtCollision(BODY one, BODY two);
+
 void applyAcceleration(BODY * actor);
 
 void callback();
@@ -190,9 +192,9 @@ int main() {
     //~ div.pih = SCREENXRES;
 	//~ div.piv = SCREENYRES;
 
-    CVECTOR outCol ={0,0,0,0};
-    CVECTOR outCol1 ={0,0,0,0};
-    CVECTOR outCol2 ={0,0,0,0};
+    //~ CVECTOR outCol ={0,0,0,0};
+    //~ CVECTOR outCol1 ={0,0,0,0};
+    //~ CVECTOR outCol2 ={0,0,0,0};
     
     MATRIX Cmatrix = {0};
     
@@ -216,16 +218,12 @@ int main() {
     // physics
     short physics = 1;
     long time = 0;
-    //~ long sec = 0;
 
-    //~ long d1y, d2y;
-    //~ long d1x, d2x;
-    //~ long d1z, d2z;
-    
+     VECTOR col_lvl, col_sphere = {0};
     
     // Actor start pos
     
-    modelobject_body.position.vx = modelobject_pos.vx = 50;
+    //~ modelobject_body.position.vx = modelobject_pos.vx = 50;
 
     // Cam stuff 
     
@@ -384,43 +382,50 @@ int main() {
             
            //~ dt = time/180+1 - time/180;
         if (physics){
-            if(time%2 == 0){
+            if(time%1 == 0){
                 for ( int k = 0; k < sizeof(meshes)/sizeof(meshes[0]);k ++){
                     
                     if ( *meshes[k]->isRigidBody == 1 ) {
 
                         applyAcceleration(meshes[k]->body);
                         
-                        VECTOR col;
+                        //~ VECTOR col_lvl, col_sphere = {0};
                         
                         // Get col with level ( modelgnd_body )
-                        col = getCollision( *meshes[k]->body , modelgnd_body);
-
+                        col_lvl = getIntCollision( *meshes[k]->body , modelgnd_body );
+                        
+                        col_sphere = getExtCollision( modelobject_body, modelSphere_body );
+                        
                         // If !col, keep moving
                         
-                        if ( !col.vx ){ meshes[k]->pos->vx = meshes[k]->body->position.vx; } 
+                        if ( !col_lvl.vx ){ meshes[k]->pos->vx = meshes[k]->body->position.vx; } 
                         
-                        if ( !col.vy ){ meshes[k]->pos->vy = meshes[k]->body->position.vy + 15; } // FIXME : Why the 15px offset ? 
+                        if ( !col_lvl.vy ){ meshes[k]->pos->vy = meshes[k]->body->position.vy; } // FIXME : Why the 15px offset ? 
                         
-                        if ( !col.vz ){ meshes[k]->pos->vz = meshes[k]->body->position.vz; }
+                        if ( !col_lvl.vz ){ meshes[k]->pos->vz = meshes[k]->body->position.vz; }
                                                
                         // If col with wall, change direction
                         
-                        if ( col.vx ) { meshes[k]->body->gForce.vx *= -1; }
+                        if ( col_lvl.vx ) { meshes[k]->body->gForce.vx *= -1; }
 
-                        if ( col.vy ) { meshes[k]->body->gForce.vy *= -1; }
+                        if ( col_lvl.vy ) { meshes[k]->body->gForce.vy *= -1; }
                         
-                        if ( col.vz ) { meshes[k]->body->gForce.vz *= -1; }
+                        if ( col_lvl.vz ) { meshes[k]->body->gForce.vz *= -1; }
                         
                         // If col, reset velocity
                         
-                        if ( col.vx ||
-                             col.vy ||
-                             col.vz
+                        if ( col_lvl.vx ||
+                             col_lvl.vy ||
+                             col_lvl.vz
                            ) {
                             meshes[k]->body->velocity.vy = meshes[k]->body->velocity.vx = meshes[k]->body->velocity.vz = 0;
-                        
                         }
+                        
+                        
+                        if ( col_sphere.vx ) { meshes[k]->body->gForce.vx *= -1; modelSphere_body.gForce.vx = -meshes[k]->body->gForce.vx/2;  }
+                        if ( col_sphere.vz ) { meshes[k]->body->gForce.vz *= -1; }
+                        //~ if ( col_sphere.vy ) { meshes[k]->body->gForce.vy *= -1; }
+                        
                         
                     }
                 }
@@ -465,10 +470,9 @@ int main() {
                     //~ PushMatrix();                                         // Push current matrix on the stack (real slow -> dma transfer )
                     
                     RotMatrix_gte(meshes[k]->rot, meshes[k]->mat);            // Apply rotation matrix
-        
+                                                            
                     TransMatrix(meshes[k]->mat, meshes[k]->pos);              // Apply translation matrix
                     
-                    //~ MulMatrix0(&camera.mat, meshes[k]->mat, meshes[k]->mat);
                     CompMatrix(&camera.mat, meshes[k]->mat, meshes[k]->mat);  // Was using &PolyMatrix instead of meshes[k]->mat 
 
                     SetRotMatrix(meshes[k]->mat);                             // Set default rotation matrix - Was using &PolyMatrix instead of meshes[k]->mat
@@ -590,8 +594,8 @@ int main() {
                         
                     } else {                        
                     
-                    // Use model's regular vertex pos
-                    OTz = RotAverage3(
+                        // Use model's regular vertex pos
+                        OTz = RotAverage3(
                             &meshes[k]->tmesh->v[meshes[k]->index[t]],  
                             &meshes[k]->tmesh->v[meshes[k]->index[t+1]],
                             &meshes[k]->tmesh->v[meshes[k]->index[t+2]],
@@ -643,8 +647,12 @@ int main() {
                         //~ NormalColorDpq(&meshes[k]->anim->normals[ atime%19 * modelCylindre_anim.nvert + meshes[k]->index[t]], &meshes[k]->tmesh->c[meshes[k]->index[t]], *meshes[k]->p, &outCol);
                         //~ NormalColorDpq(&meshes[k]->anim->normals[ atime%19 * modelCylindre_anim.nvert + meshes[k]->index[t+1]], &meshes[k]->tmesh->c[meshes[k]->index[t+1]], *meshes[k]->p, &outCol1);
                         //~ NormalColorDpq(&meshes[k]->anim->normals[ atime%19 * modelCylindre_anim.nvert + meshes[k]->index[t+2]], &meshes[k]->tmesh->c[meshes[k]->index[t+2]], *meshes[k]->p, &outCol2);
-
                     //~ } else {
+
+                        CVECTOR outCol  ={0,0,0,0};
+                        CVECTOR outCol1 ={0,0,0,0};
+                        CVECTOR outCol2 ={0,0,0,0};
+
                         NormalColorDpq(&meshes[k]->tmesh->n[meshes[k]->index[t]]  , &meshes[k]->tmesh->c[meshes[k]->index[t]], *meshes[k]->p, &outCol);
                         NormalColorDpq(&meshes[k]->tmesh->n[meshes[k]->index[t+1]], &meshes[k]->tmesh->c[meshes[k]->index[t+1]], *meshes[k]->p, &outCol1);
                         NormalColorDpq(&meshes[k]->tmesh->n[meshes[k]->index[t+2]], &meshes[k]->tmesh->c[meshes[k]->index[t+2]], *meshes[k]->p, &outCol2);
@@ -681,20 +689,18 @@ int main() {
                         setRGB2(poly, outCol2.r, outCol2.g, outCol2.b);
                     } 
                            
-                 
-                                    
-                
-                    
                     // Sort the primitive into the OT
                     //~ OTz /= 3;
                     
                     // cliptest3((short *)&meshes[k]->tmesh->v[meshes[k]->index[t]])
                     
                         //~ if ((OTz > 0) && (OTz < OTLEN) && (*meshes[k]->p < 2048)){
-                        if ((OTz > 0) && (OTz < OTLEN) && (*meshes[k]->p < 4096)){
-                            AddPrim(&ot[db][OTz-2], poly);        // OTz - 2
-                        }
-                        nextpri += sizeof(POLY_GT3);
+                    if ((OTz > 0) && (OTz < OTLEN) && (*meshes[k]->p < 4096)){
+                        AddPrim(&ot[db][OTz-2], poly);        // OTz - 2
+                    }
+                    
+                    nextpri += sizeof(POLY_GT3);
+                    
                 t+=3;
                 
                 //~ if (*meshes[k]->isRigidBody){
@@ -712,15 +718,19 @@ int main() {
 
         }
         
+        FntPrint("ColSphere: %d\n", (modelobject_body.position.vy + modelobject_body.max.vy) - (modelSphere_body.position.vy + modelSphere_body.min.vy) );
+        FntPrint("ColSphere: %d\n", (modelSphere_body.position.vy + modelSphere_body.max.vy) - (modelobject_body.position.vy + modelobject_body.min.vy) );
+        FntPrint("Col %d\n", col_sphere.vy );
+        //~ FntPrint("Time    : %d %d dt :%d\n",time, atime, dt);
+        //~ FntPrint("Tricount: %d OTz: %d\nOTc: %d, p: %d\n",triCount, OTz, OTc, *meshes[2]->p);
         
-        FntPrint("Time    : %d %d dt :%d\n",time, atime, dt);
-        FntPrint("Tricount: %d OTz: %d\nOTc: %d, p: %d\n",triCount, OTz, OTc, *meshes[2]->p);
+        //~ FntPrint("Sphr : %4d %4d %4d\n", modelSphere_body.gForce.vx, modelSphere_body.gForce.vy, modelSphere_body.gForce.vz);
 
-        FntPrint("isPrism: %d\n", *meshobject.isPrism);
+        //~ FntPrint("isPrism: %d\n", *meshobject.isPrism);
 
-        FntPrint("L1: %d %d %d\n", light.m[0][0],light.m[0][1],light.m[0][2]);
-        FntPrint("L2: %d %d %d\n", light.m[1][0],light.m[1][1],light.m[1][2]);
-        FntPrint("L3: %d %d %d\n", light.m[2][0],light.m[2][1],light.m[2][2]);
+        //~ FntPrint("L1: %d %d %d\n", light.m[0][0],light.m[0][1],light.m[0][2]);
+        //~ FntPrint("L2: %d %d %d\n", light.m[1][0],light.m[1][1],light.m[1][2]);
+        //~ FntPrint("L3: %d %d %d\n", light.m[2][0],light.m[2][1],light.m[2][2]);
  
         FntFlush(-1);
 		
@@ -873,21 +883,41 @@ SVECTOR SVlerp(SVECTOR start, SVECTOR end, int factor){
     return output;
     }
 
-VECTOR getCollision(BODY one, BODY two){
+VECTOR getIntCollision(BODY one, BODY two){
     
     VECTOR d1, d2, col;
     
     d1.vx = (one.position.vx - one.max.vx) - (two.position.vx + two.min.vx);
-    d1.vy = (one.position.vy - one.min.vy) - (two.position.vy + two.min.vy);
+    d1.vy = (one.position.vy + one.min.vy) - (two.position.vy + two.min.vy);
     d1.vz = (one.position.vz - one.max.vz) - (two.position.vz + two.min.vz);
     
     d2.vx = (two.position.vx + two.max.vx) - (one.position.vx + one.max.vx);
     d2.vy = (two.position.vy + two.max.vy) - (one.position.vy + one.max.vy);
     d2.vz = (two.position.vz + two.max.vz) - (one.position.vz + one.max.vz);
 
-    col.vx = !(d1.vx >= 0 && d2.vx >= 0);
-    col.vy = !(d1.vy >= 0 && d2.vy >= 0);
-    col.vz = !(d1.vz >= 0 && d2.vz >= 0);
+    col.vx = !(d1.vx > 0 && d2.vx > 0);
+    col.vy = !(d1.vy > 0 && d2.vy > 0);
+    col.vz = !(d1.vz > 0 && d2.vz > 0);
+        
+    return col;
+
+    }
+    
+VECTOR getExtCollision(BODY one, BODY two){
+    
+    VECTOR d1, d2, col;
+    
+    d1.vx = (one.position.vx + one.max.vx) - (two.position.vx + two.min.vx);
+    d1.vy = (one.position.vy + one.max.vy) - (two.position.vy + two.min.vy);
+    d1.vz = (one.position.vz + one.max.vz) - (two.position.vz + two.min.vz);
+    
+    d2.vx = (two.position.vx + two.max.vx) - (one.position.vx + one.min.vx);
+    d2.vy = (two.position.vy + two.max.vy) - (one.position.vy + one.min.vy);
+    d2.vz = (two.position.vz + two.max.vz) - (one.position.vz + one.min.vz);
+
+    col.vx = d1.vx > 0 && d2.vx > 0;
+    col.vy = d1.vy > 0 && d2.vy > 0;
+    col.vz = d1.vz > 0 && d2.vz > 0;
         
     return col;
 
@@ -895,17 +925,17 @@ VECTOR getCollision(BODY one, BODY two){
 
 void applyAcceleration(BODY * actor){
     
-    short dt = 1;
+    short dt = 3076;
 
     VECTOR acceleration = {actor->gForce.vx / actor->mass, actor->gForce.vy / actor->mass, actor->gForce.vz / actor->mass};
     
-    actor->velocity.vx += acceleration.vx * dt;
-    actor->velocity.vy += acceleration.vy * dt;
-    actor->velocity.vz += acceleration.vz * dt;
+    actor->velocity.vx += (acceleration.vx * dt) / (ONE /4);
+    actor->velocity.vy += (acceleration.vy * dt) / (ONE /4);
+    actor->velocity.vz += (acceleration.vz * dt) / (ONE /4);
     
-    actor->position.vx += actor->velocity.vx * dt;
-    actor->position.vy += actor->velocity.vy * dt;
-    actor->position.vz += actor->velocity.vz * dt;
+    actor->position.vx += (actor->velocity.vx * dt) / ONE/4;
+    actor->position.vy += (actor->velocity.vy * dt) / ONE/4;
+    actor->position.vz += (actor->velocity.vz * dt) / ONE/4;
     
     }
 
