@@ -42,6 +42,24 @@
 // atantable
 #define SWAP(a,b,c)			{(c)=(a); (a)=(b); (b)=(c);} // swap(x, y, buffer)
 
+// dotproduct of two vectors
+#define dotProduct(v0, v1)  \
+	(v0).vx * (v1).vx +	\
+	(v0).vy * (v1).vy +	\
+	(v0).vz * (v1).vz
+
+// min value
+#define min(a,b)    \
+        (a)-(b)>0?(b):(a)
+// max
+#define max(a,b)    \
+        (a)-(b)>0?(a):(b)
+
+#define subVector(v0, v1) \
+	(v0).vx - (v1).vx,	\
+	(v0).vy - (v1).vy,	\
+	(v0).vz - (v1).vz	
+
 //~ extern ushort rcossin_tbl[];
 
 // Display and draw environments, double buffered
@@ -174,6 +192,8 @@ void setCameraPos(VECTOR pos, SVECTOR rot);
 // Physics
 VECTOR getIntCollision(BODY one, BODY two);
 VECTOR getExtCollision(BODY one, BODY two);
+void ResolveCollision( BODY * one, BODY * two );
+
 
 void applyAcceleration(BODY * actor);
 
@@ -219,7 +239,9 @@ int main() {
     short physics = 1;
     long time = 0;
 
-     VECTOR col_lvl, col_sphere = {0};
+    long dt;
+
+    VECTOR col_lvl, col_sphere = {0};
     
     // Actor start pos
     
@@ -261,7 +283,7 @@ int main() {
                 
         //~ timediv = 1;
 
-        long dt;
+
         
         //~ // Physics
         //~ if (time%2 == 0){
@@ -389,6 +411,8 @@ int main() {
 
                         applyAcceleration(meshes[k]->body);
                         
+                        
+                        
                         //~ VECTOR col_lvl, col_sphere = {0};
                         
                         // Get col with level ( modelgnd_body )
@@ -418,14 +442,20 @@ int main() {
                              col_lvl.vy ||
                              col_lvl.vz
                            ) {
-                            meshes[k]->body->velocity.vy = meshes[k]->body->velocity.vx = meshes[k]->body->velocity.vz = 0;
+                            //~ meshes[k]->body->velocity.vy = meshes[k]->body->velocity.vx = meshes[k]->body->velocity.vz = 0;
+                            //~ meshes[k]->body->velocity.vy = meshes[k]->body->velocity.vz = 0;
                         }
                         
                         
-                        if ( col_sphere.vx ) { meshes[k]->body->gForce.vx *= -1; modelSphere_body.gForce.vx = -meshes[k]->body->gForce.vx/2;  }
+                        if ( col_sphere.vx ) { meshes[k]->body->gForce.vx *= -1; modelSphere_body.gForce.vx = -meshes[k]->body->gForce.vx/4;                         //~ ResolveCollision(&modelobject_body, &modelSphere_body);
+ }
                         if ( col_sphere.vz ) { meshes[k]->body->gForce.vz *= -1; }
                         //~ if ( col_sphere.vy ) { meshes[k]->body->gForce.vy *= -1; }
                         
+                        //~ if (modelSphere_body.gForce.vx){modelSphere_body.gForce.vx -= 5;}
+                        meshes[k]->body->position.vx = meshes[k]->pos->vx;
+                        meshes[k]->body->position.vy = meshes[k]->pos->vy;
+                        meshes[k]->body->position.vz = meshes[k]->pos->vz;
                         
                     }
                 }
@@ -718,9 +748,15 @@ int main() {
 
         }
         
-        FntPrint("ColSphere: %d\n", (modelobject_body.position.vy + modelobject_body.max.vy) - (modelSphere_body.position.vy + modelSphere_body.min.vy) );
-        FntPrint("ColSphere: %d\n", (modelSphere_body.position.vy + modelSphere_body.max.vy) - (modelobject_body.position.vy + modelobject_body.min.vy) );
-        FntPrint("Col %d\n", col_sphere.vy );
+        //~ FntPrint("ColSphere: %d\n", (modelobject_body.position.vy + modelobject_body.max.vy) - (modelSphere_body.position.vy + modelSphere_body.min.vy) );
+        //~ FntPrint("ColSphere: %d\n", (modelSphere_body.position.vy + modelSphere_body.max.vy) - (modelobject_body.position.vy + modelobject_body.min.vy) );
+        //~ FntPrint("Col %d\n", col_sphere.vy );
+        
+        FntPrint("Obj: %d,%d,%d\n",modelobject_body.velocity.vx,modelobject_body.velocity.vy,modelobject_body.velocity.vz);
+        FntPrint("Sph: %d,%d,%d\n",modelSphere_body.velocity.vx,modelSphere_body.velocity.vy,modelSphere_body.velocity.vz);
+        
+        //~ FntPrint("%d, %d\n",modelobject_body.position.vx, modelobject_pos.vx);
+        
         //~ FntPrint("Time    : %d %d dt :%d\n",time, atime, dt);
         //~ FntPrint("Tricount: %d OTz: %d\nOTc: %d, p: %d\n",triCount, OTz, OTc, *meshes[2]->p);
         
@@ -925,19 +961,73 @@ VECTOR getExtCollision(BODY one, BODY two){
 
 void applyAcceleration(BODY * actor){
     
-    short dt = 3076;
+    short dt = 1;
 
     VECTOR acceleration = {actor->gForce.vx / actor->mass, actor->gForce.vy / actor->mass, actor->gForce.vz / actor->mass};
     
-    actor->velocity.vx += (acceleration.vx * dt) / (ONE /4);
-    actor->velocity.vy += (acceleration.vy * dt) / (ONE /4);
-    actor->velocity.vz += (acceleration.vz * dt) / (ONE /4);
+    actor->velocity.vx += (acceleration.vx * dt);
+    actor->velocity.vy += (acceleration.vy * dt);
+    actor->velocity.vz += (acceleration.vz * dt);
     
-    actor->position.vx += (actor->velocity.vx * dt) / ONE/4;
-    actor->position.vy += (actor->velocity.vy * dt) / ONE/4;
-    actor->position.vz += (actor->velocity.vz * dt) / ONE/4;
+    actor->position.vx += (actor->velocity.vx * dt);
+    actor->position.vy += (actor->velocity.vy * dt);
+    actor->position.vz += (actor->velocity.vz * dt);
     
     }
+
+//~ // https://gamedevelopment.tutsplus.com/tutorials/how-to-create-a-custom-2d-physics-engine-the-basics-and-impulse-resolution--gamedev-6331
+void ResolveCollision( BODY * one, BODY * two ){
+  
+  // Calculate relative velocity
+  VECTOR rv = { subVector(two->velocity, one->velocity) };
+  
+  //~ FntPrint("rv: %d, %d, %d\n", rv.vx,rv.vy,rv.vz);
+  
+  // Collision normal
+  VECTOR normal = { subVector( two->position, one->position ) };
+  
+  //~ FntPrint("norm: %d, %d, %d\n", normal.vx,normal.vy,normal.vz);
+  
+  // Calculate relative velocity in terms of the normal direction
+  long velAlongNormal = dotProduct( rv, normal );
+ 
+  //~ FntPrint("velN: %d\n", velAlongNormal);
+ 
+  // Do not resolve if velocities are separating
+  if(velAlongNormal > 0)
+    return;
+ 
+  // Calculate restitution
+  long e = min( one->restitution, two->restitution );
+  
+  //~ FntPrint("e: %d\n", e);
+  
+  //~ // Calculate impulse scalar
+  long j = -(1 + e) * velAlongNormal;
+  long k = ONE / one->mass;
+  long l = ONE / two->mass;
+  j /= k + l;
+  j /= ONE;
+ 
+  //~ FntPrint("j: %d\n", j);
+  
+  // Apply impulse
+  applyVector(&normal, j, j, j, *=);
+  
+  VECTOR velOne = normal;
+  VECTOR velTwo = normal;
+  
+  FntPrint("vel1: %d, %d, %d\n", velOne.vx,velOne.vy,velOne.vz);
+  FntPrint("vel2: %d, %d, %d\n", velTwo.vx,velTwo.vy,velTwo.vz);
+  
+  applyVector(&velOne,k/ONE,k/ONE,k/ONE, *=);
+  applyVector(&velTwo,l/ONE,l/ONE,l/ONE, *=);
+  
+  applyVector(&one->velocity, velOne.vx, velOne.vy, velOne.vz, -=);
+  applyVector(&two->velocity, velTwo.vx, velTwo.vy, velTwo.vz, +=);
+}
+
+
 
 // A few notes on the following code :
 
