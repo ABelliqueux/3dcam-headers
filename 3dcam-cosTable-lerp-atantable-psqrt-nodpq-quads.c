@@ -404,7 +404,7 @@ int main() {
             
            //~ dt = time/180+1 - time/180;
         if (physics){
-            //~ if(time%1 == 0){
+            if(time%1 == 0){
                 for ( int k = 0; k < sizeof(meshes)/sizeof(meshes[0]);k ++){
                     
                     if ( *meshes[k]->isRigidBody == 1 ) {
@@ -431,10 +431,9 @@ int main() {
                         if ( col_lvl.vx ) { meshes[k]->body->gForce.vx *= -1; }
 
                         if ( col_lvl.vy ) { 
-                            //~ meshes[k]->body->gForce.vy *= -1;
-                            //~ meshes[k]->body->velocity.vy = 0;
-                            //~ meshes[k]->body->position.vy = modelgnd_body.max.vy - meshes[k]->body->max.vy ;
-                            }
+                            //~ meshes[k]->body->gForce.vy *= -1; 
+
+                        }
                         
                         if ( col_lvl.vz ) { meshes[k]->body->gForce.vz *= -1; }
                         
@@ -444,70 +443,55 @@ int main() {
                              //~ col_lvl.vy ||
                              //~ col_lvl.vz
                            //~ ) {
-                            //~ meshes[k]->body->velocity.vy = meshes[k]->body->velocity.vx = meshes[k]->body->velocity.vz = 0;
-                            //~ //meshes[k]->body->velocity.vy = meshes[k]->body->velocity.vz = 0;
+                            //~ meshes[k]->body->velocity.vy = meshes[k]->body->velocity.vz = 0;
                         //~ }
                         
-                        ResolveCollision(&modelobject_body, &modelSphere_body);
-                        //~ FntPrint("Col: %d\n", col_sphere.vx);
-                        
-                        
-                        if ( !col_sphere.vx ) { 
-                            //~ ResolveCollision(&modelobject_body, &modelSphere_body);
-                            //~ modelSphere_body.restitution = -meshes[k]->body->gForce.vx/2;
-                            //~ modelSphere_body.velocity.vx -= 1;
-                        }
-                        
-                            //~ modelSphere_body.restitution = -meshes[k]->body->gForce.vx/2;
-                            //~ meshes[k]->body->gForce.vx *= -1;
-                        int w = ONE / ( (modelSphere_body.velocity.vx * ONE) / ((modelSphere_body.max.vx - modelSphere_body.min.vx)/2) ) * col_sphere.vx;
-
-                        
-                        if (modelSphere_body.velocity.vx){
-                            //~ modelSphere_rot.vz -= 10;
-                            //angular velocity w = v/r 
+                        ResolveCollision( &modelobject_body, &modelSphere_body);
+                        //~ FntPrint("Vel: %d\n", modelSphere_body.velocity.vx);
+                        if (col_sphere.vx){
                             
-                            modelSphere_rot.vz += w;
+                            int w = (ONE / (( modelSphere_body.velocity.vx * ONE ) / ( (modelSphere_body.max.vx - modelSphere_body.min.vx) / 2 ))) ; 
                             
-                            if ( !col_sphere.vx & modelSphere_body.velocity.vx > 0 ) { 
-                            //~ ResolveCollision(&modelobject_body, &modelSphere_body);
-                            //~ modelSphere_body.restitution = -meshes[k]->body->gForce.vx/2;
-                            modelSphere_body.velocity.vx -= 1;
+                            if (modelSphere_body.velocity.vx){
+                                
+                                //~ int w = (ONE / (( modelSphere_body.velocity.vx * ONE ) / ( (modelSphere_body.max.vx - modelSphere_body.min.vx) / 2 ))) * modelSphere_body.velocity.vx ; 
+                                //~ FntPrint("W %d\n",w);
+                                FntPrint("Vel %d\n",modelSphere_body.velocity.vx);
+                                
+                                modelSphere_rot.vz += w;
                             
-                        }
-
-                            FntPrint("W: %d\n", w);
-                            //~ FntPrint("G: %d\n", modelSphere_body.velocity.vx);
-                            //~ FntPrint("F: %d\n", modelSphere_body.gForce.vx);
+                                //~ if ( col_sphere.vx ) {
+                                    //~ meshes[k]->body->gForce.vx *= -1;
+                                //modelSphere_body.gForce.vx = -meshes[k]->body->gForce.vx/4;                         //~ ResolveCollision(&modelobject_body, &modelSphere_body);
+                                //~ }
                             }
-                        //~ if (modelSphere_body.inertia){
+                        }
+                        
+                        if (!col_sphere.vx){
+                            modelSphere_body.velocity.vx = 0;
+                            }
 
-                            //~ modelSphere_body.velocity.vx = 
-                            //~ modelSphere_body.inertia --;
-
+                        //~ if (w && !modelSphere_body.velocity.vx)
+                        //~ {
+                            //~ FntPrint("W %d\n",w);
+                            //~ w --;
                         //~ }
-                            
-                        //~ if (modelSphere_body.gForce.vx){
-                            //~ modelSphere_body.gForce.vx -= 10;
-                        //~ }
+                        
+                        
                         //~ if ( col_sphere.vz ) { meshes[k]->body->gForce.vz *= -1; }
                         //~ if ( col_sphere.vy ) { meshes[k]->body->gForce.vy *= -1; }
-                        //~ ResolveCollision(&modelobject_body, &modelSphere_body);
-
+                        
                         //~ if (modelSphere_body.gForce.vx){modelSphere_body.gForce.vx -= 5;}
                         meshes[k]->pos->vx = meshes[k]->body->position.vx;
-                        //~ meshes[k]->pos->vy = meshes[k]->body->position.vy;
+                        //~ meshes[k]->pos->vy = meshes[k]->body->position.vy ;
                         meshes[k]->pos->vz = meshes[k]->body->position.vz;
                         
-                        //~ if(modelSphere_body.restitution > 0) { 
-                            //~ modelSphere_body.position.vx += lerp(modelSphere_body.restitution,modelSphere_body.position.vx,48);
-                            //~ modelSphere_body.restitution += lerp(modelSphere_body.restitution,modelSphere_body.position.vx,48);
-                        //~ }
-                        meshes[k]->body->velocity.vy = meshes[k]->body->velocity.vx = meshes[k]->body->velocity.vz = 0;
-
+                        
                     }
+                    meshes[k]->body->velocity.vy = meshes[k]->body->velocity.vx = meshes[k]->body->velocity.vz = 0;
+
                 }
-            //~ }
+            }
         }
         // Camera setup 
         
@@ -803,7 +787,7 @@ int main() {
         FntPrint("Obj: %d,%d,%d\n",modelobject_body.velocity.vx,modelobject_body.velocity.vy,modelobject_body.velocity.vz);
         FntPrint("Sph: %d,%d,%d\n",modelSphere_body.velocity.vx,modelSphere_body.velocity.vy,modelSphere_body.velocity.vz);
         
-        FntPrint("%d, %d\n",modelSphere_body.restitution, modelobject_pos.vx);
+        //~ FntPrint("%d, %d\n",modelobject_body.position.vx, modelobject_pos.vx);
         
         //~ FntPrint("Time    : %d %d dt :%d\n",time, atime, dt);
         //~ FntPrint("Tricount: %d OTz: %d\nOTc: %d, p: %d\n",triCount, OTz, OTc, *meshes[2]->p);
@@ -1081,10 +1065,8 @@ void ResolveCollision( BODY * one, BODY * two ){
 
   //~ FntPrint("V1 %d %d %d\n", velOne.vx/4096/4096,velOne.vy/4096/4096,velOne.vz/4096/4096);
   //~ FntPrint("V2 %d %d %d\n", velTwo.vx/4096/4096,velTwo.vy/4096/4096,velTwo.vz/4096/4096);
-  
 
 }
-
 
 
 // A few notes on the following code :
