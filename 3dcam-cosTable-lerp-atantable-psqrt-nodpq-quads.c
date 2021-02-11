@@ -411,8 +411,6 @@ int main() {
 
                         applyAcceleration(meshes[k]->body);
                         
-                        
-                        
                         //~ VECTOR col_lvl, col_sphere = {0};
                         
                         // Get col with level ( modelgnd_body )
@@ -432,32 +430,66 @@ int main() {
                         
                         if ( col_lvl.vx ) { meshes[k]->body->gForce.vx *= -1; }
 
-                        if ( col_lvl.vy ) { meshes[k]->body->gForce.vy *= -1; }
+                        if ( col_lvl.vy ) { 
+                            //~ meshes[k]->body->gForce.vy *= -1; 
+
+                        }
                         
                         if ( col_lvl.vz ) { meshes[k]->body->gForce.vz *= -1; }
                         
                         // If col, reset velocity
                         
-                        if ( col_lvl.vx ||
-                             col_lvl.vy ||
-                             col_lvl.vz
-                           ) {
-                            //~ meshes[k]->body->velocity.vy = meshes[k]->body->velocity.vx = meshes[k]->body->velocity.vz = 0;
+                        //~ if ( col_lvl.vx ||
+                             //~ col_lvl.vy ||
+                             //~ col_lvl.vz
+                           //~ ) {
                             //~ meshes[k]->body->velocity.vy = meshes[k]->body->velocity.vz = 0;
+                        //~ }
+                        
+                        ResolveCollision( &modelobject_body, &modelSphere_body);
+                        //~ FntPrint("Vel: %d\n", modelSphere_body.velocity.vx);
+                        if (col_sphere.vx){
+                            
+                            int w = (ONE / (( modelSphere_body.velocity.vx * ONE ) / ( (modelSphere_body.max.vx - modelSphere_body.min.vx) / 2 ))) ; 
+                            
+                            if (modelSphere_body.velocity.vx){
+                                
+                                //~ int w = (ONE / (( modelSphere_body.velocity.vx * ONE ) / ( (modelSphere_body.max.vx - modelSphere_body.min.vx) / 2 ))) * modelSphere_body.velocity.vx ; 
+                                //~ FntPrint("W %d\n",w);
+                                FntPrint("Vel %d\n",modelSphere_body.velocity.vx);
+                                
+                                modelSphere_rot.vz += w;
+                            
+                                //~ if ( col_sphere.vx ) {
+                                    //~ meshes[k]->body->gForce.vx *= -1;
+                                //modelSphere_body.gForce.vx = -meshes[k]->body->gForce.vx/4;                         //~ ResolveCollision(&modelobject_body, &modelSphere_body);
+                                //~ }
+                            }
                         }
                         
+                        if (!col_sphere.vx){
+                            modelSphere_body.velocity.vx = 0;
+                            }
+
+                        //~ if (w && !modelSphere_body.velocity.vx)
+                        //~ {
+                            //~ FntPrint("W %d\n",w);
+                            //~ w --;
+                        //~ }
                         
-                        if ( col_sphere.vx ) { meshes[k]->body->gForce.vx *= -1; modelSphere_body.gForce.vx = -meshes[k]->body->gForce.vx/4;                         //~ ResolveCollision(&modelobject_body, &modelSphere_body);
- }
-                        if ( col_sphere.vz ) { meshes[k]->body->gForce.vz *= -1; }
+                        
+                        //~ if ( col_sphere.vz ) { meshes[k]->body->gForce.vz *= -1; }
                         //~ if ( col_sphere.vy ) { meshes[k]->body->gForce.vy *= -1; }
                         
                         //~ if (modelSphere_body.gForce.vx){modelSphere_body.gForce.vx -= 5;}
-                        meshes[k]->body->position.vx = meshes[k]->pos->vx;
-                        meshes[k]->body->position.vy = meshes[k]->pos->vy;
-                        meshes[k]->body->position.vz = meshes[k]->pos->vz;
+                        meshes[k]->pos->vx = meshes[k]->body->position.vx;
+                        //~ meshes[k]->pos->vy = meshes[k]->body->position.vy ;
+                        meshes[k]->pos->vz = meshes[k]->body->position.vz;
+                        
                         
                     }
+                    meshes[k]->body->velocity.vy = meshes[k]->body->velocity.vx = meshes[k]->body->velocity.vz = 0;
+
                 }
             }
         }
@@ -963,11 +995,11 @@ void applyAcceleration(BODY * actor){
     
     short dt = 1;
 
-    VECTOR acceleration = {actor->gForce.vx / actor->mass, actor->gForce.vy / actor->mass, actor->gForce.vz / actor->mass};
+    VECTOR acceleration = {actor->invMass * actor->gForce.vx ,  actor->invMass * actor->gForce.vy, actor->invMass * actor->gForce.vz};
     
-    actor->velocity.vx += (acceleration.vx * dt);
-    actor->velocity.vy += (acceleration.vy * dt);
-    actor->velocity.vz += (acceleration.vz * dt);
+    actor->velocity.vx += (acceleration.vx * dt) / 4096;
+    actor->velocity.vy += (acceleration.vy * dt) / 4096;
+    actor->velocity.vz += (acceleration.vz * dt) / 4096;
     
     actor->position.vx += (actor->velocity.vx * dt);
     actor->position.vy += (actor->velocity.vy * dt);
@@ -979,12 +1011,17 @@ void applyAcceleration(BODY * actor){
 void ResolveCollision( BODY * one, BODY * two ){
   
   // Calculate relative velocity
-  VECTOR rv = { subVector(two->velocity, one->velocity) };
+  VECTOR rv = { subVector( one->velocity, two->velocity) };
   
   //~ FntPrint("rv: %d, %d, %d\n", rv.vx,rv.vy,rv.vz);
   
   // Collision normal
   VECTOR normal = { subVector( two->position, one->position ) };
+  
+  // Normalize collision normal
+  normal.vx = normal.vx > 32 ? 1 : normal.vx < -32 ? -1 : 0 ;
+  normal.vy = normal.vy > 256 ? 1 : normal.vy < -256 ? -1 : 0 ;
+  normal.vz = normal.vz > 32 ? 1 : normal.vz < -32 ? -1 : 0 ;
   
   //~ FntPrint("norm: %d, %d, %d\n", normal.vx,normal.vy,normal.vz);
   
@@ -1003,30 +1040,33 @@ void ResolveCollision( BODY * one, BODY * two ){
   //~ FntPrint("e: %d\n", e);
   
   //~ // Calculate impulse scalar
-  long j = -(1 + e) * velAlongNormal;
-  long k = ONE / one->mass;
-  long l = ONE / two->mass;
-  j /= k + l;
-  j /= ONE;
+  long j = -(1 + e) * velAlongNormal * ONE;
+  j /= one->invMass + two->invMass;
+  //~ j /= ONE;
  
   //~ FntPrint("j: %d\n", j);
   
   // Apply impulse
   applyVector(&normal, j, j, j, *=);
   
+  //~ FntPrint("Cnormal %d %d %d\n",normal.vx,normal.vy,normal.vz); 
+  
   VECTOR velOne = normal;
   VECTOR velTwo = normal;
   
-  FntPrint("vel1: %d, %d, %d\n", velOne.vx,velOne.vy,velOne.vz);
-  FntPrint("vel2: %d, %d, %d\n", velTwo.vx,velTwo.vy,velTwo.vz);
+  applyVector(&velOne,one->invMass,one->invMass,one->invMass, *=);
+  applyVector(&velTwo,two->invMass,two->invMass,two->invMass, *=);
   
-  applyVector(&velOne,k/ONE,k/ONE,k/ONE, *=);
-  applyVector(&velTwo,l/ONE,l/ONE,l/ONE, *=);
+  //~ FntPrint("V1 %d %d %d\n", velOne.vx/4096/4096,velOne.vy/4096/4096,velOne.vz/4096/4096);
+  //~ FntPrint("V2 %d %d %d\n", velTwo.vx/4096/4096,velTwo.vy/4096/4096,velTwo.vz/4096/4096);
   
-  applyVector(&one->velocity, velOne.vx, velOne.vy, velOne.vz, -=);
-  applyVector(&two->velocity, velTwo.vx, velTwo.vy, velTwo.vz, +=);
-}
+  applyVector(&one->velocity, velOne.vx/4096/4096, velOne.vy/4096/4096, velOne.vz/4096/4096, -=);
+  applyVector(&two->velocity, velTwo.vx/4096/4096, velTwo.vy/4096/4096, velTwo.vz/4096/4096, +=);
 
+  //~ FntPrint("V1 %d %d %d\n", velOne.vx/4096/4096,velOne.vy/4096/4096,velOne.vz/4096/4096);
+  //~ FntPrint("V2 %d %d %d\n", velTwo.vx/4096/4096,velTwo.vy/4096/4096,velTwo.vz/4096/4096);
+
+}
 
 
 // A few notes on the following code :
