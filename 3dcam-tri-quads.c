@@ -20,6 +20,7 @@
 #include <libetc.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <stddef.h>
 
 // Precalculated sin/cos values
 //~ #include "psin.c"
@@ -27,7 +28,7 @@
 #include "atan.c"
 
 // Sample vector model
-#include "coridor1.c"
+#include "coridor2.c"
 //~ #include "tst-quads.c"
 //~ #include "gnd.c"
 //~ #include "startcube.c"
@@ -46,6 +47,7 @@
 #define FNT_POS_X 960
 #define FNT_POS_Y 0
 
+#define OT2LEN	    8	                   
 #define OTLEN	    256	                    // Maximum number of OT entries
 #define PRIMBUFFLEN	1024 * sizeof(POLY_GT4)	    // Maximum number of POLY_GT3 primitives
 
@@ -76,7 +78,12 @@
 DISPENV disp[2];
 DRAWENV draw[2];
 
+// OT for BG/FG discrimination
+u_long otdisc[2][OT2LEN] = {0};
+
+// Main OT
 u_long	    ot[2][OTLEN]  = {0};   		        // Ordering table (contains addresses to primitives)
+
 char	primbuff[2][PRIMBUFFLEN] = {0};	        // Primitive list // That's our prim buffer
 
 //~ int		    primcnt=0;			            // Primitive counter
@@ -240,10 +247,10 @@ int main() {
     DR_TPAGE * tpage;
     
     // Poly subdiv
-    //~ DIVPOLYGON3	div = { 0 };
-    //~ div.pih = SCREENXRES;
-	//~ div.piv = SCREENYRES;
-    //~ div.ndiv = 1;
+    DIVPOLYGON4	div = { 0 };
+    div.pih = SCREENXRES;
+	div.piv = SCREENYRES;
+    div.ndiv = 1;
     
     MATRIX Cmatrix = {0};
     
@@ -262,6 +269,12 @@ int main() {
     
     for (int k = 0; k < sizeof(meshes)/sizeof(TMESH *); k++){
         LoadTexture(meshes[k]->tim_data, meshes[k]->tim);
+    }
+    
+    //~ camPtr = &camAngle_camPath_001;
+    
+    if (camPtr->tim_data){
+        LoadTexture(camPtr->tim_data, camPtr->BGtim);
     }
     
     // physics
@@ -286,14 +299,20 @@ int main() {
             triCount += meshes[k]->tmesh->len;
     }
     
-    setCameraPos(camStartPos.pos, camStartPos.rot);
+    // Pre-calc bg test
+    setCameraPos(camPtr->campos->pos, camPtr->campos->rot);
+    
+    
     //~ camera.rot.vz = 100;
     
 	// Main loop
 	while (1) {
         
-        // Clear the current OT
-		ClearOTagR(ot[db], OTLEN);
+        // Clear the main OT
+		ClearOTagR(otdisc[db], OT2LEN);
+		
+        // Clear Secondary OT
+        ClearOTagR(ot[db], OTLEN);
         
         // timeB = time;
         time ++;
@@ -368,30 +387,61 @@ int main() {
         // Fixed Camera angle
         if (camMode == 2){                              
             
-            sprt = (SPRT *) nextpri;
-            
-            setSprt(sprt);
-            setRGB0(sprt, 255,255,0);
-            setXY0(sprt, 0, 0);
-            setWH(sprt, 320, 240);
-            setUV0(sprt, 0, 0);
-            
-            AddPrim(&ot[db][OTz], sprt);        
-                        
-            nextpri += sizeof(SPRT);
-            
-            DR_TPAGE * tpage;
-            
-            setDrawTPage(tpage, 0, 1,   
-                         getTPage(tim_home.mode&0x3, 0,       
-                         tim_home.prect->x, tim_home.prect->y));
-                                                    
-            addPrim(&ot[db], tpage);
+            // Load BG image in two SPRT since max width == 256 
+            if (camPtr->tim_data){
+                
+                // left part
+                sprt = (SPRT *) nextpri;
+                
+                setSprt(sprt);
+                setRGB0(sprt, 128,128,128);
+                setXY0(sprt, 0, 0);
+                setWH(sprt, 256, 240);
+                setUV0(sprt, 0, 0);
+                setClut(sprt, camPtr->BGtim->crect->x, camPtr->BGtim->crect->y);
+                
+                addPrim(&otdisc[db][OT2LEN-1], sprt);        
+                            
+                nextpri += sizeof(SPRT);
+                
+                tpage = (DR_TPAGE *) nextpri;
+                
+                setDrawTPage(tpage, 0, 1,   
+                             getTPage(camPtr->BGtim->mode & 0x3, 0,       
+                             camPtr->BGtim->prect->x, camPtr->BGtim->prect->y));
+                                                        
+                addPrim(&otdisc[db][OT2LEN-1], tpage);
 
-            nextpri += sizeof(DR_TPAGE); 
+                nextpri += sizeof(DR_TPAGE); 
+                
+                
+                // right part
+                sprt = (SPRT *) nextpri;
+                
+                setSprt(sprt);
+                setRGB0(sprt, 128,128,128);
+                setXY0(sprt, 320-(320-256), 0);
+                setWH(sprt, 320-256, 240);
+                setUV0(sprt, 0, 0);
+                
+                setClut(sprt, camPtr->BGtim->crect->x, camPtr->BGtim->crect->y);
+                            
+                addPrim(&otdisc[db][OT2LEN-1], sprt);        
+                            
+                nextpri += sizeof(SPRT);
+                
+                tpage = (DR_TPAGE *) nextpri;
+                
+                setDrawTPage(tpage, 0, 1,   
+                             getTPage(camPtr->BGtim->mode & 0x3, 0,       
+                             camPtr->BGtim->prect->x + 128, camPtr->BGtim->prect->y));
+                                                        
+                addPrim(&otdisc[db][OT2LEN-1], tpage);
+
+                nextpri += sizeof(DR_TPAGE); 
+            }
             
-            
-            setCameraPos(camStartPos.pos, camStartPos.rot);
+            setCameraPos(camPtr->campos->pos, camPtr->campos->rot);
 
         }
         
@@ -428,9 +478,9 @@ int main() {
                 camera.pos.vz = lerpD(camPath.points[camPath.cursor].vz << precision, camPath.points[camPath.cursor+1].vz << precision, camPath.pos << precision) >> precision;
                 
                 //~ FntPrint("Cam %d, %d\n", (int32_t)camPath.points[camPath.cursor].vx, camPath.points[camPath.cursor+1].vx);
-                FntPrint("Cam %d, %d, %d\n", camera.pos.vx, camera.pos.vy, camera.pos.vz);
-                FntPrint("Theta y: %d x: %d\n", theta.vy, theta.vx);
-                FntPrint("Pos: %d Cur: %d\nTheta y: %d x: %d\n", camPath.pos, camPath.cursor, theta.vy, theta.vx);
+                //~ FntPrint("Cam %d, %d, %d\n", camera.pos.vx, camera.pos.vy, camera.pos.vz);
+                //~ FntPrint("Theta y: %d x: %d\n", theta.vy, theta.vx);
+                //~ FntPrint("Pos: %d Cur: %d\nTheta y: %d x: %d\n", camPath.pos, camPath.cursor, theta.vy, theta.vx);
 
                 // Linearly increment the lerp factor
                 camPath.pos += 20;
@@ -490,10 +540,10 @@ int main() {
                 //~ FntPrint("Pos: %d Cur: %d\nTheta y: %d x: %d\n", camPath.pos, camPath.cursor, theta.vy, theta.vx);
 
                 if ( theta.vy < -50 ) {  
-                    camPath.pos += 20;
+                    camPath.pos += 40;
                 }
                 if ( theta.vy > 50 ) {  
-                    camPath.pos -= 20;
+                    camPath.pos -= 40;
                 }
                 
                 // If camera has reached next key pos, reset pos index, move cursor to next key pos
@@ -666,191 +716,222 @@ int main() {
                 // modelCube is a TMESH, len member == # vertices, but here it's # of triangle... So, for each tri * 3 vertices ...
                 for (i = 0; i < (meshes[k]->tmesh->len * 3); i += 3) {               
                     
-                    poly = (POLY_GT3 *)nextpri;
+                    // if mesh is not part of BG, draw them, else, discard
+                    //~ if (!*meshes[k]->isBG) {
                     
-                    // Vertex Anim
-                     
-                    if (*meshes[k]->isAnim){
-                    
-                        // with interpolation
-                        if(meshes[k]->anim->interpolate){
-                            
-                            
-                             // ping pong
-                             //~ if (meshes[k]->anim->cursor > 4096 || meshes[k]->anim->cursor < 0){
-                                //~ meshes[k]->anim->dir *= -1;
-                             //~ }
-                             
-                             short precision = 12;
-
-                             //~ // next keyframe 
-                             if (meshes[k]->anim->cursor > (1 << precision)) {
-                                if ( meshes[k]->anim->lerpCursor < meshes[k]->anim->nframes - 1 ) {
-                                    meshes[k]->anim->lerpCursor ++;
-                                    meshes[k]->anim->cursor = 0;
-                                }
-                                if ( meshes[k]->anim->lerpCursor == meshes[k]->anim->nframes - 1 ) {
-                                 //~ else {
-                                    meshes[k]->anim->lerpCursor = 0;
-                                    meshes[k]->anim->cursor = 0;
-                                }
-                             }
-                             
-                             //~ FntPrint("%d %d %d\n",meshes[k]->anim->lerpCursor, meshes[k]->anim->nframes, meshes[k]->anim->cursor );
-                                                      
-                             // overflows somewhere ?
-                             //~ for (int v = 0; v <= 1; v++){
+                        poly = (POLY_GT3 *)nextpri;
+                        
+                        // Vertex Anim
+                         
+                        if (*meshes[k]->isAnim){
+                        
+                            // with interpolation
+                            if(meshes[k]->anim->interpolate){
+                                
+                                
+                                 // ping pong
+                                 //~ if (meshes[k]->anim->cursor > 4096 || meshes[k]->anim->cursor < 0){
+                                    //~ meshes[k]->anim->dir *= -1;
+                                 //~ }
                                  
-                             //~ meshes[k]->tmesh->v[* &meshes[k]->index[t].order.vx + v].vx = lerpD( meshes[k]->anim->data[0 * meshes[k]->anim->nvert + * &meshes[k]->index[t].order.vx + v].vx << 12 , meshes[k]->anim->data[10 * meshes[k]->anim->nvert + * &meshes[k]->index[t].order.vx + v].vx  << 12, meshes[k]->anim->cursor << 12) >> 12;
-                             //~ meshes[k]->tmesh->v[* &meshes[k]->index[t].order.vx + v].vz = lerpD( meshes[k]->anim->data[0 * meshes[k]->anim->nvert + * &meshes[k]->index[t].order.vx + v].vz << 12 , meshes[k]->anim->data[10 * meshes[k]->anim->nvert + * &meshes[k]->index[t].order.vx + v].vz  << 12, meshes[k]->anim->cursor << 12) >> 12;
-                             //~ meshes[k]->tmesh->v[* &meshes[k]->index[t].order.vx + v].vy = lerpD( meshes[k]->anim->data[0 * meshes[k]->anim->nvert + * &meshes[k]->index[t].order.vx + v].vy << 12 , meshes[k]->anim->data[10 * meshes[k]->anim->nvert + * &meshes[k]->index[t].order.vx + v].vy  << 12, meshes[k]->anim->cursor << 12) >> 12;
-                            
-                            //~ }
+                                 short precision = 12;
 
-                            // Let's lerp between keyframes
-                            meshes[k]->tmesh->v[meshes[k]->index[t].order.vx].vx = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vx << precision , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vx  << precision, meshes[k]->anim->cursor << precision)  >> precision;
-                            meshes[k]->tmesh->v[meshes[k]->index[t].order.vx].vz = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vz << precision , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vz  << precision, meshes[k]->anim->cursor << precision)  >> precision;
-                            meshes[k]->tmesh->v[meshes[k]->index[t].order.vx].vy = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vy << precision , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vy  << precision, meshes[k]->anim->cursor << precision)  >> precision;
-                             
-                            meshes[k]->tmesh->v[meshes[k]->index[t].order.vz].vx = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vx << precision , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vx  << precision, meshes[k]->anim->cursor << precision)  >> precision;
-                            meshes[k]->tmesh->v[meshes[k]->index[t].order.vz].vz = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vz << precision , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vz  << precision, meshes[k]->anim->cursor << precision)  >> precision;
-                            meshes[k]->tmesh->v[meshes[k]->index[t].order.vz].vy = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vy << precision , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vy  << precision, meshes[k]->anim->cursor << precision)  >> precision;
-                            
-                            meshes[k]->tmesh->v[meshes[k]->index[t].order.vy].vx = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vx << precision , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vx  << precision, meshes[k]->anim->cursor << precision)  >> precision;
-                            meshes[k]->tmesh->v[meshes[k]->index[t].order.vy].vz = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vz << precision , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vz  << precision, meshes[k]->anim->cursor << precision)  >> precision;
-                            meshes[k]->tmesh->v[meshes[k]->index[t].order.vy].vy = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vy << precision , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vy  << precision, meshes[k]->anim->cursor << precision)  >> precision;
-                             
-                            meshes[k]->anim->cursor += 2 * meshes[k]->anim->dir;
-                             
-                            //~ FntPrint("%d %d\n", meshes[k]->tmesh->v[meshes[k]->index[t].order.vx].vx, meshes[k]->tmesh->v[meshes[k]->index[t].order.vx].vz);
-                            //~ FntPrint("%d %d\n", *&meshes[k]->index[t].order.vx, *(&meshes[k]->index[t].order.vx+1));
-                            //~ FntPrint("Anim fps : %d\n",  meshes[k]->anim->cursor);
-                             
-                            // Coord transformation
+                                 //~ // next keyframe 
+                                 if (meshes[k]->anim->cursor > (1 << precision)) {
+                                    if ( meshes[k]->anim->lerpCursor < meshes[k]->anim->nframes - 1 ) {
+                                        meshes[k]->anim->lerpCursor ++;
+                                        meshes[k]->anim->cursor = 0;
+                                    }
+                                    if ( meshes[k]->anim->lerpCursor == meshes[k]->anim->nframes - 1 ) {
+                                     //~ else {
+                                        meshes[k]->anim->lerpCursor = 0;
+                                        meshes[k]->anim->cursor = 0;
+                                    }
+                                 }
+                                 
+                                 //~ FntPrint("%d %d %d\n",meshes[k]->anim->lerpCursor, meshes[k]->anim->nframes, meshes[k]->anim->cursor );
+                                                          
+                                 // overflows somewhere ?
+                                 //~ for (int v = 0; v <= 1; v++){
+                                     
+                                 //~ meshes[k]->tmesh->v[* &meshes[k]->index[t].order.vx + v].vx = lerpD( meshes[k]->anim->data[0 * meshes[k]->anim->nvert + * &meshes[k]->index[t].order.vx + v].vx << 12 , meshes[k]->anim->data[10 * meshes[k]->anim->nvert + * &meshes[k]->index[t].order.vx + v].vx  << 12, meshes[k]->anim->cursor << 12) >> 12;
+                                 //~ meshes[k]->tmesh->v[* &meshes[k]->index[t].order.vx + v].vz = lerpD( meshes[k]->anim->data[0 * meshes[k]->anim->nvert + * &meshes[k]->index[t].order.vx + v].vz << 12 , meshes[k]->anim->data[10 * meshes[k]->anim->nvert + * &meshes[k]->index[t].order.vx + v].vz  << 12, meshes[k]->anim->cursor << 12) >> 12;
+                                 //~ meshes[k]->tmesh->v[* &meshes[k]->index[t].order.vx + v].vy = lerpD( meshes[k]->anim->data[0 * meshes[k]->anim->nvert + * &meshes[k]->index[t].order.vx + v].vy << 12 , meshes[k]->anim->data[10 * meshes[k]->anim->nvert + * &meshes[k]->index[t].order.vx + v].vy  << 12, meshes[k]->anim->cursor << 12) >> 12;
+                                
+                                //~ }
+
+                                // Let's lerp between keyframes
+                                meshes[k]->tmesh->v[meshes[k]->index[t].order.vx].vx = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vx << precision , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vx  << precision, meshes[k]->anim->cursor << precision)  >> precision;
+                                meshes[k]->tmesh->v[meshes[k]->index[t].order.vx].vz = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vz << precision , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vz  << precision, meshes[k]->anim->cursor << precision)  >> precision;
+                                meshes[k]->tmesh->v[meshes[k]->index[t].order.vx].vy = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vy << precision , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vy  << precision, meshes[k]->anim->cursor << precision)  >> precision;
+                                 
+                                meshes[k]->tmesh->v[meshes[k]->index[t].order.vz].vx = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vx << precision , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vx  << precision, meshes[k]->anim->cursor << precision)  >> precision;
+                                meshes[k]->tmesh->v[meshes[k]->index[t].order.vz].vz = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vz << precision , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vz  << precision, meshes[k]->anim->cursor << precision)  >> precision;
+                                meshes[k]->tmesh->v[meshes[k]->index[t].order.vz].vy = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vy << precision , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vy  << precision, meshes[k]->anim->cursor << precision)  >> precision;
+                                
+                                meshes[k]->tmesh->v[meshes[k]->index[t].order.vy].vx = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vx << precision , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vx  << precision, meshes[k]->anim->cursor << precision)  >> precision;
+                                meshes[k]->tmesh->v[meshes[k]->index[t].order.vy].vz = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vz << precision , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vz  << precision, meshes[k]->anim->cursor << precision)  >> precision;
+                                meshes[k]->tmesh->v[meshes[k]->index[t].order.vy].vy = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vy << precision , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vy  << precision, meshes[k]->anim->cursor << precision)  >> precision;
+                                 
+                                meshes[k]->anim->cursor += 2 * meshes[k]->anim->dir;
+                                 
+                                //~ FntPrint("%d %d\n", meshes[k]->tmesh->v[meshes[k]->index[t].order.vx].vx, meshes[k]->tmesh->v[meshes[k]->index[t].order.vx].vz);
+                                //~ FntPrint("%d %d\n", *&meshes[k]->index[t].order.vx, *(&meshes[k]->index[t].order.vx+1));
+                                //~ FntPrint("Anim fps : %d\n",  meshes[k]->anim->cursor);
+                                 
+                                // Coord transformation
+                                nclip = RotAverageNclip3(
+                                        &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vx ],  
+                                        &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vz ],
+                                        &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vy ],
+                                        (long*)&poly->x0, (long*)&poly->x1, (long*)&poly->x2,
+                                        meshes[k]->p,
+                                        meshes[k]->OTz,
+                                        &Flag
+                                    );
+                                    
+                                } else { 
+                                    // No interpolation : just take the vertices coordinates from the anim data
+                                    nclip = RotAverageNclip3(
+                                        &meshes[k]->anim->data[ atime % meshes[k]->anim->nframes * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx],
+                                        &meshes[k]->anim->data[ atime % meshes[k]->anim->nframes * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz],
+                                        &meshes[k]->anim->data[ atime % meshes[k]->anim->nframes * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy],
+                                        (long*)&poly->x0, (long*)&poly->x1, (long*)&poly->x2,
+                                        meshes[k]->p,
+                                        meshes[k]->OTz,
+                                        &Flag
+                                    );
+                            }
+                                
+                        } else {                        
+                            // No animation
+                            // Use model's regular vertex pos
                             nclip = RotAverageNclip3(
-                                    &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vx ],  
-                                    &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vz ],
-                                    &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vy ],
-                                    (long*)&poly->x0, (long*)&poly->x1, (long*)&poly->x2,
-                                    meshes[k]->p,
-                                    meshes[k]->OTz,
-                                    &Flag
+                                &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vx ],  
+                                &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vz ],
+                                &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vy ],
+                                (long*)&poly->x0, (long*)&poly->x1, (long*)&poly->x2,
+                                meshes[k]->p,
+                                meshes[k]->OTz,
+                                &Flag
+                                );
+                        }
+                        
+                        if (nclip > 0 && *meshes[k]->OTz > 0 && (*meshes[k]->p < 4096) ) {
+
+                            
+                            SetPolyGT3(poly);
+                            
+                            // Transparency effect
+                            if (*meshes[k]->isPrism){ 
+                                
+                                // Use current DRAWENV clip as TPAGE
+                                ((POLY_GT3 *)poly)->tpage = getTPage(meshes[k]->tim->mode&0x3, 0,
+                                                                     draw[db].clip.x,
+                                                                     draw[db].clip.y
                                 );
                                 
-                            } else { 
-                                // No interpolation : just take the vertices coordinates from the anim data
-                                nclip = RotAverageNclip3(
-                                    &meshes[k]->anim->data[ atime % meshes[k]->anim->nframes * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx],
-                                    &meshes[k]->anim->data[ atime % meshes[k]->anim->nframes * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz],
-                                    &meshes[k]->anim->data[ atime % meshes[k]->anim->nframes * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy],
-                                    (long*)&poly->x0, (long*)&poly->x1, (long*)&poly->x2,
-                                    meshes[k]->p,
-                                    meshes[k]->OTz,
-                                    &Flag
+                                //~ setShadeTex(poly, 1);
+                                // Use projected coordinates (results from RotAverage...) as UV coords and clamp them to 0-255,0-224 
+                                setUV3(poly,  (poly->x0 < 0? 0 : poly->x0 > 255? 255 : poly->x0), 
+                                              (poly->y0 < 0? 0 : poly->y0 > 224? 224 : poly->y0), 
+                                              (poly->x1 < 0? 0 : poly->x1 > 255? 255 : poly->x1), 
+                                              (poly->y1 < 0? 0 : poly->y1 > 224? 224 : poly->y1), 
+                                              (poly->x2 < 0? 0 : poly->x2 > 255? 255 : poly->x2), 
+                                              (poly->y2 < 0? 0 : poly->y2 > 224? 224 : poly->y2)
+                                              );
+                                
+             
+                            } else {
+                                
+                                // Use regular TPAGE
+                                ((POLY_GT3 *)poly)->tpage = getTPage(meshes[k]->tim->mode&0x3, 0,
+                                                                 meshes[k]->tim->prect->x,
+                                                                 meshes[k]->tim->prect->y
                                 );
-                        }
+                                
+                                //~ if (!meshes[k]->isBG) {
+                                    //~ setShadeTex(poly, 1);
+                                    //~ setSemiTrans(poly, 1);
+                                //~ }
+                                setUV3(poly,  meshes[k]->tmesh->u[i].vx  , meshes[k]->tmesh->u[i].vy   + meshes[k]->tim->prect->y,
+                                              meshes[k]->tmesh->u[i+2].vx, meshes[k]->tmesh->u[i+2].vy + meshes[k]->tim->prect->y,
+                                              meshes[k]->tmesh->u[i+1].vx, meshes[k]->tmesh->u[i+1].vy + meshes[k]->tim->prect->y);
+                                //~ }
+                                 //~ else {
                             
-                    } else {                        
-                        // No animation
-                        // Use model's regular vertex pos
-                        nclip = RotAverageNclip3(
-                            &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vx ],  
-                            &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vz ],
-                            &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vy ],
-                            (long*)&poly->x0, (long*)&poly->x1, (long*)&poly->x2,
-                            meshes[k]->p,
-                            meshes[k]->OTz,
-                            &Flag
-                            );
-                    }
+                                //~ // Use model UV coordinates
+                                //~ setUV3(poly,  255  , 255,
+                                              //~ 255  , 255,
+                                              //~ 255  , 255);
+                                
+                                //~ }
+
+                            }
+
+                            // If tim mode  == 0 | 1, set CLUT coordinates
+                            if ((meshes[k]->tim->mode & 0x3) < 2){
+                                setClut(poly,             
+                                        meshes[k]->tim->crect->x,
+                                        meshes[k]->tim->crect->y);
+                            }
+                                         
+                        // If vertex anim has updated normals
+                        
+                            //~ if (*meshes[k]->isAnim){
+                                //~ NormalColorDpq(&meshes[k]->anim->normals[ atime%19 * modelCylindre_anim.nvert + meshes[k]->index[t]], &meshes[k]->tmesh->c[meshes[k]->index[t]], *meshes[k]->p, &outCol);
+                                //~ NormalColorDpq(&meshes[k]->anim->normals[ atime%19 * modelCylindre_anim.nvert + meshes[k]->index[t+1]], &meshes[k]->tmesh->c[meshes[k]->index[t+1]], *meshes[k]->p, &outCol1);
+                                //~ NormalColorDpq(&meshes[k]->anim->normals[ atime%19 * modelCylindre_anim.nvert + meshes[k]->index[t+2]], &meshes[k]->tmesh->c[meshes[k]->index[t+2]], *meshes[k]->p, &outCol2);
+                            //~ } else {
+                            
+                            
+                            
+                            // using precalc BG, default to black
+                            CVECTOR outCol  ={128,128,128,0};
+                            CVECTOR outCol1 ={128,128,128,0};
+                            CVECTOR outCol2 ={128,128,128,0};
+                        
+                            //~ if ( !camPtr->tim_data ) {
+                            
+                                // default to neutral grey
+                            //~ outCol.r , outCol.g , outCol.b  = 128;
+                            //~ outCol1.r, outCol1.g, outCol1.b = 128;
+                            //~ outCol2.r, outCol2.g, outCol2.b = 128;
+                        
+                            NormalColorDpq(&meshes[k]->tmesh->n[ meshes[k]->index[t].order.vx ], &meshes[k]->tmesh->c[ meshes[k]->index[t].order.vx ], *meshes[k]->p, &outCol);
+                            NormalColorDpq(&meshes[k]->tmesh->n[ meshes[k]->index[t].order.vz ], &meshes[k]->tmesh->c[ meshes[k]->index[t].order.vz ], *meshes[k]->p, &outCol1);
+                            NormalColorDpq(&meshes[k]->tmesh->n[ meshes[k]->index[t].order.vy ], &meshes[k]->tmesh->c[ meshes[k]->index[t].order.vy ], *meshes[k]->p, &outCol2);                           
+                        
+                            //~ }
+                            
+                            if (*meshes[k]->isPrism){ 
+                                
+                                // Use un-interpolated (i.e: no light, no fog) colors
+                                setRGB0(poly, meshes[k]->tmesh->c[i].r,   meshes[k]->tmesh->c[i].g, meshes[k]->tmesh->c[i].b);
+                                setRGB1(poly, meshes[k]->tmesh->c[i+1].r, meshes[k]->tmesh->c[i+1].g, meshes[k]->tmesh->c[i+1].b);
+                                setRGB2(poly, meshes[k]->tmesh->c[i+2].r, meshes[k]->tmesh->c[i+2].g, meshes[k]->tmesh->c[i+2].b);
+                            
+                            } else {
+                                
+                                setRGB0(poly, outCol.r, outCol.g  , outCol.b);
+                                setRGB1(poly, outCol1.r, outCol1.g, outCol1.b);
+                                setRGB2(poly, outCol2.r, outCol2.g, outCol2.b);
+                            } 
+                                   
+                            if ((*meshes[k]->OTz > 0) && (*meshes[k]->OTz < OTLEN) && (*meshes[k]->p < 4096)){
+                                AddPrim(&ot[db][*meshes[k]->OTz-2], poly);        // OTz - 2
+                            }
+                            
+                            nextpri += sizeof(POLY_GT3);
+                        }
                     
-                    if (nclip > 0 && *meshes[k]->OTz > 0 && (*meshes[k]->p < 4096) ) {
-
-                        
-                        SetPolyGT3(poly);
-                        
-                        // Transparency effect
-                        if (*meshes[k]->isPrism){ 
-                            
-                            // Use current DRAWENV clip as TPAGE
-                            ((POLY_GT3 *)poly)->tpage = getTPage(meshes[k]->tim->mode&0x3, 0,
-                                                                 draw[db].clip.x,
-                                                                 draw[db].clip.y
-                            );
-                            
-                            // Use projected coordinates (results from RotAverage...) as UV coords and clamp them to 0-255,0-224 
-                            setUV3(poly,  (poly->x0 < 0? 0 : poly->x0 > 255? 255 : poly->x0), 
-                                          (poly->y0 < 0? 0 : poly->y0 > 224? 224 : poly->y0), 
-                                          (poly->x1 < 0? 0 : poly->x1 > 255? 255 : poly->x1), 
-                                          (poly->y1 < 0? 0 : poly->y1 > 224? 224 : poly->y1), 
-                                          (poly->x2 < 0? 0 : poly->x2 > 255? 255 : poly->x2), 
-                                          (poly->y2 < 0? 0 : poly->y2 > 224? 224 : poly->y2)
-                                          );
-                            
-         
-                        } else {
-                            
-                            // Use regular TPAGE
-                            ((POLY_GT3 *)poly)->tpage = getTPage(meshes[k]->tim->mode&0x3, 0,
-                                                             meshes[k]->tim->prect->x,
-                                                             meshes[k]->tim->prect->y
-                            );
-                            
-                            // Use model UV coordinates
-                            setUV3(poly,  meshes[k]->tmesh->u[i].vx  , meshes[k]->tmesh->u[i].vy   + meshes[k]->tim->prect->y,
-                                          meshes[k]->tmesh->u[i+2].vx, meshes[k]->tmesh->u[i+2].vy + meshes[k]->tim->prect->y,
-                                          meshes[k]->tmesh->u[i+1].vx, meshes[k]->tmesh->u[i+1].vy + meshes[k]->tim->prect->y);
-                        
-
-                        }
-                                     
-                    // If vertex anim has updated normals
+                        t+=1;
                     
-                        //~ if (*meshes[k]->isAnim){
-                            //~ NormalColorDpq(&meshes[k]->anim->normals[ atime%19 * modelCylindre_anim.nvert + meshes[k]->index[t]], &meshes[k]->tmesh->c[meshes[k]->index[t]], *meshes[k]->p, &outCol);
-                            //~ NormalColorDpq(&meshes[k]->anim->normals[ atime%19 * modelCylindre_anim.nvert + meshes[k]->index[t+1]], &meshes[k]->tmesh->c[meshes[k]->index[t+1]], *meshes[k]->p, &outCol1);
-                            //~ NormalColorDpq(&meshes[k]->anim->normals[ atime%19 * modelCylindre_anim.nvert + meshes[k]->index[t+2]], &meshes[k]->tmesh->c[meshes[k]->index[t+2]], *meshes[k]->p, &outCol2);
-                        //~ } else {
-                        
-                        
-                        // default to neutral grey
-                        CVECTOR outCol  ={128,128,128,0};
-                        CVECTOR outCol1 ={128,128,128,0};
-                        CVECTOR outCol2 ={128,128,128,0};
-
-                        NormalColorDpq(&meshes[k]->tmesh->n[ meshes[k]->index[t].order.vx ], &meshes[k]->tmesh->c[ meshes[k]->index[t].order.vx ], *meshes[k]->p, &outCol);
-                        NormalColorDpq(&meshes[k]->tmesh->n[ meshes[k]->index[t].order.vz ], &meshes[k]->tmesh->c[ meshes[k]->index[t].order.vz ], *meshes[k]->p, &outCol1);
-                        NormalColorDpq(&meshes[k]->tmesh->n[ meshes[k]->index[t].order.vy ], &meshes[k]->tmesh->c[ meshes[k]->index[t].order.vy ], *meshes[k]->p, &outCol2);
-      
-
-                        if (*meshes[k]->isPrism){ 
-                            
-                            // Use un-interpolated (i.e: no light, no fog) colors
-                            setRGB0(poly, meshes[k]->tmesh->c[i].r,   meshes[k]->tmesh->c[i].g, meshes[k]->tmesh->c[i].b);
-                            setRGB1(poly, meshes[k]->tmesh->c[i+1].r, meshes[k]->tmesh->c[i+1].g, meshes[k]->tmesh->c[i+1].b);
-                            setRGB2(poly, meshes[k]->tmesh->c[i+2].r, meshes[k]->tmesh->c[i+2].g, meshes[k]->tmesh->c[i+2].b);
-                        
-                        } else {
-                            
-                            setRGB0(poly, outCol.r, outCol.g  , outCol.b);
-                            setRGB1(poly, outCol1.r, outCol1.g, outCol1.b);
-                            setRGB2(poly, outCol2.r, outCol2.g, outCol2.b);
-                        } 
-                               
-                        if ((*meshes[k]->OTz > 0) && (*meshes[k]->OTz < OTLEN) && (*meshes[k]->p < 4096)){
-                            AddPrim(&ot[db][*meshes[k]->OTz-2], poly);        // OTz - 2
-                        }
-                        
-                        nextpri += sizeof(POLY_GT3);
+                    //~ if (*meshes[k]->isRigidBody){
+                        //~ PopMatrix();                    // Pull previous matrix from stack (slow)
+                    //~ }
                     }
-                
-                    t+=1;
-                
-                //~ if (*meshes[k]->isRigidBody){
-                    //~ PopMatrix();                    // Pull previous matrix from stack (slow)
                 //~ }
-
-                }
             
             } 
 
@@ -859,60 +940,95 @@ int main() {
                 t=0;
 
                 for (i = 0; i < (meshes[k]->tmesh->len * 4); i += 4) {               
-                        
-                    poly4 = (POLY_GT4 *)nextpri;
-                        
-                                     
-                    // Vertex Anim 
-                    if (*meshes[k]->isAnim){
-                        
-                        // with interpolation
-                        if(meshes[k]->anim->interpolate){
+                    
+                    // if mesh is not part of BG, draw them, else, discard
+                    if (!*meshes[k]->isBG) {
+                    
+                        poly4 = (POLY_GT4 *)nextpri;
                             
-                            // ping pong
-                            //~ if (meshes[k]->anim->cursor > 4096 || meshes[k]->anim->cursor < 0){
-                               //~ meshes[k]->anim->dir *= -1;
-                            //~ }
+                                         
+                        // Vertex Anim 
+                        if (*meshes[k]->isAnim){
                             
-                            short precision = 12;
+                            // with interpolation
+                            if(meshes[k]->anim->interpolate){
+                                
+                                // ping pong
+                                //~ if (meshes[k]->anim->cursor > 4096 || meshes[k]->anim->cursor < 0){
+                                   //~ meshes[k]->anim->dir *= -1;
+                                //~ }
+                                
+                                short precision = 12;
 
-                            if (meshes[k]->anim->cursor > 1<<precision) {
+                                if (meshes[k]->anim->cursor > 1<<precision) {
 
-                                if ( meshes[k]->anim->lerpCursor < meshes[k]->anim->nframes - 1 ) {
+                                    if ( meshes[k]->anim->lerpCursor < meshes[k]->anim->nframes - 1 ) {
 
-                                    meshes[k]->anim->lerpCursor ++;
+                                        meshes[k]->anim->lerpCursor ++;
 
-                                    meshes[k]->anim->cursor = 0;
+                                        meshes[k]->anim->cursor = 0;
 
+                                    }
+
+                                    if ( meshes[k]->anim->lerpCursor == meshes[k]->anim->nframes - 1 ) {
+
+                                        meshes[k]->anim->lerpCursor = 0;
+
+                                        meshes[k]->anim->cursor = 0;
+                                    }
                                 }
-
-                                if ( meshes[k]->anim->lerpCursor == meshes[k]->anim->nframes - 1 ) {
-
-                                    meshes[k]->anim->lerpCursor = 0;
-
-                                    meshes[k]->anim->cursor = 0;
-                                }
+                                
+                                meshes[k]->tmesh->v[meshes[k]->index[t].order.vx].vx = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vx << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vx  << 12, meshes[k]->anim->cursor << 12)  >> 12;
+                                meshes[k]->tmesh->v[meshes[k]->index[t].order.vx].vz = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vz << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vz  << 12, meshes[k]->anim->cursor << 12)  >> 12;
+                                meshes[k]->tmesh->v[meshes[k]->index[t].order.vx].vy = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vy << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vy  << 12, meshes[k]->anim->cursor << 12)  >> 12;
+                                
+                                meshes[k]->tmesh->v[meshes[k]->index[t].order.vz].vx = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vx << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vx  << 12, meshes[k]->anim->cursor << 12)  >> 12;
+                                meshes[k]->tmesh->v[meshes[k]->index[t].order.vz].vz = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vz << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vz  << 12, meshes[k]->anim->cursor << 12)  >> 12;
+                                meshes[k]->tmesh->v[meshes[k]->index[t].order.vz].vy = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vy << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vy  << 12, meshes[k]->anim->cursor << 12)  >> 12;
+                                
+                                meshes[k]->tmesh->v[meshes[k]->index[t].order.vy].vx = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vx << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vx  << 12, meshes[k]->anim->cursor << 12)  >> 12;
+                                meshes[k]->tmesh->v[meshes[k]->index[t].order.vy].vz = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vz << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vz  << 12, meshes[k]->anim->cursor << 12)  >> 12;
+                                meshes[k]->tmesh->v[meshes[k]->index[t].order.vy].vy = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vy << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vy  << 12, meshes[k]->anim->cursor << 12)  >> 12;
+                                
+                                meshes[k]->tmesh->v[meshes[k]->index[t].order.pad].vx = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.pad].vx << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.pad].vx  << 12, meshes[k]->anim->cursor << 12) >> 12;
+                                meshes[k]->tmesh->v[meshes[k]->index[t].order.pad].vz = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.pad].vz << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.pad].vz  << 12, meshes[k]->anim->cursor << 12) >> 12;
+                                meshes[k]->tmesh->v[meshes[k]->index[t].order.pad].vy = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.pad].vy << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.pad].vy  << 12, meshes[k]->anim->cursor << 12) >> 12;
+                                
+                                meshes[k]->anim->cursor += 2 * meshes[k]->anim->dir;
+                                
+                                // Coord transformations
+                                nclip = RotAverageNclip4(
+                                    &meshes[k]->tmesh->v[ meshes[k]->index[t].order.pad ],  
+                                    &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vz],
+                                    &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vx ],
+                                    &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vy ],
+                                    (long*)&poly4->x0, (long*)&poly4->x1, (long*)&poly4->x2, (long*)&poly4->x3,
+                                    meshes[k]->p,
+                                    meshes[k]->OTz,
+                                    &Flag
+                                    );
+                                    
+                            } else {
+                                
+                                // No interpolation, use all vertices coordinates in anim data
+                                 
+                                OTz = RotAverageNclip4(
+                                    &meshes[k]->anim->data[ atime % meshes[k]->anim->nframes * meshes[k]->anim->nvert + meshes[k]->index[t].order.pad ],
+                                    &meshes[k]->anim->data[ atime % meshes[k]->anim->nframes * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz ],
+                                    &meshes[k]->anim->data[ atime % meshes[k]->anim->nframes * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx ],
+                                    &meshes[k]->anim->data[ atime % meshes[k]->anim->nframes * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy ],
+                                    (long*)&poly4->x0, (long*)&poly4->x1, (long*)&poly4->x2, (long*)&poly4->x3,
+                                    meshes[k]->p,
+                                    meshes[k]->OTz,
+                                    &Flag
+                                );
                             }
+                                    
+                        } else {                        
+                        
+                            // No animation
+                            // Use regulare vertex coords
                             
-                            meshes[k]->tmesh->v[meshes[k]->index[t].order.vx].vx = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vx << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vx  << 12, meshes[k]->anim->cursor << 12)  >> 12;
-                            meshes[k]->tmesh->v[meshes[k]->index[t].order.vx].vz = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vz << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vz  << 12, meshes[k]->anim->cursor << 12)  >> 12;
-                            meshes[k]->tmesh->v[meshes[k]->index[t].order.vx].vy = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vy << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx].vy  << 12, meshes[k]->anim->cursor << 12)  >> 12;
-                            
-                            meshes[k]->tmesh->v[meshes[k]->index[t].order.vz].vx = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vx << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vx  << 12, meshes[k]->anim->cursor << 12)  >> 12;
-                            meshes[k]->tmesh->v[meshes[k]->index[t].order.vz].vz = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vz << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vz  << 12, meshes[k]->anim->cursor << 12)  >> 12;
-                            meshes[k]->tmesh->v[meshes[k]->index[t].order.vz].vy = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vy << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz].vy  << 12, meshes[k]->anim->cursor << 12)  >> 12;
-                            
-                            meshes[k]->tmesh->v[meshes[k]->index[t].order.vy].vx = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vx << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vx  << 12, meshes[k]->anim->cursor << 12)  >> 12;
-                            meshes[k]->tmesh->v[meshes[k]->index[t].order.vy].vz = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vz << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vz  << 12, meshes[k]->anim->cursor << 12)  >> 12;
-                            meshes[k]->tmesh->v[meshes[k]->index[t].order.vy].vy = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vy << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy].vy  << 12, meshes[k]->anim->cursor << 12)  >> 12;
-                            
-                            meshes[k]->tmesh->v[meshes[k]->index[t].order.pad].vx = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.pad].vx << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.pad].vx  << 12, meshes[k]->anim->cursor << 12) >> 12;
-                            meshes[k]->tmesh->v[meshes[k]->index[t].order.pad].vz = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.pad].vz << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.pad].vz  << 12, meshes[k]->anim->cursor << 12) >> 12;
-                            meshes[k]->tmesh->v[meshes[k]->index[t].order.pad].vy = lerpD( meshes[k]->anim->data[meshes[k]->anim->lerpCursor * meshes[k]->anim->nvert + meshes[k]->index[t].order.pad].vy << 12 , meshes[k]->anim->data[(meshes[k]->anim->lerpCursor + 1) * meshes[k]->anim->nvert + meshes[k]->index[t].order.pad].vy  << 12, meshes[k]->anim->cursor << 12) >> 12;
-                            
-                            meshes[k]->anim->cursor += 2 * meshes[k]->anim->dir;
-                            
-                            // Coord transformations
                             nclip = RotAverageNclip4(
                                 &meshes[k]->tmesh->v[ meshes[k]->index[t].order.pad ],  
                                 &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vz],
@@ -920,157 +1036,136 @@ int main() {
                                 &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vy ],
                                 (long*)&poly4->x0, (long*)&poly4->x1, (long*)&poly4->x2, (long*)&poly4->x3,
                                 meshes[k]->p,
-                                &OTz,
+                                meshes[k]->OTz,
                                 &Flag
+                            );
+                        }
+                        
+                        if (nclip > 0 && *meshes[k]->OTz > 0 && (*meshes[k]->p < 4096)) {
+                     
+                            SetPolyGT4(poly4);
+                                
+                            // FIXME : Polygon subdiv - is it working ?
+                            
+                            OTc = OTz>>4;
+                            FntPrint("OTC:%d", OTc);
+                            if (OTc < 15) {
+                            
+                                if (OTc > 5) div.ndiv = 1; else div.ndiv = 2;
+                                    
+                                    DivideGT4(
+                                        // Vertex coord
+                                        &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vx ],  
+                                        &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vy ],
+                                        &meshes[k]->tmesh->v[ meshes[k]->index[t].order.pad ],
+                                        &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vz ],
+                                        // UV coord
+                                        meshes[k]->tmesh->u[i+3],
+                                        meshes[k]->tmesh->u[i+2],
+                                        meshes[k]->tmesh->u[i+0],
+                                        meshes[k]->tmesh->u[i+1],
+                                        
+                                        // Color
+                                        meshes[k]->tmesh->c[i], 
+                                        meshes[k]->tmesh->c[i+1], 
+                                        meshes[k]->tmesh->c[i+2], 
+                                        meshes[k]->tmesh->c[i+3], 
+
+                                        // Gpu packet
+                                        poly4,
+                                        &ot[db][OTz],
+                                        &div);
+                                                
+                                    //~ // Increment primitive list pointer
+                                    nextpri  += ( (sizeof(POLY_GT4) + 3) / 4 ) * (( 1 << ( div.ndiv )) << ( div.ndiv ));
+                                    triCount = ((1<<(div.ndiv))<<(div.ndiv));
+                            
+                            }
+                            
+                            // Transparency effect
+                            if (*meshes[k]->isPrism){ 
+                                
+                                
+                                // Use current DRAWENV clip as TPAGE
+                                ((POLY_GT4 *)poly4)->tpage = getTPage(meshes[k]->tim->mode&0x3, 0,
+                                                                     draw[db].clip.x,
+                                                                     draw[db].clip.y
                                 );
                                 
-                        } else {
-                            
-                            // No interpolation, use all vertices coordinates in anim data
-                             
-                            OTz = RotAverageNclip4(
-                                &meshes[k]->anim->data[ atime % meshes[k]->anim->nframes * meshes[k]->anim->nvert + meshes[k]->index[t].order.pad ],
-                                &meshes[k]->anim->data[ atime % meshes[k]->anim->nframes * meshes[k]->anim->nvert + meshes[k]->index[t].order.vz ],
-                                &meshes[k]->anim->data[ atime % meshes[k]->anim->nframes * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx ],
-                                &meshes[k]->anim->data[ atime % meshes[k]->anim->nframes * meshes[k]->anim->nvert + meshes[k]->index[t].order.vy ],
-                                (long*)&poly4->x0, (long*)&poly4->x1, (long*)&poly4->x2, (long*)&poly4->x3,
-                                meshes[k]->p,
-                                &OTz,
-                                &Flag
-                            );
-                        }
+                                //SetShadeTex(poly4, 1);
                                 
-                    } else {                        
+                                // Use projected coordinates (results from RotAverage...) as UV coords and clamp them to 0-255,0-224 
+                                setUV4(poly4, (poly4->x0 < 0? 0 : poly4->x0 > 255? 255 : poly4->x0), 
+                                              (poly4->y0 < 0? 0 : poly4->y0 > 224? 224 : poly4->y0), 
+                                              (poly4->x1 < 0? 0 : poly4->x1 > 255? 255 : poly4->x1), 
+                                              (poly4->y1 < 0? 0 : poly4->y1 > 224? 224 : poly4->y1), 
+                                              (poly4->x2 < 0? 0 : poly4->x2 > 255? 255 : poly4->x2), 
+                                              (poly4->y2 < 0? 0 : poly4->y2 > 224? 224 : poly4->y2),
+                                              (poly4->x3 < 0? 0 : poly4->x3 > 255? 255 : poly4->x3), 
+                                              (poly4->y3 < 0? 0 : poly4->y3 > 224? 224 : poly4->y3)
+                                              );
+                                
+             
+                            } else {
+                                
+                                // Use regular TPAGE
+                                ((POLY_GT4 *)poly4)->tpage = getTPage(meshes[k]->tim->mode&0x3, 0,
+                                                                 meshes[k]->tim->prect->x,
+                                                                 meshes[k]->tim->prect->y
+                                );
+                                
+                                // Use model UV coordinates
+                                setUV4(poly4, meshes[k]->tmesh->u[i+3].vx, meshes[k]->tmesh->u[i+3].vy   + meshes[k]->tim->prect->y,
+                                              meshes[k]->tmesh->u[i+2].vx, meshes[k]->tmesh->u[i+2].vy + meshes[k]->tim->prect->y,
+                                              meshes[k]->tmesh->u[i+0].vx, meshes[k]->tmesh->u[i+0].vy + meshes[k]->tim->prect->y,
+                                              meshes[k]->tmesh->u[i+1].vx, meshes[k]->tmesh->u[i+1].vy + meshes[k]->tim->prect->y);
+                            
+
+                            }
+                            
+                            
+                                // If tim mode  == 0 | 1, set CLUT coordinates
+                                if ((meshes[k]->tim->mode & 0x3) < 2){
+                                    setClut(poly,             
+                                            meshes[k]->tim->crect->x,
+                                            meshes[k]->tim->crect->y);
+                                }
+                                CVECTOR outCol  = {128,128,128,0};
+                                CVECTOR outCol1 = {128,128,128,0};
+                                CVECTOR outCol2 = {128,128,128,0};
+                                CVECTOR outCol3 = {128,128,128,0};
+
+                                NormalColorDpq(&meshes[k]->tmesh->n[ meshes[k]->index[t].order.pad ]  , &meshes[k]->tmesh->c[ meshes[k]->index[t].order.pad ], *meshes[k]->p, &outCol);
+                                NormalColorDpq(&meshes[k]->tmesh->n[ meshes[k]->index[t].order.vz ], &meshes[k]->tmesh->c[ meshes[k]->index[t].order.vz ], *meshes[k]->p, &outCol1);
+                                NormalColorDpq(&meshes[k]->tmesh->n[ meshes[k]->index[t].order.vx ], &meshes[k]->tmesh->c[ meshes[k]->index[t].order.vx ], *meshes[k]->p, &outCol2);
+                                NormalColorDpq(&meshes[k]->tmesh->n[ meshes[k]->index[t].order.vy ], &meshes[k]->tmesh->c[  meshes[k]->index[t].order.vy ], *meshes[k]->p, &outCol3);
+
+                            if (*meshes[k]->isPrism){ 
+                                
+                                // Use un-interpolated (i.e: no light, no fog) colors
+                                setRGB0(poly4, meshes[k]->tmesh->c[i].r, meshes[k]->tmesh->c[i].g, meshes[k]->tmesh->c[i].b);
+                                setRGB1(poly4, meshes[k]->tmesh->c[i+1].r, meshes[k]->tmesh->c[i+1].g, meshes[k]->tmesh->c[i+1].b);
+                                setRGB2(poly4, meshes[k]->tmesh->c[i+2].r, meshes[k]->tmesh->c[i+2].g, meshes[k]->tmesh->c[i+2].b);
+                                setRGB3(poly4, meshes[k]->tmesh->c[i+3].r, meshes[k]->tmesh->c[i+3].g, meshes[k]->tmesh->c[i+3].b);
+                            
+                            } else {
+                                
+                                setRGB0(poly4, outCol.r, outCol.g  , outCol.b);
+                                setRGB1(poly4, outCol1.r, outCol1.g, outCol1.b);
+                                setRGB2(poly4, outCol2.r, outCol2.g, outCol2.b);
+                                setRGB3(poly4, outCol3.r, outCol3.g, outCol3.b);
+                            } 
+                                   
+                            if ((*meshes[k]->OTz > 0) && (*meshes[k]->OTz < OTLEN) && (*meshes[k]->p < 4096)){
+                                AddPrim(&ot[db][*meshes[k]->OTz-3], poly4);        // OTz - 2
+                            }
+                            
+                            nextpri += sizeof(POLY_GT4);
+                        }    
                     
-                        // No animation
-                        // Use regulare vertex coords
-                        
-                        nclip = RotAverageNclip4(
-                            &meshes[k]->tmesh->v[ meshes[k]->index[t].order.pad ],  
-                            &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vz],
-                            &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vx ],
-                            &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vy ],
-                            (long*)&poly4->x0, (long*)&poly4->x1, (long*)&poly4->x2, (long*)&poly4->x3,
-                            meshes[k]->p,
-                            &OTz,
-                            &Flag
-                        );
+                    t+=1;
+
                     }
-                    
-                    if (nclip > 0 && OTz > 0 && (*meshes[k]->p < 4096)) {
-                 
-                        SetPolyGT4(poly4);
-                            
-                        // FIXME : Polygon subdiv 
-                        
-                        //~ OTc = OTz>>4;
-                        
-                        //~ if (OTc < 1) {
-                        
-                            //~ if (OTc > 5) div.ndiv = 1; else div.ndiv = 1;
-                                
-                                //~ DivideGT4(
-                                    //~ // Vertex coord
-                                    //~ &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vx ],  
-                                    //~ &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vy ],
-                                    //~ &meshes[k]->tmesh->v[ meshes[k]->index[t].order.pad ],
-                                    //~ &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vz ],
-                                    //~ // UV coord
-                                    //~ meshes[k]->tmesh->u[i+3],
-                                    //~ meshes[k]->tmesh->u[i+2],
-                                    //~ meshes[k]->tmesh->u[i+0],
-                                    //~ meshes[k]->tmesh->u[i+1],
-                                    
-                                    //~ // Color
-                                    //~ meshes[k]->tmesh->c[i], 
-                                    //~ meshes[k]->tmesh->c[i+1], 
-                                    //~ meshes[k]->tmesh->c[i+2], 
-                                    //~ meshes[k]->tmesh->c[i+3], 
-
-                                    //~ // Gpu packet
-                                    //~ poly4,
-                                    //~ &ot[db][OTz],
-                                    //~ &div);
-                                            
-                                // Increment primitive list pointer
-                                //~ nextpri  += ( (sizeof(POLY_GT4) + 3) / 4 ) * (( 1 << ( div.ndiv )) << ( div.ndiv ));
-                                //~ triCount = ((1<<(div.ndiv))<<(div.ndiv));
-                        
-                        //~ }
-                        
-                        // Transparency effect
-                        if (*meshes[k]->isPrism){ 
-                            
-                            // Use current DRAWENV clip as TPAGE
-                            ((POLY_GT4 *)poly4)->tpage = getTPage(meshes[k]->tim->mode&0x3, 0,
-                                                                 draw[db].clip.x,
-                                                                 draw[db].clip.y
-                            );
-                            
-                            // Use projected coordinates (results from RotAverage...) as UV coords and clamp them to 0-255,0-224 
-                            setUV4(poly4, (poly4->x0 < 0? 0 : poly4->x0 > 255? 255 : poly4->x0), 
-                                          (poly4->y0 < 0? 0 : poly4->y0 > 224? 224 : poly4->y0), 
-                                          (poly4->x1 < 0? 0 : poly4->x1 > 255? 255 : poly4->x1), 
-                                          (poly4->y1 < 0? 0 : poly4->y1 > 224? 224 : poly4->y1), 
-                                          (poly4->x2 < 0? 0 : poly4->x2 > 255? 255 : poly4->x2), 
-                                          (poly4->y2 < 0? 0 : poly4->y2 > 224? 224 : poly4->y2),
-                                          (poly4->x3 < 0? 0 : poly4->x3 > 255? 255 : poly4->x3), 
-                                          (poly4->y3 < 0? 0 : poly4->y3 > 224? 224 : poly4->y3)
-                                          );
-                            
-         
-                        } else {
-                            
-                            // Use regular TPAGE
-                            ((POLY_GT4 *)poly4)->tpage = getTPage(meshes[k]->tim->mode&0x3, 0,
-                                                             meshes[k]->tim->prect->x,
-                                                             meshes[k]->tim->prect->y
-                            );
-                            
-                            // Use model UV coordinates
-                            setUV4(poly4, meshes[k]->tmesh->u[i+3].vx, meshes[k]->tmesh->u[i+3].vy   + meshes[k]->tim->prect->y,
-                                          meshes[k]->tmesh->u[i+2].vx, meshes[k]->tmesh->u[i+2].vy + meshes[k]->tim->prect->y,
-                                          meshes[k]->tmesh->u[i+0].vx, meshes[k]->tmesh->u[i+0].vy + meshes[k]->tim->prect->y,
-                                          meshes[k]->tmesh->u[i+1].vx, meshes[k]->tmesh->u[i+1].vy + meshes[k]->tim->prect->y);
-                        
-
-                        }
-
-                            CVECTOR outCol  = {128,128,128,0};
-                            CVECTOR outCol1 = {128,128,128,0};
-                            CVECTOR outCol2 = {128,128,128,0};
-                            CVECTOR outCol3 = {128,128,128,0};
-
-                            NormalColorDpq(&meshes[k]->tmesh->n[ meshes[k]->index[t].order.pad ]  , &meshes[k]->tmesh->c[ meshes[k]->index[t].order.pad ], *meshes[k]->p, &outCol);
-                            NormalColorDpq(&meshes[k]->tmesh->n[ meshes[k]->index[t].order.vz ], &meshes[k]->tmesh->c[ meshes[k]->index[t].order.vz ], *meshes[k]->p, &outCol1);
-                            NormalColorDpq(&meshes[k]->tmesh->n[ meshes[k]->index[t].order.vx ], &meshes[k]->tmesh->c[ meshes[k]->index[t].order.vx ], *meshes[k]->p, &outCol2);
-                            NormalColorDpq(&meshes[k]->tmesh->n[ meshes[k]->index[t].order.vy ], &meshes[k]->tmesh->c[  meshes[k]->index[t].order.vy ], *meshes[k]->p, &outCol3);
-
-                        if (*meshes[k]->isPrism){ 
-                            
-                            // Use un-interpolated (i.e: no light, no fog) colors
-                            setRGB0(poly4, meshes[k]->tmesh->c[i].r, meshes[k]->tmesh->c[i].g, meshes[k]->tmesh->c[i].b);
-                            setRGB1(poly4, meshes[k]->tmesh->c[i+1].r, meshes[k]->tmesh->c[i+1].g, meshes[k]->tmesh->c[i+1].b);
-                            setRGB2(poly4, meshes[k]->tmesh->c[i+2].r, meshes[k]->tmesh->c[i+2].g, meshes[k]->tmesh->c[i+2].b);
-                            setRGB3(poly4, meshes[k]->tmesh->c[i+3].r, meshes[k]->tmesh->c[i+3].g, meshes[k]->tmesh->c[i+3].b);
-                        
-                        } else {
-                            
-                            setRGB0(poly4, outCol.r, outCol.g  , outCol.b);
-                            setRGB1(poly4, outCol1.r, outCol1.g, outCol1.b);
-                            setRGB2(poly4, outCol2.r, outCol2.g, outCol2.b);
-                            setRGB3(poly4, outCol3.r, outCol3.g, outCol3.b);
-                        } 
-                               
-                        if ((OTz > 0) && (OTz < OTLEN) && (*meshes[k]->p < 4096)){
-                            AddPrim(&ot[db][OTz-3], poly4);        // OTz - 2
-                        }
-                        
-                        nextpri += sizeof(POLY_GT4);
-                    }    
-                
-                t+=1;
-
                 }
             }
             
@@ -1080,23 +1175,21 @@ int main() {
             SetLightMatrix(&light);
 
             applyCamera(&camera);
-
+        
         }
         
+        
+        // Add secondary OT to main OT
+        AddPrims(otdisc[db], ot[db] + OTLEN - 1, ot[db]);
+
         //~ FntPrint("Time    : %d %d dt :%d\n",time, atime, dt);
-        //~ FntPrint("CamMode: %d Slowmo : %d\nTricount: %d OTz: %d\nOTc: %d, p: %d\n", camMode, actorPtr->anim->interpolate, triCount, OTz, OTc, *meshes[0]->p);
+        //~ FntPrint("CamMode: %d Slowmo : %d\nTricount: %d OTz: %d\nOTc: %d, p: %d\n", camMode, actorPtr->anim->interpolate, triCount, *meshes[9]->OTz, OTc, *meshes[9]->p);
         //~ FntPrint("Fy: %d Vy:%d\n", actorPtr->body->gForce.vy, actorPtr->body->velocity.vy );
         //~ FntPrint("Vy: %4d\n", actorPtr->body->gForce.vy );
-        FntPrint("%d", *meshes[0]->OTz);
-        //~ static int lerpValues[16];
+        //~ FntPrint("%d %d %d", meshes[0]->tim->mode & 0x3, meshes[0]->tim->crect->x, meshes[0]->tim->crect->y);
         
-        //~ for ( short i = 0; i < (4096 >> 8) ; i++ ){
-            //~ lerpValues[15-i] = lerp(-24, -224, ( i << 8 ) );
-            //~ FntPrint("%d, ", lerpValues[i] );
-        //~ }
+        //~ FntPrint("%d", OTc);
         
-        
-
         FntFlush(-1);
 		
 		display();
@@ -1156,7 +1249,11 @@ void display(void){
 
     SetDispMask(1);
     
-    DrawOTag(ot[db] + OTLEN - 1);
+    // Main OT
+    DrawOTag(otdisc[db] + OT2LEN - 1);
+    
+    // Secondary OT
+    //~ DrawOTag(ot[db] + OTLEN - 1);
     
     db = !db;
 
@@ -1544,6 +1641,8 @@ void callback(){
     
     static short cursor = 0;
     
+    static short curCamAngle = 0;
+    
     if(!lerpValues[0]){
         for ( long long i = 0; i < div ; i++ ){
         // lerp
@@ -1570,18 +1669,33 @@ void callback(){
     if(cursor>0){cursor--;}    
 
     if (pad & PADR1 && !timer){
-        if(camMode < 5){ 
-            camMode ++;
-            lerping = 0;
+        
+        if (!camPtr->tim_data){
+            if(camMode < 6){ 
+                
+                    camMode ++;
+                    lerping = 0;
+                
+            } else {
+                setCameraPos(camPtr->campos->pos, camPtr->campos->rot);
+                camPath.cursor = 0;
+                camMode = 0;
+                lerping = 0;
+            }
+            //~ lastPad = pad;
+            //~ timer = 10;
+            //~ pressed = 1;
         } else {
-            setCameraPos(camStartPos.pos, camStartPos.rot);
-            camPath.cursor = 0;
-            camMode = 0;
-            lerping = 0;
+            if (curCamAngle < 5) {
+                curCamAngle++;
+                camPtr = camAngles[curCamAngle];
+                LoadTexture(camPtr->tim_data, camPtr->BGtim);
+            } else {
+                curCamAngle = 0;
+            }
         }
         lastPad = pad;
         timer = 10;
-        //~ pressed = 1;
     }
         
     if (!(pad & PADR1) && lastPad & PADR1){
@@ -1652,16 +1766,16 @@ void callback(){
     }
     
     if (pad & PADLleft){
-        actorPtr->rot->vx = 0;
-        actorPtr->rot->vz = 0;
+        //~ actorPtr->rot->vx = 0;
+        //~ actorPtr->rot->vz = 0;
         actorPtr->rot->vy -= 10;
         lastPad = pad;
 
     }
     
     if (pad & PADLright){
-        actorPtr->rot->vx = 0;
-        actorPtr->rot->vz = 0;
+        //~ actorPtr->rot->vx = 0;
+        //~ actorPtr->rot->vz = 0;
         actorPtr->rot->vy += 10;
         lastPad = pad;
     }
@@ -1673,6 +1787,8 @@ void callback(){
     
     if (cursor){
         actorPtr->body->position.vy = lerpValues[cursor];}
+    
+    FntPrint("Mode : %d  Angle: %d\n", camMode, curCamAngle);
     
     //~ FntPrint("Curs: %d Vy: %d\n", cursor, actorPtr->body->position.vy );
     //~ FntPrint("Force: %d\n", forceApplied);
