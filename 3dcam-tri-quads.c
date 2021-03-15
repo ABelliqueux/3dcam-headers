@@ -49,7 +49,7 @@
 
 #define OT2LEN	    8	                   
 #define OTLEN	    256	                    // Maximum number of OT entries
-#define PRIMBUFFLEN	1024 * sizeof(POLY_GT4)	    // Maximum number of POLY_GT3 primitives
+#define PRIMBUFFLEN	4096 * sizeof(POLY_GT4)	    // Maximum number of POLY_GT3 primitives
 
 // atantable
 #define SWAP(a,b,c)			{(c)=(a); (a)=(b); (b)=(c);} // swap(x, y, buffer)
@@ -182,6 +182,9 @@ int camMode = 2;
 long timeB = 0;
 int lerping    = 0;
 
+// Inverted Cam coordinates for Forward Vector calc
+VECTOR InvCamPos = {0,0,0,0};
+VECTOR fVecActor = {0,0,0,0};
 
 u_long triCount = 0;
 
@@ -195,7 +198,7 @@ int  ncos(u_int t);
 int  nsin(u_int t);
 
 // Atan table
-int patan(int x, int y);
+long long patan(long x, long y);
 
 //sqrt
 u_int psqrt(u_int n);
@@ -219,6 +222,8 @@ void LoadTexture(u_long * tim, TIM_IMAGE * tparam);
 int cliptest3(short * v1);
 int lerp(int start, int end, int factor); // FIXME : not working as it should
 SVECTOR SVlerp(SVECTOR start, SVECTOR end, int factor); // FIXME 
+VECTOR getVectorTo(VECTOR actor, VECTOR target);
+int alignAxisToVect(VECTOR target, short axis, int factor);
 
 // Camera 
 void getCameraXZ(int * x, int * z, int actorX, int actorZ, int angle, int distance);
@@ -247,10 +252,15 @@ int main() {
     DR_TPAGE * tpage;
     
     // Poly subdiv
-    DIVPOLYGON4	div = { 0 };
-    div.pih = SCREENXRES;
-	div.piv = SCREENYRES;
-    div.ndiv = 1;
+    DIVPOLYGON4	div4 = { 0 };
+    div4.pih = SCREENXRES;
+	div4.piv = SCREENYRES;
+    div4.ndiv = 2;
+    
+    //~ DIVPOLYGON3	div3 = { 0 };
+    //~ div3.pih = SCREENXRES;
+	//~ div3.piv = SCREENYRES;
+    //~ div3.ndiv = 1;
     
     MATRIX Cmatrix = {0};
     
@@ -285,8 +295,12 @@ int main() {
     
     // Cam stuff 
     
-    VECTOR posToActor  = {0, 0, 0, 0};      // position of camera relative to actor    
-    VECTOR theta       = {0, 0, 0, 0};      // rotation angles for the camera to point at actor
+    VECTOR posToActor    = {0, 0, 0, 0};      // position of camera relative to actor    
+    VECTOR camAngleToAct = {0, 0, 0, 0};      // rotation angles for the camera to point at actor
+    
+    // Sprite sustem
+    VECTOR posToCam      = {0, 0, 0, 0};
+    VECTOR objAngleToCam = {0, 0, 0, 0};
     
     int angle     = 0;                      //PSX units = 4096 == 360° = 2Pi
     int dist      = 0;                      //PSX units 
@@ -301,7 +315,6 @@ int main() {
     
     // Pre-calc bg test
     setCameraPos(camPtr->campos->pos, camPtr->campos->rot);
-    
     
     //~ camera.rot.vz = 100;
     
@@ -326,15 +339,32 @@ int main() {
             
         // Angle between camera and actor
         // using atantable (faster)
-        theta.vy = patan(posToActor.vx, posToActor.vz) / 16 - 1024 ;
-        theta.vx = patan(dist, posToActor.vy)/16;
-                    
+        camAngleToAct.vy = (patan(-posToActor.vx, -posToActor.vz) / 16) - 3076 ;
+        camAngleToAct.vx = patan(dist, posToActor.vy) >> 4;
+
+        //~ posToCam = getVectorTo(*meshPlan.pos, camera.pos);
+        //~ posToCam = getVectorTo(camera.pos, *meshPlan.pos);
+
+        //~ objAngleToCam.vy = ( (patan(meshPlan.pos->vx, meshPlan.pos->vz) - patan(camera.pos.vx > 0 ? camera.pos.vx : camera.pos.vx, camera.pos.vz) ) >> 4) - 1024;
+        //~ objAngleToCam.vy = ( (patan(meshPlan.pos->vx > 0 ? meshPlan.pos->vx : 4096 + meshPlan.pos->vx, meshPlan.pos->vz) - patan(camera.pos.vx > 0 ? camera.pos.vx : 4096 + camera.pos.vx, camera.pos.vz) ) >> 4) - 1024;
+        //~ objAngleToCam.vx = ratan2(posToCam.pad, posToCam.vy);
+        
+        //~ meshPlan.rot->vy = objAngleToCam.vy;
+        //~ meshPlan.rot->vx = objAngleToCam.vy;
+        
+        // Actor Forward vector 
+
+        fVecActor = *actorPtr->pos;
+        
+        fVecActor.vx = actorPtr->pos->vx + (nsin(actorPtr->rot->vy/2));
+        fVecActor.vz = actorPtr->pos->vz - (ncos(actorPtr->rot->vy/2));
+
         if(camMode != 2){
             
-            camera.rot.vy = theta.vy;
+            camera.rot.vy = camAngleToAct.vy;
             // using csin/ccos, no need for theta
             //~ camera.rot.vy = angle; 
-            camera.rot.vx = theta.vx;   
+            camera.rot.vx = camAngleToAct.vx;   
         
         }
         
@@ -349,12 +379,19 @@ int main() {
             //~ camera.pos.vy = -(camera.y/ONE);
             camera.pos.vz = -(camera.z/ONE);
             
+            //~ InvCamPos.vx = camera.x/ONE;
+            //~ InvCamPos.vz = camera.z/ONE;
+        
+            //~ applyVector(&InvCamPos, -1,-1,-1, *=);
+            
+            angle = -actorPtr->rot->vy / 2;
+            //~ angle = actorPtr->rot->vy;
+
             getCameraXZ(&camera.x, &camera.z, actorPtr->pos->vx, actorPtr->pos->vz, angle, dist);
 
             // FIXME! camera lerping to pos
             //~ angle += lerp(camera.rot.vy, -actorPtr->rot->vy, 128);
             //~ angle = lerpD(camera.rot.vy << 12, actorPtr->rot->vy << 12, 1024 << 12) >> 12;
-            angle = -actorPtr->rot->vy;
             
         }
         
@@ -365,7 +402,13 @@ int main() {
             camera.pos.vx = -(camera.x/ONE);
             //~ camera.pos.vy = -(camera.y/ONE);
             camera.pos.vz = -(camera.z/ONE);
-                                                
+            
+            //~ fVecActor = *actorPtr->pos;
+            
+            //~ fVecActor.vx = actorPtr->pos->vx + (nsin(actorPtr->rot->vy));
+            //~ fVecActor.vz = actorPtr->pos->vz - (ncos(actorPtr->rot->vy));
+            
+            
             getCameraXZ(&camera.x, &camera.z, actorPtr->pos->vx, actorPtr->pos->vz, angle, dist);
             angle += 10;
         }
@@ -468,7 +511,7 @@ int main() {
                     }
                     
                 // Pre calculated sqrt ( see psqrt() )
-                dist = psqrt( (posToActor.vx * posToActor.vx ) + (posToActor.vz * posToActor.vz) );
+                dist = psqrt( (posToActor.vx * posToActor.vx ) + (posToActor.vz * posToActor.vz));
                 
                 // Fixed point precision 2^12 == 4096
                 int precision = 12;
@@ -526,7 +569,7 @@ int main() {
                     }
                     
                 // Pre calculated sqrt ( see psqrt() )
-                dist = psqrt( (posToActor.vx * posToActor.vx ) + (posToActor.vz * posToActor.vz) );
+                dist = psqrt( (posToActor.vx * posToActor.vx ) + (posToActor.vz * posToActor.vz));
                 
                 // Fixed point precision 2^12 == 4096
                 short precision = 12;
@@ -539,10 +582,10 @@ int main() {
                 //~ FntPrint("Cam %d, %d, %d\n", camera.pos.vx, camera.pos.vy, camera.pos.vz);
                 //~ FntPrint("Pos: %d Cur: %d\nTheta y: %d x: %d\n", camPath.pos, camPath.cursor, theta.vy, theta.vx);
 
-                if ( theta.vy < -50 ) {  
+                if ( camAngleToAct.vy < -50 ) {  
                     camPath.pos += 40;
                 }
-                if ( theta.vy > 50 ) {  
+                if ( camAngleToAct.vy > 50 ) {  
                     camPath.pos -= 40;
                 }
                 
@@ -582,12 +625,13 @@ int main() {
 
                         applyAcceleration(meshes[k]->body);
                         
-                        
                         // Get col with level                         ( modelgnd_body )        
+                        
                         //~ col_lvl = getIntCollision( *meshes[k]->body , *levelPtr->body );
-                        col_lvl = getIntCollision( *actorPtr->body , *levelPtr->body );
-                        //                            &modelobject_body, &modelSphere_body
-                        col_sphere = getIntCollision( *propPtr->body, *levelPtr->body );
+                        
+                        col_lvl = getIntCollision( *actorPtr->body , *curNode->curPlane->body );
+                        
+                        col_sphere = getIntCollision( *propPtr->body, *curNode->curPlane->body );
                         
                         col_sphere_act = getExtCollision( *actorPtr->body, *propPtr->body );
                         
@@ -626,7 +670,7 @@ int main() {
                             if (propPtr->body->velocity.vx){
                                 
                                 VECTOR L = angularMom(*propPtr->body);
-                                propPtr->rot->vz += L.vx;
+                                propPtr->rot->vz -= L.vx;
                             }
                             
                             if (propPtr->body->velocity.vz){
@@ -640,16 +684,16 @@ int main() {
                             propPtr->body->velocity.vx = 0;
                             }
                         
-                        if ( actorPtr->body->velocity.vx){ 
-                            VECTOR L = angularMom(*actorPtr->body);
-                            actorPtr->rot->vz += L.vx * nsin(actorPtr->rot->vy) * nsin(actorPtr->rot->vy) >> 24 ;
+                        //~ if ( actorPtr->body->velocity.vx){ 
+                            //~ VECTOR L = angularMom(*actorPtr->body);
+                            //~ actorPtr->rot->vx += L.vx * nsin(actorPtr->rot->vy/2) * nsin(actorPtr->rot->vy/2) >> 24 ;
                             
-                        }
+                        //~ }
                         
-                        if ( actorPtr->body->velocity.vz){ 
-                            VECTOR L = angularMom(*actorPtr->body);
-                            actorPtr->rot->vx -= L.vz * ncos(actorPtr->rot->vy) * ncos(actorPtr->rot->vy) >> 24 ;
-                        }
+                        //~ if ( actorPtr->body->velocity.vz){ 
+                            //~ VECTOR L = angularMom(*actorPtr->body);
+                            //~ actorPtr->rot->vx -= L.vz * ncos(actorPtr->rot->vy/2) * ncos(actorPtr->rot->vy/2) >> 24 ;
+                        //~ }
                     
                         //~ if ( actorPtr->body->velocity.vy){
                             
@@ -671,15 +715,15 @@ int main() {
             }
         }
         
-        //*/
-
         // Camera setup 
         
-
         // position of cam relative to actor
         posToActor.vx = actorPtr->pos->vx + camera.pos.vx;
         posToActor.vz = actorPtr->pos->vz + camera.pos.vz;
         posToActor.vy = actorPtr->pos->vy + camera.pos.vy;
+        
+        // position of object relative to cam
+        
         
 		// Clear the current OT
 		// ClearOTagR(ot[db], OTLEN);
@@ -717,12 +761,46 @@ int main() {
                 for (i = 0; i < (meshes[k]->tmesh->len * 3); i += 3) {               
                     
                     // if mesh is not part of BG, draw them, else, discard
-                    //~ if (!*meshes[k]->isBG) {
+                    if (!*meshes[k]->isBG || camMode != 2) {
                     
                         poly = (POLY_GT3 *)nextpri;
+
+                        // FIXME : Polygon subdiv - is it working ?
+                        
+                        //~ OTc = *meshes[k]->OTz>>4;
+                        //~ FntPrint("OTC:%d", OTc);
+                        //~ if (OTc < 15) {
+                        
+                            //~ if (OTc > 5) div3.ndiv = 1; else div3.ndiv = 1;
+                                
+                                //~ DivideGT3(
+                                    //~ // Vertex coord
+                                    //~ &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vx ],  
+                                    //~ &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vz ],
+                                    //~ &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vy ],
+                                    //~ // UV coord
+                                    //~ meshes[k]->tmesh->u[i+0],
+                                    //~ meshes[k]->tmesh->u[i+2],
+                                    //~ meshes[k]->tmesh->u[i+1],
+                                    
+                                    //~ // Color
+                                    //~ meshes[k]->tmesh->c[i], 
+                                    //~ meshes[k]->tmesh->c[i+1], 
+                                    //~ meshes[k]->tmesh->c[i+2],
+
+                                    //~ // Gpu packet
+                                    //~ poly,
+                                    //~ &ot[db][*meshes[k]->OTz],
+                                    //~ &div3);
+                                            
+                                // Increment primitive list pointer
+                                //~ nextpri  += ( (sizeof(POLY_GT3) + 3) / 4 ) * (( 1 << ( div3.ndiv )) << ( div3.ndiv ));
+                                //~ triCount = ((1<<(div3.ndiv))<<(div3.ndiv));
+                                //triCount = ( (sizeof(POLY_GT3) + 3) / 4 ) * (( 1 << ( div3.ndiv )) << ( div3.ndiv ));
+                        
+                        //~ }
                         
                         // Vertex Anim
-                         
                         if (*meshes[k]->isAnim){
                         
                             // with interpolation
@@ -879,6 +957,7 @@ int main() {
                         // If vertex anim has updated normals
                         
                             //~ if (*meshes[k]->isAnim){
+                                // &meshes[k]->anim->data[ atime % meshes[k]->anim->nframes * meshes[k]->anim->nvert + meshes[k]->index[t].order.vx],
                                 //~ NormalColorDpq(&meshes[k]->anim->normals[ atime%19 * modelCylindre_anim.nvert + meshes[k]->index[t]], &meshes[k]->tmesh->c[meshes[k]->index[t]], *meshes[k]->p, &outCol);
                                 //~ NormalColorDpq(&meshes[k]->anim->normals[ atime%19 * modelCylindre_anim.nvert + meshes[k]->index[t+1]], &meshes[k]->tmesh->c[meshes[k]->index[t+1]], *meshes[k]->p, &outCol1);
                                 //~ NormalColorDpq(&meshes[k]->anim->normals[ atime%19 * modelCylindre_anim.nvert + meshes[k]->index[t+2]], &meshes[k]->tmesh->c[meshes[k]->index[t+2]], *meshes[k]->p, &outCol2);
@@ -931,7 +1010,7 @@ int main() {
                         //~ PopMatrix();                    // Pull previous matrix from stack (slow)
                     //~ }
                     }
-                //~ }
+                }
             
             } 
 
@@ -942,7 +1021,7 @@ int main() {
                 for (i = 0; i < (meshes[k]->tmesh->len * 4); i += 4) {               
                     
                     // if mesh is not part of BG, draw them, else, discard
-                    if (!*meshes[k]->isBG) {
+                    if (!*meshes[k]->isBG || camMode != 2) {
                     
                         poly4 = (POLY_GT4 *)nextpri;
                             
@@ -1045,43 +1124,44 @@ int main() {
                      
                             SetPolyGT4(poly4);
                                 
-                            // FIXME : Polygon subdiv - is it working ?
+                            //~ // FIXME : Polygon subdiv - is it working ?
                             
-                            OTc = OTz>>4;
-                            FntPrint("OTC:%d", OTc);
-                            if (OTc < 15) {
+                            //~ OTc = *meshes[k]->OTz >> 4;
+                            //~ FntPrint("OTC:%d", OTc);
                             
-                                if (OTc > 5) div.ndiv = 1; else div.ndiv = 2;
+                            //~ if (OTc < 4) {
+                            
+                                //~ if (OTc > 1) div4.ndiv = 1; else div4.ndiv = 2;
                                     
-                                    DivideGT4(
-                                        // Vertex coord
-                                        &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vx ],  
-                                        &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vy ],
-                                        &meshes[k]->tmesh->v[ meshes[k]->index[t].order.pad ],
-                                        &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vz ],
-                                        // UV coord
-                                        meshes[k]->tmesh->u[i+3],
-                                        meshes[k]->tmesh->u[i+2],
-                                        meshes[k]->tmesh->u[i+0],
-                                        meshes[k]->tmesh->u[i+1],
+                                    //~ DivideGT4(
+                                        //~ // Vertex coord
+                                        //~ &meshes[k]->tmesh->v[ meshes[k]->index[t].order.pad ],  
+                                        //~ &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vz ],
+                                        //~ &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vx ],
+                                        //~ &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vy ],
+                                        //~ // UV coord
+                                        //~ meshes[k]->tmesh->u[i+3],
+                                        //~ meshes[k]->tmesh->u[i+2],
+                                        //~ meshes[k]->tmesh->u[i+0],
+                                        //~ meshes[k]->tmesh->u[i+1],
                                         
-                                        // Color
-                                        meshes[k]->tmesh->c[i], 
-                                        meshes[k]->tmesh->c[i+1], 
-                                        meshes[k]->tmesh->c[i+2], 
-                                        meshes[k]->tmesh->c[i+3], 
+                                        //~ // Color
+                                        //~ meshes[k]->tmesh->c[i], 
+                                        //~ meshes[k]->tmesh->c[i+1], 
+                                        //~ meshes[k]->tmesh->c[i+2], 
+                                        //~ meshes[k]->tmesh->c[i+3], 
 
-                                        // Gpu packet
-                                        poly4,
-                                        &ot[db][OTz],
-                                        &div);
+                                        //~ // Gpu packet
+                                        //~ poly4,
+                                        //~ &ot[db][*meshes[k]->OTz],
+                                        //~ &div4);
                                                 
                                     //~ // Increment primitive list pointer
-                                    nextpri  += ( (sizeof(POLY_GT4) + 3) / 4 ) * (( 1 << ( div.ndiv )) << ( div.ndiv ));
-                                    triCount = ((1<<(div.ndiv))<<(div.ndiv));
+                                    //~ nextpri  += ( (sizeof(POLY_GT4) + 3) / 4 ) * (( 1 << ( div4.ndiv )) << ( div4.ndiv ));
+                                    //~ triCount = ((1<<(div4.ndiv))<<(div4.ndiv));
                             
-                            }
-                            
+                            //~ } else if (OTc < 48) {
+                        
                             // Transparency effect
                             if (*meshes[k]->isPrism){ 
                                 
@@ -1161,7 +1241,9 @@ int main() {
                             }
                             
                             nextpri += sizeof(POLY_GT4);
-                        }    
+                            
+                            //~ }    
+                        }
                     
                     t+=1;
 
@@ -1188,7 +1270,18 @@ int main() {
         //~ FntPrint("Vy: %4d\n", actorPtr->body->gForce.vy );
         //~ FntPrint("%d %d %d", meshes[0]->tim->mode & 0x3, meshes[0]->tim->crect->x, meshes[0]->tim->crect->y);
         
-        //~ FntPrint("%d", OTc);
+        FntPrint("%d %d %d %d\n", getVectorTo(InvCamPos, *actorPtr->pos));
+        FntPrint("Tst : %d %d %d %d\n", getVectorTo(fVecActor, *actorPtr->pos));
+        //~ FntPrint("Cc %d Sc %d\n", ncos(camera.rot.vy), nsin(camera.rot.vy));
+        
+        //~ FntPrint("CRot: %d\n", camera.rot.vy );
+        //~ FntPrint("AcRot: %d %d\n", actorPtr->rot->vy, angle);
+        
+        FntPrint("Cam pos: %d %d\n", -camera.pos.vx, -camera.pos.vz );
+        FntPrint("Ac  pos: %d %d\n", actorPtr->pos->vx, actorPtr->pos->vz );
+        FntPrint("fVec  pos: %d %d\n", fVecActor.vx, fVecActor.vz);
+        //~ FntPrint("pos2cam: %d %d \n", posToCam.vx, posToCam.vz );
+        //~ FntPrint("ang2cam: %d %d", objAngleToCam.vy, objAngleToCam.vx);
         
         FntFlush(-1);
 		
@@ -1267,8 +1360,8 @@ void getCameraXZ(int * x, int * z, int actorX, int actorZ, int angle, int distan
     
     // Using Nic's Costable : https://github.com/grumpycoders/Balau/blob/master/tests/test-Handles.cc#L20-L102
     //                        https://godbolt.org/z/q6cMcj    
-    *x = (actorX * ONE) + (distance * nsin(angle));
-    *z = (actorZ * ONE) - (distance * ncos(angle));
+    *x = (actorX << 12) + (distance * nsin(angle));
+    *z = (actorZ << 12) - (distance * ncos(angle));
 
 }
 // @Will : you might want to use sin/cos to move the camera in a circle but you could do that by moving it along it’s tangent and then clamping the distance
@@ -1337,19 +1430,47 @@ SVECTOR SVlerp(SVECTOR start, SVECTOR end, int factor){
     output.vz = lerp(start.vz, end.vz, factor);
     return output;
     }
+    
+VECTOR getVectorTo(VECTOR actor, VECTOR target){
+    
+    VECTOR direction = { subVector(target, actor) };
+    VECTOR Ndirection = {0,0,0,0};
+    //~ VECTOR distance = {0};
+    
+    //~ copyVector(&distance, &direction);
+    //~ applyVector(&distance, distance.vx, distance.vy, distance.vz, *=);
+    
+    u_int distSq = (direction.vx * direction.vx) + (direction.vz * direction.vz); // + distance.vy;
+    
+    direction.pad = psqrt(distSq);
+    
+    VectorNormal(&direction, &Ndirection);
+    //~ direction.pad = csqrt(distSq);
+    
+    //~ FntPrint("%d ", distSq);
+    
+    return Ndirection ;
+    }
+    
+int alignAxisToVect(VECTOR target, short axis, int factor){
+    
+    }
+
+
 
 VECTOR getIntCollision(BODY one, BODY two){
     
     VECTOR d1, d2, col;
+    short correction = 50;
     
     d1.vx = (one.position.vx - one.max.vx) - (two.position.vx + two.min.vx);
     d1.vy = (one.position.vy + one.max.vy) - (two.position.vy + two.min.vy);
-    d1.vz = (one.position.vz - one.max.vz) - (two.position.vz + two.min.vz);
+    d1.vz = (one.position.vz + one.max.vz) - (two.position.vz + two.min.vz);
     
     d2.vx = (two.position.vx + two.max.vx) - (one.position.vx + one.max.vx);
     //~ d2.vy = (two.position.vy + two.max.vy) - (one.position.vy + one.max.vy);
     d2.vy = (two.position.vy + two.max.vy) - (one.position.vy + one.min.vy);
-    d2.vz = (two.position.vz + two.max.vz) - (one.position.vz + one.max.vz);
+    d2.vz = (two.position.vz + two.max.vz) - (one.position.vz - one.max.vz);
 
     col.vx = !(d1.vx > 0 && d2.vx > 0);
     col.vy = d1.vy > 0 && d2.vy > 0;
@@ -1473,13 +1594,13 @@ VECTOR angularMom(BODY body){
     // p = m * v  
     VECTOR w = {0,0,0,0};
     
-    int r = (body.max.vx - body.min.vx) / 2 / SCALE;
+    int r = (body.max.vx - body.min.vx) >> 1;
     
-    w.vx = (r * body.mass * body.velocity.vx); 
-    w.vy = (r * body.mass * body.velocity.vy); 
-    w.vz = (r * body.mass * body.velocity.vz); 
+    w.vx = (r * body.mass * body.velocity.vx) >> 2; 
+    w.vy = (r * body.mass * body.velocity.vy) >> 2; 
+    w.vz = (r * body.mass * body.velocity.vz) >> 2; 
     
-    //~ FntPrint("v: %d, r:%d, w:%d\n", body.velocity.vz * r, r * r, w.vz);
+    FntPrint("v: %d, r:%d, w:%d\n", body.velocity.vz * r, r * r, w.vz);
     
     return w;
     
@@ -1558,8 +1679,8 @@ void generateTable(void){
 };
 
 // https://github.com/Arsunt/TR2Main/blob/411cacb35914c616cb7960c0e677e00c71c7ee88/3dsystem/phd_math.cpp#L432
-int patan(int x, int y){
-    int result;
+long long patan(long x, long y){
+    long long result;
     int swapBuf;
     int flags = 0;
     
@@ -1743,8 +1864,15 @@ void callback(){
     }
         
     if (pad & PADLup){
-        actorPtr->body->gForce.vz = (10  * ncos(actorPtr->rot->vy)) >> 12 ;
-        actorPtr->body->gForce.vx = (10  * nsin(actorPtr->rot->vy)) >> 12 ;
+        //~ actorPtr->body->gForce.vz = (10  * ncos(actorPtr->rot->vy)) >> 12 ;
+        //~ actorPtr->body->gForce.vx = (10  * nsin(actorPtr->rot->vy)) >> 12 ;
+        // Cammode 0 :
+        //~ actorPtr->body->gForce.vz = getVectorTo(InvCamPos, *actorPtr->pos).vz >> 8 ;
+        //~ actorPtr->body->gForce.vx = getVectorTo(InvCamPos, *actorPtr->pos).vx >> 8 ;
+        // Others
+        actorPtr->body->gForce.vz = getVectorTo(fVecActor, *actorPtr->pos).vz >> 8 ;
+        actorPtr->body->gForce.vx = -getVectorTo(fVecActor, *actorPtr->pos).vx >> 8 ;
+        
         lastPad = pad;
     }
     
@@ -1754,8 +1882,14 @@ void callback(){
     }
     
     if (pad & PADLdown){
-        actorPtr->body->gForce.vz = (-10 * ncos(actorPtr->rot->vy)) >> 12 ;
-        actorPtr->body->gForce.vx = (-10 * nsin(actorPtr->rot->vy)) >> 12 ;
+        //~ actorPtr->body->gForce.vz = -10 ;
+        //~ actorPtr->body->gForce.vx = -10 ;
+        // Cammode 0 :
+        //~ actorPtr->body->gForce.vz = -getVectorTo(InvCamPos, *actorPtr->pos).vz >> 8 ;
+        //~ actorPtr->body->gForce.vx = -getVectorTo(InvCamPos, *actorPtr->pos).vx >> 8 ;
+        // Others:
+        actorPtr->body->gForce.vz = -getVectorTo(fVecActor, *actorPtr->pos).vz >> 8 ;
+        actorPtr->body->gForce.vx = getVectorTo(fVecActor, *actorPtr->pos).vx >> 8 ;
         lastPad = pad;
     }
     
@@ -1768,7 +1902,7 @@ void callback(){
     if (pad & PADLleft){
         //~ actorPtr->rot->vx = 0;
         //~ actorPtr->rot->vz = 0;
-        actorPtr->rot->vy -= 10;
+        actorPtr->rot->vy -= 32;
         lastPad = pad;
 
     }
@@ -1776,7 +1910,7 @@ void callback(){
     if (pad & PADLright){
         //~ actorPtr->rot->vx = 0;
         //~ actorPtr->rot->vz = 0;
-        actorPtr->rot->vy += 10;
+        actorPtr->rot->vy += 32;
         lastPad = pad;
     }
     
@@ -1788,10 +1922,10 @@ void callback(){
     if (cursor){
         actorPtr->body->position.vy = lerpValues[cursor];}
     
-    FntPrint("Mode : %d  Angle: %d\n", camMode, curCamAngle);
+    //~ FntPrint("Mode : %d  Angle: %d\n", camMode, curCamAngle);
     
     //~ FntPrint("Curs: %d Vy: %d\n", cursor, actorPtr->body->position.vy );
-    //~ FntPrint("Force: %d\n", forceApplied);
+    FntPrint("C %d S %d\n", ncos(actorPtr->rot->vy), nsin(actorPtr->rot->vy));
     //~ FntPrint("%d\n", !(pad & PADRdown) && lastPad & PADRdown);
     //~ FntPrint("sin: %d cos:%d\n", nsin(actorPtr->rot->vy), ncos(actorPtr->rot->vy));
     //~ FntPrint("sin: %d cos:%d\n", 10 * nsin(actorPtr->rot->vy) >> 12, 10 * ncos(actorPtr->rot->vy) >> 12);
