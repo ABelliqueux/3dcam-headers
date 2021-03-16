@@ -616,12 +616,32 @@ int main() {
     
         //~ dt = time/180+1 - time/180;
         
+        
+        // Spatial partitioning
+        
+        for (int msh = 0; msh < curNode->siblings->index; msh ++){
+        
+            if ( !getIntCollision( *actorPtr->body , *curNode->siblings->list[msh]->plane->body).vx &&
+                 !getIntCollision( *actorPtr->body , *curNode->siblings->list[msh]->plane->body).vz )
+            {
+            
+            FntPrint("%d", msh );
+            curNode = curNode->siblings->list[msh];
+            //~ levelPtr = curNode->siblings->list[plane]->curPlane;
+            
+            }
+            
+        }
+        
         // Physics
+        
         if (physics){
+            
             if(time%1 == 0){
+                
                 for ( int k = 0; k < sizeof(meshes)/sizeof(meshes[0]);k ++){
                     
-                    if ( *meshes[k]->isRigidBody == 1 ) {
+                    if ( ( *meshes[k]->isRigidBody == 1 ) && () ) {
 
                         applyAcceleration(meshes[k]->body);
                         
@@ -629,13 +649,11 @@ int main() {
                         
                         //~ col_lvl = getIntCollision( *meshes[k]->body , *levelPtr->body );
                         
-                        col_lvl = getIntCollision( *actorPtr->body , *curNode->curPlane->body );
+                        col_lvl = getIntCollision( *actorPtr->body , *curNode->plane->body );
                         
-                        col_sphere = getIntCollision( *propPtr->body, *curNode->curPlane->body );
+                        col_sphere = getIntCollision( *propPtr->body, *curNode->plane->body );
                         
                         col_sphere_act = getExtCollision( *actorPtr->body, *propPtr->body );
-                        
-                        //~ ResolveCollision( actorPtr->body, propPtr->body);
                         
                         // If !col, keep moving
                         
@@ -654,14 +672,6 @@ int main() {
                             if (!col_sphere.vx && !col_sphere.vz){propPtr->body->position.vy = propPtr->body->min.vy; }
                         }
                         
-                        //~ if ( col_lvl.vz ) { meshes[k]->body->gForce.vz *= -1; }
-                                                
-                        //~ FntPrint("Vel: %d\n", modelSphere_body.velocity.vx);
-                        
-                        //~ FntPrint("Obj: %d,%d,%d\n",modelobject_body.velocity.vx,modelobject_body.velocity.vy,modelobject_body.velocity.vz);
-                        //~ FntPrint("Sph: %d,%d,%d\n",modelSphere_body.velocity.vx,modelSphere_body.velocity.vy,modelSphere_body.velocity.vz);
-                        
-                        //
                         if (col_sphere_act.vx && col_sphere_act.vz ){
 
                             propPtr->body->velocity.vx += actorPtr->body->velocity.vx;// * ONE / propPtr->body->restitution ;
@@ -684,24 +694,7 @@ int main() {
                             propPtr->body->velocity.vx = 0;
                             }
                         
-                        //~ if ( actorPtr->body->velocity.vx){ 
-                            //~ VECTOR L = angularMom(*actorPtr->body);
-                            //~ actorPtr->rot->vx += L.vx * nsin(actorPtr->rot->vy/2) * nsin(actorPtr->rot->vy/2) >> 24 ;
-                            
-                        //~ }
                         
-                        //~ if ( actorPtr->body->velocity.vz){ 
-                            //~ VECTOR L = angularMom(*actorPtr->body);
-                            //~ actorPtr->rot->vx -= L.vz * ncos(actorPtr->rot->vy/2) * ncos(actorPtr->rot->vy/2) >> 24 ;
-                        //~ }
-                    
-                        //~ if ( actorPtr->body->velocity.vy){
-                            
-                            //~ } 
-                        //~ if ( col_sphere.vz ) { meshes[k]->body->gForce.vz *= -1; }
-                        //~ if ( col_sphere.vy ) { meshes[k]->body->gForce.vy *= -1; }
-                 
-                        //~ if (modelSphere_body.gForce.vx){modelSphere_body.gForce.vx -= 5;}
 
                         meshes[k]->pos->vx = meshes[k]->body->position.vx;
                         meshes[k]->pos->vy = meshes[k]->body->position.vy ;
@@ -1264,22 +1257,24 @@ int main() {
         // Add secondary OT to main OT
         AddPrims(otdisc[db], ot[db] + OTLEN - 1, ot[db]);
 
+        FntPrint("CurNode : %x\nIndex: %d", curNode, curNode->siblings->index);
+        
         //~ FntPrint("Time    : %d %d dt :%d\n",time, atime, dt);
         //~ FntPrint("CamMode: %d Slowmo : %d\nTricount: %d OTz: %d\nOTc: %d, p: %d\n", camMode, actorPtr->anim->interpolate, triCount, *meshes[9]->OTz, OTc, *meshes[9]->p);
         //~ FntPrint("Fy: %d Vy:%d\n", actorPtr->body->gForce.vy, actorPtr->body->velocity.vy );
         //~ FntPrint("Vy: %4d\n", actorPtr->body->gForce.vy );
         //~ FntPrint("%d %d %d", meshes[0]->tim->mode & 0x3, meshes[0]->tim->crect->x, meshes[0]->tim->crect->y);
         
-        FntPrint("%d %d %d %d\n", getVectorTo(InvCamPos, *actorPtr->pos));
-        FntPrint("Tst : %d %d %d %d\n", getVectorTo(fVecActor, *actorPtr->pos));
+        //~ FntPrint("%d %d %d %d\n", getVectorTo(InvCamPos, *actorPtr->pos));
+        //~ FntPrint("Tst : %d %d %d %d\n", getVectorTo(fVecActor, *actorPtr->pos));
         //~ FntPrint("Cc %d Sc %d\n", ncos(camera.rot.vy), nsin(camera.rot.vy));
         
         //~ FntPrint("CRot: %d\n", camera.rot.vy );
         //~ FntPrint("AcRot: %d %d\n", actorPtr->rot->vy, angle);
         
-        FntPrint("Cam pos: %d %d\n", -camera.pos.vx, -camera.pos.vz );
-        FntPrint("Ac  pos: %d %d\n", actorPtr->pos->vx, actorPtr->pos->vz );
-        FntPrint("fVec  pos: %d %d\n", fVecActor.vx, fVecActor.vz);
+        //~ FntPrint("Cam pos: %d %d\n", -camera.pos.vx, -camera.pos.vz );
+        //~ FntPrint("Ac  pos: %d %d\n", actorPtr->pos->vx, actorPtr->pos->vz );
+        //~ FntPrint("fVec  pos: %d %d\n", fVecActor.vx, fVecActor.vz);
         //~ FntPrint("pos2cam: %d %d \n", posToCam.vx, posToCam.vz );
         //~ FntPrint("ang2cam: %d %d", objAngleToCam.vy, objAngleToCam.vx);
         
@@ -1463,12 +1458,11 @@ VECTOR getIntCollision(BODY one, BODY two){
     VECTOR d1, d2, col;
     short correction = 50;
     
-    d1.vx = (one.position.vx - one.max.vx) - (two.position.vx + two.min.vx);
+    d1.vx = (one.position.vx + one.max.vx) - (two.position.vx + two.min.vx);
     d1.vy = (one.position.vy + one.max.vy) - (two.position.vy + two.min.vy);
     d1.vz = (one.position.vz + one.max.vz) - (two.position.vz + two.min.vz);
     
-    d2.vx = (two.position.vx + two.max.vx) - (one.position.vx + one.max.vx);
-    //~ d2.vy = (two.position.vy + two.max.vy) - (one.position.vy + one.max.vy);
+    d2.vx = (two.position.vx + two.max.vx) - (one.position.vx - one.max.vx);
     d2.vy = (two.position.vy + two.max.vy) - (one.position.vy + one.min.vy);
     d2.vz = (two.position.vz + two.max.vz) - (one.position.vz - one.max.vz);
 
@@ -1600,7 +1594,7 @@ VECTOR angularMom(BODY body){
     w.vy = (r * body.mass * body.velocity.vy) >> 2; 
     w.vz = (r * body.mass * body.velocity.vz) >> 2; 
     
-    FntPrint("v: %d, r:%d, w:%d\n", body.velocity.vz * r, r * r, w.vz);
+    //~ FntPrint("v: %d, r:%d, w:%d\n", body.velocity.vz * r, r * r, w.vz);
     
     return w;
     
@@ -1925,7 +1919,7 @@ void callback(){
     //~ FntPrint("Mode : %d  Angle: %d\n", camMode, curCamAngle);
     
     //~ FntPrint("Curs: %d Vy: %d\n", cursor, actorPtr->body->position.vy );
-    FntPrint("C %d S %d\n", ncos(actorPtr->rot->vy), nsin(actorPtr->rot->vy));
+    //~ FntPrint("C %d S %d\n", ncos(actorPtr->rot->vy), nsin(actorPtr->rot->vy));
     //~ FntPrint("%d\n", !(pad & PADRdown) && lastPad & PADRdown);
     //~ FntPrint("sin: %d cos:%d\n", nsin(actorPtr->rot->vy), ncos(actorPtr->rot->vy));
     //~ FntPrint("sin: %d cos:%d\n", 10 * nsin(actorPtr->rot->vy) >> 12, 10 * ncos(actorPtr->rot->vy) >> 12);
