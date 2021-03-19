@@ -94,7 +94,7 @@ char		    db	= 0;                        // Current buffer counter
 
 
 CVECTOR BGc = {50, 50, 75, 0};                  // Far color
-VECTOR BKc = {100, 100, 100, 0};                // Back color
+VECTOR BKc = {128, 128, 128, 0};                // Back color
 
 // Local color matrix   
 
@@ -178,7 +178,7 @@ int pressed = 0;
 u_short timer = 0;
 
 // Cam stuff 
-int camMode = 2;
+int camMode = 0;
 long timeB = 0;
 int lerping    = 0;
 
@@ -627,7 +627,7 @@ int main() {
             
             FntPrint("%d", msh );
             curNode = curNode->siblings->list[msh];
-            //~ levelPtr = curNode->siblings->list[plane]->curPlane;
+            //~ //levelPtr = curNode->siblings->list[plane]->curPlane;
             
             }
             
@@ -641,17 +641,19 @@ int main() {
                 
                 for ( int k = 0; k < sizeof(meshes)/sizeof(meshes[0]);k ++){
                     
-                    if ( ( *meshes[k]->isRigidBody == 1 ) && () ) {
+                    if ( ( *meshes[k]->isRigidBody == 1 ) ) {
 
                         applyAcceleration(meshes[k]->body);
                         
                         // Get col with level                         ( modelgnd_body )        
                         
-                        //~ col_lvl = getIntCollision( *meshes[k]->body , *levelPtr->body );
+                        col_lvl = getIntCollision( *meshes[k]->body , *levelPtr->body );
                         
-                        col_lvl = getIntCollision( *actorPtr->body , *curNode->plane->body );
+                        //~ col_lvl = getIntCollision( *actorPtr->body , *curNode->plane->body );
                         
-                        col_sphere = getIntCollision( *propPtr->body, *curNode->plane->body );
+                        col_sphere = getIntCollision( *propPtr->body, *levelPtr->body );
+                        
+                        //~ col_sphere = getIntCollision( *propPtr->body, *curNode->plane->body );
                         
                         col_sphere_act = getExtCollision( *actorPtr->body, *propPtr->body );
                         
@@ -1257,7 +1259,7 @@ int main() {
         // Add secondary OT to main OT
         AddPrims(otdisc[db], ot[db] + OTLEN - 1, ot[db]);
 
-        FntPrint("CurNode : %x\nIndex: %d", curNode, curNode->siblings->index);
+        //~ FntPrint("CurNode : %x\nIndex: %d", curNode, curNode->siblings->index);
         
         //~ FntPrint("Time    : %d %d dt :%d\n",time, atime, dt);
         //~ FntPrint("CamMode: %d Slowmo : %d\nTricount: %d OTz: %d\nOTc: %d, p: %d\n", camMode, actorPtr->anim->interpolate, triCount, *meshes[9]->OTz, OTc, *meshes[9]->p);
