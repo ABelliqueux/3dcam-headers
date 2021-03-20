@@ -625,9 +625,10 @@ int main() {
                  !getIntCollision( *actorPtr->body , *curNode->siblings->list[msh]->plane->body).vz )
             {
             
-            FntPrint("%d", msh );
-            curNode = curNode->siblings->list[msh];
-            //~ //levelPtr = curNode->siblings->list[plane]->curPlane;
+            // FntPrint("%d", msh );
+            //~ curNode = curNode->siblings->list[msh];
+            // curNode = &nodegnd;
+            levelPtr = curNode->siblings->list[msh]->plane;
             
             }
             
@@ -637,35 +638,39 @@ int main() {
         
         if (physics){
             
-            if(time%1 == 0){
+            // if(time%1 == 0){
                 
-                for ( int k = 0; k < sizeof(meshes)/sizeof(meshes[0]);k ++){
-                    
-                    if ( ( *meshes[k]->isRigidBody == 1 ) ) {
+                 for ( int k = 0; k < sizeof(meshes)/sizeof(meshes[0]);k ++){
+                //~ for ( int k = 0; k < curNode->objects->index ; k ++){
+                                        
+                     if ( ( *meshes[k]->isRigidBody == 1 ) ) {
+                    //~ if ( ( *curNode->rigidbodies->list[k]->isRigidBody == 1 ) ) {
 
-                        applyAcceleration(meshes[k]->body);
+                        //~ applyAcceleration(curNode->rigidbodies->list[k]->body);
                         
+                        applyAcceleration(meshes[k]->body);
+                    
                         // Get col with level                         ( modelgnd_body )        
                         
                         col_lvl = getIntCollision( *meshes[k]->body , *levelPtr->body );
                         
                         //~ col_lvl = getIntCollision( *actorPtr->body , *curNode->plane->body );
                         
-                        col_sphere = getIntCollision( *propPtr->body, *levelPtr->body );
+                        //~ col_sphere = getIntCollision( *propPtr->body, *propPtr->body->curNode->plane->body );
                         
-                        //~ col_sphere = getIntCollision( *propPtr->body, *curNode->plane->body );
+                        col_sphere = getIntCollision( *propPtr->body, *levelPtr->body );
                         
                         col_sphere_act = getExtCollision( *actorPtr->body, *propPtr->body );
                         
-                        // If !col, keep moving
+                        //~ // If !col, keep moving
                         
-                        if ( !col_lvl.vx ){ meshes[k]->pos->vx = meshes[k]->body->position.vx; } 
+                        //~ if ( !col_lvl.vx ){ curNode->rigidbodies->list[k]->pos->vx = curNode->rigidbodies->list[k]->body->position.vx; } 
                         
-                        if ( !col_lvl.vy ){ meshes[k]->pos->vy = meshes[k]->body->position.vy; };//meshes[k]->body->gForce.vy = 0;} // FIXME : Why the 15px offset ? 
+                        //~ if ( !col_lvl.vy ){ curNode->rigidbodies->list[k]->pos->vy = curNode->rigidbodies->list[k]->body->position.vy; };//meshes[k]->body->gForce.vy = 0;} // FIXME : Why the 15px offset ? 
                         
-                        if ( !col_lvl.vz ){ meshes[k]->pos->vz = meshes[k]->body->position.vz; }
+                        //~ if ( !col_lvl.vz ){ curNode->rigidbodies->list[k]->pos->vz = curNode->rigidbodies->list[k]->body->position.vz; }
                                                
-                        // If no col with ground, fall off
+                        //~ // If no col with ground, fall off
                 
                         if ( col_lvl.vy ) {
                             if (!col_lvl.vx && !col_lvl.vz){actorPtr->body->position.vy = actorPtr->body->min.vy;}
@@ -674,27 +679,27 @@ int main() {
                             if (!col_sphere.vx && !col_sphere.vz){propPtr->body->position.vy = propPtr->body->min.vy; }
                         }
                         
-                        if (col_sphere_act.vx && col_sphere_act.vz ){
+                        //~ if (col_sphere_act.vx && col_sphere_act.vz ){
 
-                            propPtr->body->velocity.vx += actorPtr->body->velocity.vx;// * ONE / propPtr->body->restitution ;
-                            propPtr->body->velocity.vz += actorPtr->body->velocity.vz;// * ONE / propPtr->body->restitution ;
+                            //~ propPtr->body->velocity.vx += actorPtr->body->velocity.vx;// * ONE / propPtr->body->restitution ;
+                            //~ propPtr->body->velocity.vz += actorPtr->body->velocity.vz;// * ONE / propPtr->body->restitution ;
                             
-                            if (propPtr->body->velocity.vx){
+                            //~ if (propPtr->body->velocity.vx){
                                 
-                                VECTOR L = angularMom(*propPtr->body);
-                                propPtr->rot->vz -= L.vx;
-                            }
+                                //~ VECTOR L = angularMom(*propPtr->body);
+                                //~ propPtr->rot->vz -= L.vx;
+                            //~ }
                             
-                            if (propPtr->body->velocity.vz){
+                            //~ if (propPtr->body->velocity.vz){
                                 
-                                VECTOR L = angularMom(*propPtr->body);
-                                propPtr->rot->vx -= L.vz;
-                            }
-                        }
+                                //~ VECTOR L = angularMom(*propPtr->body);
+                                //~ propPtr->rot->vx -= L.vz;
+                            //~ }
+                        //~ }
                         
-                        if (!col_sphere_act.vx){
-                            propPtr->body->velocity.vx = 0;
-                            }
+                        //~ if (!col_sphere_act.vx){
+                            //~ propPtr->body->velocity.vx = 0;
+                            //~ }
                         
                         
 
@@ -704,10 +709,16 @@ int main() {
                         
                         
                     }
-                    meshes[k]->body->velocity.vy = meshes[k]->body->velocity.vx = meshes[k]->body->velocity.vz = 0;
-
+                    
+                    meshes[k]->body->velocity.vy = 0;
+                    meshes[k]->body->velocity.vx = 0;
+                    meshes[k]->body->velocity.vz = 0;
+                    
+                    //~ curNode->rigidbodies->list[k]->body->velocity.vx = curNode->rigidbodies->list[k]->body->velocity.vz = 0;
+                    
+                    //~ FntPrint("V:%d ", curNode->rigidbodies->list[k]->body->velocity.vy);
                 }
-            }
+            // }
         }
         
         // Camera setup 
@@ -1259,7 +1270,7 @@ int main() {
         // Add secondary OT to main OT
         AddPrims(otdisc[db], ot[db] + OTLEN - 1, ot[db]);
 
-        //~ FntPrint("CurNode : %x\nIndex: %d", curNode, curNode->siblings->index);
+        FntPrint("CurNode : %x\nIndex: %d", curNode, curNode->siblings->index);
         
         //~ FntPrint("Time    : %d %d dt :%d\n",time, atime, dt);
         //~ FntPrint("CamMode: %d Slowmo : %d\nTricount: %d OTz: %d\nOTc: %d, p: %d\n", camMode, actorPtr->anim->interpolate, triCount, *meshes[9]->OTz, OTc, *meshes[9]->p);
