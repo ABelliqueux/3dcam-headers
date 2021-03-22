@@ -291,7 +291,9 @@ int alignAxisToVect(VECTOR target, short axis, int factor);
 
 void transformMesh(MESH * meshes);
 
-void drawPoly(MESH * meshes, long t, long * Flag, int atime);
+void drawBG(void);
+
+void drawPoly(MESH * meshes, long * Flag, int atime);
 
 // Camera 
 
@@ -319,10 +321,8 @@ void callback();
 
 int main() {
 	                      
-    SPRT * sprt;                        
-    DR_TPAGE * tpage;
+    // FIXME : Poly subdiv
     
-    // Poly subdiv
     //~ DIVPOLYGON4	div4 = { 0 };
     //~ div4.pih = SCREENXRES;
 	//~ div4.piv = SCREENYRES;
@@ -333,8 +333,6 @@ int main() {
     //~ div3.pih = SCREENXRES;
 	//~ div3.piv = SCREENYRES;
     //~ div3.ndiv = 1;
-    
-    //~ MATRIX Cmatrix = { 0 };
     
 	init();
 
@@ -348,7 +346,7 @@ int main() {
     
     SetBackColor(BKc.vx,BKc.vy,BKc.vz);
     
-    //~ SetFarColor(BGc.r, BGc.g, BGc.b);
+    SetFarColor(BGc.r, BGc.g, BGc.b);
     
     SetFogNearFar(1200, 1600, SCREENXRES);
     
@@ -398,14 +396,15 @@ int main() {
     
     }
     
-    // Pre-calc bg test
+    // Set camera starting pos
     
     setCameraPos(camPtr->campos->pos, camPtr->campos->rot);
     
-    
 	// Main loop
 	
-    while (1) {
+    //~ while (1) {
+    
+    while ( VSync(1) ) {
         
         // Clear the main OT
 		
@@ -430,29 +429,59 @@ int main() {
         }
         
         // Angle between camera and actor
+        
         // using atantable (faster)
 
         camAngleToAct.vy = (patan(-posToActor.vx, -posToActor.vz) / 16) - 3076 ;
+        
         camAngleToAct.vx = patan(dist, posToActor.vy) >> 4;
 
+        // Sprite system WIP
+
         //~ posToCam = getVectorTo(*meshPlan.pos, camera.pos);
+        
         //~ posToCam = getVectorTo(camera.pos, *meshPlan.pos);
 
-        //~ objAngleToCam.vy = ( (patan(meshPlan.pos->vx, meshPlan.pos->vz) - patan(camera.pos.vx > 0 ? camera.pos.vx : camera.pos.vx, camera.pos.vz) ) >> 4) - 1024;
-        //~ objAngleToCam.vy = ( (patan(meshPlan.pos->vx > 0 ? meshPlan.pos->vx : 4096 + meshPlan.pos->vx, meshPlan.pos->vz) - patan(camera.pos.vx > 0 ? camera.pos.vx : 4096 + camera.pos.vx, camera.pos.vz) ) >> 4) - 1024;
+        //~ objAngleToCam.vy = ( 
+            
+            //~ (
+                //~ patan( meshPlan.pos->vx, meshPlan.pos->vz ) - 
+                //~ meshPlan.rot->vy -
+                
+               //~ - patan( camera.pos.vx, camera.pos.vz) 
+            
+            //~ ) >> 4 );
+        
+        //~ FntPrint("%d %d",  objAngleToCam.vy, meshPlan.rot->vy);
+        
+        //~ objAngleToCam.vy = ( 
+            
+            //~ ( 
+                //~ patan( meshPlan.pos->vx > 0 ? meshPlan.pos->vx : 4096 + meshPlan.pos->vx, meshPlan.pos->vz ) - 
+              
+                //~ patan( camera.pos.vx > 0 ? camera.pos.vx : 4096 + camera.pos.vx,          camera.pos.vz) 
+            
+            //~ ) >> 4 ) - 1024;
+        
         //~ objAngleToCam.vx = ratan2(posToCam.pad, posToCam.vy);
         
         //~ meshPlan.rot->vy = objAngleToCam.vy;
-        //~ meshPlan.rot->vx = objAngleToCam.vy;
+        
+        //~ meshPlan.rot->vx = objAngleToCam.vx;
+        
+        
         
         // Actor Forward vector 
 
         fVecActor = *actorPtr->pos;
         
         fVecActor.vx = actorPtr->pos->vx + (nsin(actorPtr->rot->vy/2));
+        
         fVecActor.vz = actorPtr->pos->vz - (ncos(actorPtr->rot->vy/2));
 
-        if(camMode != 2){
+    // Camera modes
+
+        if(camMode != 2) {
             
             camera.rot.vy = camAngleToAct.vy;
             
@@ -464,14 +493,14 @@ int main() {
         
         }
         
-        if(camMode < 4 ){
+        if(camMode < 4 ) {
        
             lerping = 0;
        
         }
         
         // Camera follows actor with lerp for rotations
-        if(camMode == 0){
+        if(camMode == 0) {
             
             dist = 150;
             
@@ -500,7 +529,7 @@ int main() {
         }
         
         // Camera rotates continuously around actor
-        if (camMode == 1){                      
+        if (camMode == 1) {                      
             
             dist = 150;
            
@@ -522,7 +551,7 @@ int main() {
         }
         
         // Fixed Camera with actor tracking
-        if (camMode == 3){                              
+        if (camMode == 3) {                              
             
             // Using precalc sqrt
 
@@ -536,61 +565,12 @@ int main() {
         }
         
         // Fixed Camera angle
-        if (camMode == 2){                              
-            
-            // Load BG image in two SPRT since max width == 256 
+        if (camMode == 2) {                              
           
             if (camPtr->tim_data){
                 
-                // left part
-                sprt = (SPRT *) nextpri;
+                drawBG();
                 
-                setSprt(sprt);
-                setRGB0(sprt, 128,128,128);
-                setXY0(sprt, 0, 0);
-                setWH(sprt, 256, 240);
-                setUV0(sprt, 0, 0);
-                setClut(sprt, camPtr->BGtim->crect->x, camPtr->BGtim->crect->y);
-                
-                addPrim(&otdisc[db][OT2LEN-1], sprt);        
-                            
-                nextpri += sizeof(SPRT);
-                
-                tpage = (DR_TPAGE *) nextpri;
-                
-                setDrawTPage(tpage, 0, 1,   
-                             getTPage(camPtr->BGtim->mode & 0x3, 0,       
-                             camPtr->BGtim->prect->x, camPtr->BGtim->prect->y));
-                                                        
-                addPrim(&otdisc[db][OT2LEN-1], tpage);
-
-                nextpri += sizeof(DR_TPAGE); 
-                
-                
-                // right part
-                sprt = (SPRT *) nextpri;
-                
-                setSprt(sprt);
-                setRGB0(sprt, 128,128,128);
-                setXY0(sprt, 320-(320-256), 0);
-                setWH(sprt, 320-256, 240);
-                setUV0(sprt, 0, 0);
-                
-                setClut(sprt, camPtr->BGtim->crect->x, camPtr->BGtim->crect->y);
-                            
-                addPrim(&otdisc[db][OT2LEN-1], sprt);        
-                            
-                nextpri += sizeof(SPRT);
-                
-                tpage = (DR_TPAGE *) nextpri;
-                
-                setDrawTPage(tpage, 0, 1,   
-                             getTPage(camPtr->BGtim->mode & 0x3, 0,       
-                             camPtr->BGtim->prect->x + 128, camPtr->BGtim->prect->y));
-                                                        
-                addPrim(&otdisc[db][OT2LEN-1], tpage);
-
-                nextpri += sizeof(DR_TPAGE); 
             }
             
             setCameraPos(camPtr->campos->pos, camPtr->campos->rot);
@@ -598,7 +578,8 @@ int main() {
         }
         
         // Flyby mode with LERP from camStart to camEnd
-        if (camMode == 4){                               
+        
+        if (camMode == 4) {                               
             
             // If key pos exist for camera
            
@@ -671,6 +652,7 @@ int main() {
         }
         
         // Camera "on a rail" - cam is tracking actor, and moving with constraints on all axis
+    
         if (camMode == 5) {
             
             // track actor. If theta (actor/cam rotation angle) is above or below an arbitrary angle, 
@@ -691,17 +673,21 @@ int main() {
                     camera.pos.vz = camPath.points[camPath.cursor].vz;
                     
                     // Lerping sequence is starting
+                    
                     lerping = 1;
                     
                     // Set cam pos index to 0
+                    
                     camPath.pos = 0;
                     
                     }
                     
                 // Pre calculated sqrt ( see psqrt() )
+                
                 dist = psqrt( (posToActor.vx * posToActor.vx ) + (posToActor.vz * posToActor.vz));
                 
                 // Fixed point precision 2^12 == 4096
+                
                 short precision = 12;
                                     
                 camera.pos.vx = lerpD(camPath.points[camPath.cursor].vx << precision, camPath.points[camPath.cursor + 1].vx << precision, camPath.pos << precision) >> precision;
@@ -727,6 +713,7 @@ int main() {
                 }
                 
                 // If camera has reached next key pos, reset pos index, move cursor to next key pos
+                
                 if (camPath.pos > (1 << precision) ){
           
                     camPath.pos = 0;
@@ -741,10 +728,12 @@ int main() {
                     camPath.pos = 1 << precision;
           
                     camPath.cursor --;
+                
                     //~ camPath.dir *= -1;
                 }                   
                 
                 // Last key pos is reached, reset cursor to first key pos, lerping sequence is over
+                
                 if ( camPath.cursor == camPath.len - 1 || camPath.cursor < 0 ){
           
                     lerping = 0;
@@ -765,22 +754,33 @@ int main() {
         
         // Spatial partitioning
         
-        for (int msh = 0; msh < curNode->siblings->index; msh ++){
+        for ( int msh = 0; msh < curNode->siblings->index; msh ++ ) {
+        
+            // Actor
         
             if ( !getIntCollision( *actorPtr->body , *curNode->siblings->list[msh]->plane->body).vx &&
                  !getIntCollision( *actorPtr->body , *curNode->siblings->list[msh]->plane->body).vz )
             {
             
-            // FntPrint("%d", msh );
-            //~ curNode = curNode->siblings->list[msh];
-            // curNode = &nodegnd;
-            levelPtr = curNode->siblings->list[msh]->plane;
+                curNode = curNode->siblings->list[msh];
+
+                levelPtr = curNode->plane;
+            
+            }
+            
+            // Moveable prop
+            
+            if ( !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vx &&
+                 !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vz )
+            {
+            
+                propPtr->node = curNode->siblings->list[ msh ];
             
             }
             
         }
         
-        // Physics
+    // Physics
         
         if ( physics ) {
             
@@ -802,9 +802,15 @@ int main() {
                         
                         //~ col_lvl = getIntCollision( *actorPtr->body , *curNode->plane->body );
                         
-                        //~ col_sphere = getIntCollision( *propPtr->body, *propPtr->body->curNode->plane->body );
+                        //~ for (int plane = 0; plane < curNode->siblings->index; plane++) {
                         
-                        col_sphere = getIntCollision( *propPtr->body, *levelPtr->body );
+                            //~ col_sphere = getIntCollision( *propPtr->body, *curNode->siblings->list[ plane ]->plane->body);
+                        
+                        //~ }
+                        
+                        col_sphere = getIntCollision( *propPtr->body, *propPtr->node->plane->body );
+                        
+                        //~ col_sphere = getIntCollision( *propPtr->body, *levelPtr->body );
                         
                         col_sphere_act = getExtCollision( *actorPtr->body, *propPtr->body );
                         
@@ -819,29 +825,31 @@ int main() {
                         //~ // If no col with ground, fall off
                 
                         if ( col_lvl.vy ) {
+                        
                             if (!col_lvl.vx && !col_lvl.vz){actorPtr->body->position.vy = actorPtr->body->min.vy;}
+                        
                         }
                         if (col_sphere.vy){
                             if (!col_sphere.vx && !col_sphere.vz){propPtr->body->position.vy = propPtr->body->min.vy; }
                         }
                         
-                        //~ if (col_sphere_act.vx && col_sphere_act.vz ){
+                        if (col_sphere_act.vx && col_sphere_act.vz ){
 
-                            //~ propPtr->body->velocity.vx += actorPtr->body->velocity.vx;// * ONE / propPtr->body->restitution ;
-                            //~ propPtr->body->velocity.vz += actorPtr->body->velocity.vz;// * ONE / propPtr->body->restitution ;
+                            propPtr->body->velocity.vx += actorPtr->body->velocity.vx;// * ONE / propPtr->body->restitution ;
+                            propPtr->body->velocity.vz += actorPtr->body->velocity.vz;// * ONE / propPtr->body->restitution ;
                             
-                            //~ if (propPtr->body->velocity.vx){
+                            if (propPtr->body->velocity.vx){
                                 
-                                //~ VECTOR L = angularMom(*propPtr->body);
-                                //~ propPtr->rot->vz -= L.vx;
-                            //~ }
+                                VECTOR L = angularMom(*propPtr->body);
+                                propPtr->rot->vz -= L.vx;
+                            }
                             
-                            //~ if (propPtr->body->velocity.vz){
+                            if (propPtr->body->velocity.vz){
                                 
-                                //~ VECTOR L = angularMom(*propPtr->body);
-                                //~ propPtr->rot->vx -= L.vz;
-                            //~ }
-                        //~ }
+                                VECTOR L = angularMom(*propPtr->body);
+                                propPtr->rot->vx -= L.vz;
+                            }
+                        }
                         
                         //~ if (!col_sphere_act.vx){
                             //~ propPtr->body->velocity.vx = 0;
@@ -871,7 +879,7 @@ int main() {
             // }
         }
         
-        // Camera setup 
+    // Camera setup 
         
         // position of cam relative to actor
         
@@ -881,55 +889,78 @@ int main() {
         
         posToActor.vy = actorPtr->pos->vy + camera.pos.vy;
         
-        // Polygon drawing
+    // Polygon drawing
         
         static long Flag;
         
-		for (int k = 0; k < sizeof(meshes)/sizeof(meshes[0]); k++){
+        //~ long t = 0;
         
-            // loop on each mesh
-            long t = 0;
-            
-            transformMesh(meshes[k]);
+        // Draw current node's plane
 
-            drawPoly( meshes[k], t, &Flag, atime);
-
-            // Find and apply light rotation matrix
-
-            RotMatrix(&lgtang, &rotlgt);	
-
-            MulMatrix0(&lgtmat, &rotlgt, &light);
-
-            SetLightMatrix(&light);
-
-            applyCamera(&camera);
+        drawPoly( curNode->plane, &Flag, atime);
+        
+        // Draw surrounding planes 
+        
+		for ( int sibling = 0; sibling < curNode->siblings->index; sibling++ ) {
+        
+            drawPoly( curNode->siblings->list[ sibling ]->plane, &Flag, atime);
         
         }
         
+        // Draw adjacent planes's children
+        
+        for ( int sibling = 0; sibling < curNode->siblings->index; sibling++ ) {
+            
+            for ( int object = 0; object < curNode->siblings->list[ sibling ]->objects->index; object++ ) {
+            
+                long t = 0;
+                
+                transformMesh(curNode->siblings->list[ sibling ]->objects->list[ object ]);
+                
+                drawPoly( curNode->siblings->list[ sibling ]->objects->list[ object ], &Flag, atime);
+            
+            }
+        }
+        
+        // Draw current plane children
+        
+		for ( int object = 0; object < curNode->objects->index; object++ ) {
+        
+            transformMesh(curNode->objects->list[ object ]);
+
+            drawPoly( curNode->objects->list[ object ], &Flag, atime);
+        
+        }
+        
+        // Draw rigidbodies
+        
+        for ( int object = 0; object < curNode->rigidbodies->index; object++ ) {
+        
+            transformMesh(curNode->rigidbodies->list[ object ]);
+
+            drawPoly( curNode->rigidbodies->list[ object ], &Flag, atime);
+        
+        }
+        
+        // Find and apply light rotation matrix
+
+        RotMatrix(&lgtang, &rotlgt);	
+
+        MulMatrix0(&lgtmat, &rotlgt, &light);
+
+        SetLightMatrix(&light);
+
+        // Set camera
+
+        applyCamera(&camera);
         
         // Add secondary OT to main OT
+        
         AddPrims(otdisc[db], ot[db] + OTLEN - 1, ot[db]);
 
-        FntPrint("CurNode : %x\nIndex: %d", curNode, curNode->siblings->index);
+        //~ FntPrint("CurNode : %x\nIndex: %d", curNode, curNode->siblings->index);
         
-        //~ FntPrint("Time    : %d %d dt :%d\n",time, atime, dt);
-        //~ FntPrint("CamMode: %d Slowmo : %d\nTricount: %d OTz: %d\nOTc: %d, p: %d\n", camMode, actorPtr->anim->interpolate, triCount, *meshes[9]->OTz, OTc, *meshes[9]->p);
-        //~ FntPrint("Fy: %d Vy:%d\n", actorPtr->body->gForce.vy, actorPtr->body->velocity.vy );
-        //~ FntPrint("Vy: %4d\n", actorPtr->body->gForce.vy );
-        //~ FntPrint("%d %d %d", meshes[0]->tim->mode & 0x3, meshes[0]->tim->crect->x, meshes[0]->tim->crect->y);
-        
-        //~ FntPrint("%d %d %d %d\n", getVectorTo(InvCamPos, *actorPtr->pos));
-        //~ FntPrint("Tst : %d %d %d %d\n", getVectorTo(fVecActor, *actorPtr->pos));
-        //~ FntPrint("Cc %d Sc %d\n", ncos(camera.rot.vy), nsin(camera.rot.vy));
-        
-        //~ FntPrint("CRot: %d\n", camera.rot.vy );
-        //~ FntPrint("AcRot: %d %d\n", actorPtr->rot->vy, angle);
-        
-        //~ FntPrint("Cam pos: %d %d\n", -camera.pos.vx, -camera.pos.vz );
-        //~ FntPrint("Ac  pos: %d %d\n", actorPtr->pos->vx, actorPtr->pos->vz );
-        //~ FntPrint("fVec  pos: %d %d\n", fVecActor.vx, fVecActor.vz);
-        //~ FntPrint("pos2cam: %d %d \n", posToCam.vx, posToCam.vz );
-        //~ FntPrint("ang2cam: %d %d", objAngleToCam.vy, objAngleToCam.vx);
+        FntPrint("Time    : %d dt :%d\n", VSync(-1) / 60, dt);
         
         FntFlush(-1);
 		
@@ -943,11 +974,13 @@ int main() {
 
 void init() {
     
+    ResetCallback();
+    
     // Reset the GPU before doing anything and the controller
 	
-    PadInit(0);
-	
     ResetGraph(0);
+
+    PadInit(0);
 	
 	// Initialize and setup the GTE
 	
@@ -1008,8 +1041,12 @@ void init() {
 
 void display(void){
     
-    DrawSync(0);
-    vs = VSync(0);
+    //~ DrawSync(0);
+    
+    vs = VSync(2);  // Using VSync 2 insures constant framerate. 0 makes the fr polycount dependant.
+
+    ResetGraph(1);
+
 
     PutDispEnv(&disp[db]);
     PutDrawEnv(&draw[db]);
@@ -1045,7 +1082,7 @@ void LoadTexture(u_long * tim, TIM_IMAGE * tparam){     // This part is from Lam
 
 void transformMesh(MESH * mesh){
     
-    if (*mesh->isRigidBody | *mesh->isStaticBody){
+    //~ if (*mesh->isRigidBody || *mesh->isStaticBody){
                             
         // Apply rotation matrix
         
@@ -1065,13 +1102,15 @@ void transformMesh(MESH * mesh){
         
         SetTransMatrix(mesh->mat);                           
         
-    }
+    //~ }
 };
 
-void drawPoly(MESH * mesh, long t, long * Flag, int atime){
+// Drawing
 
-    long nclip;
+void drawPoly(MESH * mesh, long * Flag, int atime){
 
+    long nclip, t = 0;
+    
     // mesh is POLY_GT3 ( triangle )
     
     if (mesh->index[t].code == 4) {
@@ -1304,9 +1343,11 @@ void drawPoly(MESH * mesh, long t, long * Flag, int atime){
                     
                     // Defaults depth color to neutral grey
 
-                    CVECTOR outCol  ={128,128,128,0};
-                    CVECTOR outCol1 ={128,128,128,0};
-                    CVECTOR outCol2 ={128,128,128,0};
+                    CVECTOR outCol  = { 128,128,128,0 };
+                    
+                    CVECTOR outCol1 = { 128,128,128,0 };
+                    
+                    CVECTOR outCol2 = { 128,128,128,0 };
                     
                     NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vx ], &mesh->tmesh->c[ mesh->index[t].order.vx ], *mesh->p, &outCol);
 
@@ -1666,6 +1707,117 @@ void drawPoly(MESH * mesh, long t, long * Flag, int atime){
             }
         }
     } 
+
+};
+
+void drawBG(void){
+    
+    // Draw BG image in two SPRT since max width == 256 px 
+    
+    SPRT * sprt;                        
+    
+    DR_TPAGE * tpage;
+    
+    // Left part
+                
+    sprt = ( SPRT * ) nextpri;
+    
+    setSprt( sprt );
+    
+    setRGB0( sprt, 128, 128, 128 );
+    
+    setXY0( sprt, 0, 0 );
+    
+    setWH( sprt, 256, SCREENYRES );
+    
+    setUV0( sprt, 0, 0 );
+    
+    setClut( sprt, 
+            
+             camPtr->BGtim->crect->x, 
+                
+             camPtr->BGtim->crect->y
+    
+    );
+    
+    addPrim( &otdisc[ db ][ OT2LEN-1 ], sprt );        
+                
+    nextpri += sizeof( SPRT );
+    
+    
+    // Change TPAGE
+    
+    tpage = (DR_TPAGE *) nextpri;
+    
+    setDrawTPage(
+            
+        tpage, 0, 1,   
+     
+        getTPage( 
+            
+            camPtr->BGtim->mode & 0x3, 0,       
+     
+            camPtr->BGtim->prect->x,
+            
+            camPtr->BGtim->prect->y
+        
+        )
+    
+    );
+                                            
+    addPrim(&otdisc[db][OT2LEN-1], tpage);
+
+    nextpri += sizeof(DR_TPAGE); 
+    
+    
+    // Right part
+    
+    sprt = ( SPRT * ) nextpri;
+    
+    setSprt( sprt );
+    
+    setRGB0( sprt, 128, 128, 128 );
+    
+    setXY0( sprt, SCREENXRES - ( SCREENXRES - 256 ), 0 );
+    
+    setWH( sprt, SCREENXRES - 256, SCREENYRES );
+    
+    setUV0( sprt, 0, 0 );
+    
+    setClut( sprt, 
+             
+             camPtr->BGtim->crect->x,
+             
+             camPtr->BGtim->crect->y
+    );
+                
+    addPrim( &otdisc[ db ][ OT2LEN-1 ], sprt );        
+                
+    nextpri += sizeof( SPRT );
+    
+    tpage = ( DR_TPAGE * ) nextpri;
+    
+    // Change TPAGE
+    
+    setDrawTPage(
+    
+        tpage, 0, 1,
+        
+        getTPage(
+        
+            camPtr->BGtim->mode & 0x3, 0,       
+        
+            camPtr->BGtim->prect->x + 128, 
+            
+            camPtr->BGtim->prect->y
+    
+        )
+    
+    );
+                                            
+    addPrim( &otdisc[ db ][ OT2LEN-1 ], tpage );
+
+    nextpri += sizeof( DR_TPAGE ); 
 
 };
 
@@ -2215,7 +2367,7 @@ void callback() {
 
                 curCamAngle++;
 
-                camPtr = camAngles[curCamAngle];
+                camPtr = camAngles[ curCamAngle ];
 
                 LoadTexture(camPtr->tim_data, camPtr->BGtim);
 
