@@ -339,16 +339,8 @@ int main() {
     generateTable();
 
     VSyncCallback(callback);
-    
-    //~ SetLightMatrix(&LLM);
-    
-	SetColorMatrix(&cmat);
-    
-    SetBackColor(BKc.vx,BKc.vy,BKc.vz);
-    
-    SetFarColor(BGc.r, BGc.g, BGc.b);
-    
-    SetFogNearFar(1200, 1600, SCREENXRES);
+
+    // Load textures
     
     for (int k = 0; k < sizeof(meshes)/sizeof(TMESH *); k++){
     
@@ -356,13 +348,15 @@ int main() {
     
     }
     
+    // Load current BG
+    
     if (camPtr->tim_data){
 
         LoadTexture(camPtr->tim_data, camPtr->BGtim);
 
     }
     
-    // physics
+    // Physics
 
     short physics = 1;
 
@@ -376,7 +370,7 @@ int main() {
     
     VECTOR camAngleToAct = {0, 0, 0, 0};      // rotation angles for the camera to point at actor
     
-    // Sprite sustem
+    // Sprite system
     
     VECTOR posToCam      = {0, 0, 0, 0};
     
@@ -389,6 +383,8 @@ int main() {
     short timediv = 1;
 
     int atime = 0;
+    
+    // Polycount
     
     for (int k = 0; k < sizeof(meshes)/sizeof(meshes[0]); k++){
     
@@ -1037,6 +1033,16 @@ void init() {
 
 	FntOpen(16, 180, 240, 96, 0, 512);
 	
+    // Lighting setup
+    
+    SetColorMatrix(&cmat);
+    
+    SetBackColor(BKc.vx,BKc.vy,BKc.vz);
+    
+    SetFarColor(BGc.r, BGc.g, BGc.b);
+    
+    SetFogNearFar(1200, 1600, SCREENXRES);
+    
 };
 
 void display(void){
