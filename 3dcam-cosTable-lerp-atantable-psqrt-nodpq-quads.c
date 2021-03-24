@@ -207,10 +207,10 @@ int main() {
 	long	t, p, OTz, OTc, Flag, nclip;                // t == vertex count, p == depth cueing interpolation value, OTz ==  value to create Z-ordered OT, Flag == see LibOver47.pdf, p.143
     POLY_GT3 * poly;                        
     
-    //~ // Poly subdiv
-    //~ DIVPOLYGON3	div = { 0 };
-    //~ div.pih = SCREENXRES;
-	//~ div.piv = SCREENYRES;
+    // Poly subdiv
+    DIVPOLYGON3	div = { 0 };
+    div.pih = SCREENXRES;
+	div.piv = SCREENYRES;
 
     //~ CVECTOR outCol ={0,0,0,0};
     //~ CVECTOR outCol1 ={0,0,0,0};
@@ -545,50 +545,13 @@ int main() {
             
                                         
             // modelCube is a TMESH, len member == # vertices, but here it's # of triangle... So, for each tri * 3 vertices ...
-            for (i = 0; i < (meshes[k]->tmesh->len * 3); i += 3) {               
+            if (meshes[k]->index[t].code == 4) {
+                
+                for (i = 0; i < (meshes[k]->tmesh->len * 3); i += 3) {               
                     
                     poly = (POLY_GT3 *)nextpri;
                     
-                    SetPolyGT3(poly);
-                    
-                    // Can use ?
-                    //~ RotMeshPrimS_GCT3();
-
-                    if (*meshes[k]->isPrism){ 
-                        
-                        // Use current DRAWENV clip as TPAGE
-                        ((POLY_GT3 *)poly)->tpage = getTPage(meshes[k]->tim->mode&0x3, 0,
-                                                             draw[db].clip.x,
-                                                             draw[db].clip.y
-                        );
-                        
-                        // Use projected coordinates (results from RotAverage...) as UV coords and clamp them to 0-255,0-224 
-                        setUV3(poly,  (poly->x0 < 0? 0 : poly->x0 > 255? 255 : poly->x0), 
-                                      (poly->y0 < 0? 0 : poly->y0 > 224? 224 : poly->y0), 
-                                      (poly->x1 < 0? 0 : poly->x1 > 255? 255 : poly->x1), 
-                                      (poly->y1 < 0? 0 : poly->y1 > 224? 224 : poly->y1), 
-                                      (poly->x2 < 0? 0 : poly->x2 > 255? 255 : poly->x2), 
-                                      (poly->y2 < 0? 0 : poly->y2 > 224? 224 : poly->y2)
-                                      );
-                        
-     
-                    } else {
-                        
-                        // Use regular TPAGE
-                        ((POLY_GT3 *)poly)->tpage = getTPage(meshes[k]->tim->mode&0x3, 0,
-                                                         meshes[k]->tim->prect->x,
-                                                         meshes[k]->tim->prect->y
-                        );
-                        
-                        // Use model UV coordinates
-                        setUV3(poly,  meshes[k]->tmesh->u[i].vx  , meshes[k]->tmesh->u[i].vy   + meshes[k]->tim->prect->y,
-                                      meshes[k]->tmesh->u[i+1].vx, meshes[k]->tmesh->u[i+1].vy + meshes[k]->tim->prect->y,
-                                      meshes[k]->tmesh->u[i+2].vx, meshes[k]->tmesh->u[i+2].vy + meshes[k]->tim->prect->y);
-                    
-
-                    }
-             
-                    // If Vertex Anim flag 
+                       // If Vertex Anim flag 
                     if (*meshes[k]->isAnim){
                         
                     // FIXME : SLERP VERTEX ANIM
@@ -644,12 +607,25 @@ int main() {
                         
                     // Use anim vertex's positions
                          
-                        OTz = RotAverage3(
-                            &meshes[k]->anim->data[ atime%19 * modelCylindre_anim.nvert + meshes[k]->index[t]],
-                            &meshes[k]->anim->data[ atime%19 * modelCylindre_anim.nvert + meshes[k]->index[t+1]],
-                            &meshes[k]->anim->data[ atime%19 * modelCylindre_anim.nvert + meshes[k]->index[t+2]],
+                        //~ nclip = RotAverageNclip3(
+                            //~ &meshes[k]->anim->data[ atime%19 * modelCylindre_anim.nvert + meshes[k]->index[t]],
+                            //~ &meshes[k]->anim->data[ atime%19 * modelCylindre_anim.nvert + meshes[k]->index[t+2]],
+                            //~ &meshes[k]->anim->data[ atime%19 * modelCylindre_anim.nvert + meshes[k]->index[t+1]],
+                            //~ (long*)&poly->x0, (long*)&poly->x1, (long*)&poly->x2,
+                            //~ meshes[k]->p,
+                            //~ &OTz,
+                            //~ &Flag
+                        //~ );
+                        
+                    // Use anim vertex's positions
+                         
+                        nclip = RotAverageNclip3(
+                            &meshes[k]->anim->data[ atime%19 * modelCylindre_anim.nvert + meshes[k]->index[t].order.vx],
+                            &meshes[k]->anim->data[ atime%19 * modelCylindre_anim.nvert + meshes[k]->index[t].order.vz],
+                            &meshes[k]->anim->data[ atime%19 * modelCylindre_anim.nvert + meshes[k]->index[t].order.vy],
                             (long*)&poly->x0, (long*)&poly->x1, (long*)&poly->x2,
                             meshes[k]->p,
+                            &OTz,
                             &Flag
                         );
                             
@@ -657,15 +633,62 @@ int main() {
                     } else {                        
                     
                         // Use model's regular vertex pos
-                        OTz = RotAverage3(
-                            &meshes[k]->tmesh->v[meshes[k]->index[t]],  
-                            &meshes[k]->tmesh->v[meshes[k]->index[t+1]],
-                            &meshes[k]->tmesh->v[meshes[k]->index[t+2]],
+                        nclip = RotAverageNclip3(
+                            &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vx ],  
+                            &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vz ],
+                            &meshes[k]->tmesh->v[ meshes[k]->index[t].order.vy ],
                             (long*)&poly->x0, (long*)&poly->x1, (long*)&poly->x2,
                             meshes[k]->p,
+                            &OTz,
                             &Flag
                             );
                     }
+                    
+                    //~ FntPrint("%d %d %d %d\n", meshes[k]->index[t].order.vx, meshes[k]->index[t].order.vy, meshes[k]->index[t].order.vz, meshes[k]->index[t].code);
+                    
+                    if (nclip > 0 && OTz > 0) {
+
+                    
+                    SetPolyGT3(poly);
+                    
+                    // Can use ?
+                    //~ RotMeshPrimS_GCT3();
+
+                    if (*meshes[k]->isPrism){ 
+                        
+                        // Use current DRAWENV clip as TPAGE
+                        ((POLY_GT3 *)poly)->tpage = getTPage(meshes[k]->tim->mode&0x3, 0,
+                                                             draw[db].clip.x,
+                                                             draw[db].clip.y
+                        );
+                        
+                        // Use projected coordinates (results from RotAverage...) as UV coords and clamp them to 0-255,0-224 
+                        setUV3(poly,  (poly->x0 < 0? 0 : poly->x0 > 255? 255 : poly->x0), 
+                                      (poly->y0 < 0? 0 : poly->y0 > 224? 224 : poly->y0), 
+                                      (poly->x1 < 0? 0 : poly->x1 > 255? 255 : poly->x1), 
+                                      (poly->y1 < 0? 0 : poly->y1 > 224? 224 : poly->y1), 
+                                      (poly->x2 < 0? 0 : poly->x2 > 255? 255 : poly->x2), 
+                                      (poly->y2 < 0? 0 : poly->y2 > 224? 224 : poly->y2)
+                                      );
+                        
+     
+                    } else {
+                        
+                        // Use regular TPAGE
+                        ((POLY_GT3 *)poly)->tpage = getTPage(meshes[k]->tim->mode&0x3, 0,
+                                                         meshes[k]->tim->prect->x,
+                                                         meshes[k]->tim->prect->y
+                        );
+                        
+                        // Use model UV coordinates
+                        setUV3(poly,  meshes[k]->tmesh->u[i].vx  , meshes[k]->tmesh->u[i].vy   + meshes[k]->tim->prect->y,
+                                      meshes[k]->tmesh->u[i+2].vx, meshes[k]->tmesh->u[i+2].vy + meshes[k]->tim->prect->y,
+                                      meshes[k]->tmesh->u[i+1].vx, meshes[k]->tmesh->u[i+1].vy + meshes[k]->tim->prect->y);
+                    
+
+                    }
+             
+                 
                    
                 // FIXME : Polygon subdiv 
                     
@@ -678,17 +701,17 @@ int main() {
                             //~ DivideGT3(
                                 //~ // Vertex coord
                                 //~ &meshes[k]->tmesh->v[meshes[k]->index[t]],  
-                                //~ &meshes[k]->tmesh->v[meshes[k]->index[t+1]],
                                 //~ &meshes[k]->tmesh->v[meshes[k]->index[t+2]],
+                                //~ &meshes[k]->tmesh->v[meshes[k]->index[t+1]],
                                 //~ // UV coord
                                 //~ meshes[k]->tmesh->u[i],
-                                //~ meshes[k]->tmesh->u[i+1],
                                 //~ meshes[k]->tmesh->u[i+2],
+                                //~ meshes[k]->tmesh->u[i+1],
                                 
                                 //~ // Color
                                 //~ meshes[k]->tmesh->c[i], 
-                                //~ meshes[k]->tmesh->c[i+1], 
                                 //~ meshes[k]->tmesh->c[i+2], 
+                                //~ meshes[k]->tmesh->c[i+1], 
 
                                 //~ // Gpu packet
                                 //~ poly,
@@ -696,8 +719,8 @@ int main() {
                                 //~ &div);
                                         
                             //~ // Increment primitive list pointer
-                            //~ nextpri  += ( (sizeof(POLY_GT4) + 2) / 3 ) * (( 1 << ( div.ndiv )) << ( div.ndiv ));
-                            //NumPrims += ((1<<(div.ndiv))<<(div.ndiv));
+                            //~ nextpri  += ( (sizeof(POLY_GT3) + 3) / 4 ) * (( 1 << ( div.ndiv )) << ( div.ndiv ));
+                            //~ triCount = ((1<<(div.ndiv))<<(div.ndiv));
 					
                     //~ }
                     
@@ -715,9 +738,13 @@ int main() {
                         CVECTOR outCol1 ={0,0,0,0};
                         CVECTOR outCol2 ={0,0,0,0};
 
-                        NormalColorDpq(&meshes[k]->tmesh->n[meshes[k]->index[t]]  , &meshes[k]->tmesh->c[meshes[k]->index[t]], *meshes[k]->p, &outCol);
-                        NormalColorDpq(&meshes[k]->tmesh->n[meshes[k]->index[t+1]], &meshes[k]->tmesh->c[meshes[k]->index[t+1]], *meshes[k]->p, &outCol1);
-                        NormalColorDpq(&meshes[k]->tmesh->n[meshes[k]->index[t+2]], &meshes[k]->tmesh->c[meshes[k]->index[t+2]], *meshes[k]->p, &outCol2);
+                        //~ NormalColorDpq(&meshes[k]->tmesh->n[meshes[k]->index[t]]  , &meshes[k]->tmesh->c[meshes[k]->index[t]], *meshes[k]->p, &outCol);
+                        //~ NormalColorDpq(&meshes[k]->tmesh->n[meshes[k]->index[t+2]], &meshes[k]->tmesh->c[meshes[k]->index[t+2]], *meshes[k]->p, &outCol1);
+                        //~ NormalColorDpq(&meshes[k]->tmesh->n[meshes[k]->index[t+1]], &meshes[k]->tmesh->c[meshes[k]->index[t+1]], *meshes[k]->p, &outCol2);
+                       
+                        NormalColorDpq(&meshes[k]->tmesh->n[ meshes[k]->index[t].order.vx ], &meshes[k]->tmesh->c[ meshes[k]->index[t].order.vx ], *meshes[k]->p, &outCol);
+                        NormalColorDpq(&meshes[k]->tmesh->n[ meshes[k]->index[t].order.vz ], &meshes[k]->tmesh->c[ meshes[k]->index[t].order.vz ], *meshes[k]->p, &outCol1);
+                        NormalColorDpq(&meshes[k]->tmesh->n[ meshes[k]->index[t].order.vy ], &meshes[k]->tmesh->c[ meshes[k]->index[t].order.vy ], *meshes[k]->p, &outCol2);
                     //~ }
                     
                 // Other methods 
@@ -762,14 +789,15 @@ int main() {
                     }
                     
                     nextpri += sizeof(POLY_GT3);
-                    
-                t+=3;
+                }
                 
+                t+=1;
+            }    
                 //~ if (*meshes[k]->isRigidBody){
                 //~     PopMatrix();                    // Pull previous matrix from stack (slow)
                 //~ }
 
-            }
+        }
 
             // Find and apply light rotation matrix
             RotMatrix(&lgtang, &rotlgt);	
@@ -784,13 +812,13 @@ int main() {
         //~ FntPrint("ColSphere: %d\n", (modelSphere_body.position.vy + modelSphere_body.max.vy) - (modelobject_body.position.vy + modelobject_body.min.vy) );
         //~ FntPrint("Col %d\n", col_sphere.vy );
         
-        FntPrint("Obj: %d,%d,%d\n",modelobject_body.velocity.vx,modelobject_body.velocity.vy,modelobject_body.velocity.vz);
-        FntPrint("Sph: %d,%d,%d\n",modelSphere_body.velocity.vx,modelSphere_body.velocity.vy,modelSphere_body.velocity.vz);
+        //~ FntPrint("Obj: %d,%d,%d\n",modelobject_body.velocity.vx,modelobject_body.velocity.vy,modelobject_body.velocity.vz);
+        //~ FntPrint("Sph: %d,%d,%d\n",modelSphere_body.velocity.vx,modelSphere_body.velocity.vy,modelSphere_body.velocity.vz);
         
         //~ FntPrint("%d, %d\n",modelobject_body.position.vx, modelobject_pos.vx);
         
         //~ FntPrint("Time    : %d %d dt :%d\n",time, atime, dt);
-        //~ FntPrint("Tricount: %d OTz: %d\nOTc: %d, p: %d\n",triCount, OTz, OTc, *meshes[2]->p);
+        FntPrint("Tricount: %d OTz: %d\nOTc: %d, p: %d\n",triCount, OTz, OTc, *meshes[2]->p);
         
         //~ FntPrint("Sphr : %4d %4d %4d\n", modelSphere_body.gForce.vx, modelSphere_body.gForce.vy, modelSphere_body.gForce.vz);
 

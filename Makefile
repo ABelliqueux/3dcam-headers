@@ -1,10 +1,21 @@
-TARGET = 3dcam-cosTable-lerp-atantable-psqrt-nodpq-quads
+TARGET = 3dcam-tri-quads
 TYPE = ps-exe
 
-SRCS = 3dcam-cosTable-lerp-atantable-psqrt-nodpq-quads.c \
+SRCS = 3dcam-tri-quads.c \
 ../common/crt0/crt0.s \
 TIM/home.tim \
 TIM/grnd.tim \
+TIM/cat.tim \
+TIM/lara.tim \
+TIM/bg.tim \
+TIM/bg_camPath.tim \
+TIM/bg_camPath_001.tim \
+TIM/bg_camPath_002.tim \
+TIM/bg_camPath_003.tim \
+TIM/bg_camPath_004.tim \
+TIM/bg_camPath_005.tim \
+#~ TIM/Sans_nom_56.tim \
+# img2tim -t -bpp 8 -org 320 0 -plt 0 481 -o bg.tim bg.png
 
 CPPFLAGS += -I../psyq/include
 LDFLAGS += -L../psyq/lib

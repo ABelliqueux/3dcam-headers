@@ -227,6 +227,8 @@ long timeB = 0;
 
 int lerping    = 0;
 
+short curCamAngle = 0;
+
 // Inverted Cam coordinates for Forward Vector calc
 
 VECTOR InvCamPos = {0,0,0,0};
@@ -376,6 +378,10 @@ int main() {
     
     VECTOR objAngleToCam = {0, 0, 0, 0};
     
+    //~ long objAngleToCam = 0;
+    
+    
+    
     int angle     = 0;                      //PSX units = 4096 == 360° = 2Pi
     
     int dist      = 0;                      //PSX units 
@@ -438,34 +444,23 @@ int main() {
         
         //~ posToCam = getVectorTo(camera.pos, *meshPlan.pos);
 
-        //~ objAngleToCam.vy = ( 
-            
-            //~ (
-                //~ patan( meshPlan.pos->vx, meshPlan.pos->vz ) - 
-                //~ meshPlan.rot->vy -
-                
-               //~ - patan( camera.pos.vx, camera.pos.vz) 
-            
-            //~ ) >> 4 );
+        posToCam.vx = -camera.pos.vx - modelPlan_pos.vx ;
+        posToCam.vz = -camera.pos.vz - modelPlan_pos.vz ;
+        posToCam.vy = -camera.pos.vy - modelPlan_pos.vy ;
         
-        //~ FntPrint("%d %d",  objAngleToCam.vy, meshPlan.rot->vy);
+        //~ psqrt(posToCam.vx * posToCam.vx + posToCam.vy * posToCam.vy);
         
-        //~ objAngleToCam.vy = ( 
-            
-            //~ ( 
-                //~ patan( meshPlan.pos->vx > 0 ? meshPlan.pos->vx : 4096 + meshPlan.pos->vx, meshPlan.pos->vz ) - 
-              
-                //~ patan( camera.pos.vx > 0 ? camera.pos.vx : 4096 + camera.pos.vx,          camera.pos.vz) 
-            
-            //~ ) >> 4 ) - 1024;
+        objAngleToCam.vy = patan( posToCam.vx,posToCam.vz );
+        objAngleToCam.vx = patan( posToCam.vx,posToCam.vy );
+
+        //~ objAngleToCam.vz = patan( posToCam.vz,posToCam.vy );
+        //~ objAngleToCam.vx = patan( psqrt(posToCam.vx * posToCam.vx + posToCam.vy * posToCam.vy), posToCam.vy );
+
+        //~ meshPlan.rot->vx = -( (objAngleToCam.vx >> 4) - 3076 ) ;
+        //~ meshPlan.rot->vx = (( (objAngleToCam.vx >> 4) - 3076 ) * ( (objAngleToCam.vz >> 4) - 3076 ) >> 12) * (nsin(posToCam.vz) >> 10 < 0 ? -1 : 1);
+        //~ meshPlan.rot->vx = ( (objAngleToCam.vx >> 4) - 3076 ) * ( (objAngleToCam.vz >> 4) - 3076 ) >> 12 ;
         
-        //~ objAngleToCam.vx = ratan2(posToCam.pad, posToCam.vy);
-        
-        //~ meshPlan.rot->vy = objAngleToCam.vy;
-        
-        //~ meshPlan.rot->vx = objAngleToCam.vx;
-        
-        
+        meshPlan.rot->vy = -( (objAngleToCam.vy >> 4) + 1024 ) ;
         
         // Actor Forward vector 
 
@@ -563,11 +558,11 @@ int main() {
         // Fixed Camera angle
         if (camMode == 2) {                              
           
-            if (camPtr->tim_data){
+            //~ if (camPtr->tim_data){
                 
-                drawBG();
+                //~ drawBG();
                 
-            }
+            //~ }
             
             setCameraPos(camPtr->campos->pos, camPtr->campos->rot);
 
@@ -696,6 +691,8 @@ int main() {
                 //~ FntPrint("Cam %d, %d, %d\n", camera.pos.vx, camera.pos.vy, camera.pos.vz);
                 //~ FntPrint("Pos: %d Cur: %d\nTheta y: %d x: %d\n", camPath.pos, camPath.cursor, theta.vy, theta.vx);
 
+                FntPrint("%d", camAngleToAct.vy);
+
                 if ( camAngleToAct.vy < -50 ) {  
           
                     camPath.pos += 40;
@@ -758,19 +755,28 @@ int main() {
                  !getIntCollision( *actorPtr->body , *curNode->siblings->list[msh]->plane->body).vz )
             {
             
-                curNode = curNode->siblings->list[msh];
+                if ( curNode != curNode->siblings->list[msh] ) {
+                
+                    curNode = curNode->siblings->list[msh];
 
-                levelPtr = curNode->plane;
+                    levelPtr = curNode->plane;
+                }
             
             }
             
             // Moveable prop
             
-            if ( !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vx &&
-                 !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vz )
-            {
+            if (  !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vx &&
+                  !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vz ) {
+
+                if ( propPtr->node != curNode->siblings->list[ msh ]){
+                    
+                    propPtr->node = curNode->siblings->list[ msh ];
+                }
+            } else if ( !getIntCollision( *propPtr->body , *curNode->plane->body).vx &&
+                        !getIntCollision( *propPtr->body , *curNode->plane->body).vz ) {
             
-                propPtr->node = curNode->siblings->list[ msh ];
+                    propPtr->node = curNode;
             
             }
             
@@ -889,6 +895,30 @@ int main() {
         
         static long Flag;
         
+        if ( (camMode == 2) && (camPtr->tim_data ) ) {
+      
+            //~ if (camPtr->tim_data){
+                
+                drawBG();
+        
+                //~ // Loop on camAngles
+        
+                //~ for ( int angle = 0 ; angle < sizeof(camAngles)/sizeof(camAngles[0]) - 1 ; angle++ ) {
+                
+                    for ( int mesh = 0 ; mesh < camAngles[curCamAngle]->index; mesh ++ ) {
+                        
+                        transformMesh(camAngles[curCamAngle]->objects[mesh]);
+                        
+                        drawPoly(camAngles[curCamAngle]->objects[mesh], &Flag, atime);
+                        
+                    }
+                
+                //~ }
+            
+            //~ }
+        }
+        
+        else {
         //~ long t = 0;
         
         // Draw current node's plane
@@ -937,6 +967,8 @@ int main() {
             drawPoly( curNode->rigidbodies->list[ object ], &Flag, atime);
         
         }
+    
+    }
         
         // Find and apply light rotation matrix
 
@@ -1345,8 +1377,12 @@ void drawPoly(MESH * mesh, long * Flag, int atime){
                         
                                 mesh->tim->crect->y);
                     }
-                                 
                     
+                    if (*mesh->isSprite){ 
+                                 
+                        SetShadeTex( poly, 1 );
+                    
+                    }
                     // Defaults depth color to neutral grey
 
                     CVECTOR outCol  = { 128,128,128,0 };
@@ -1649,6 +1685,11 @@ void drawPoly(MESH * mesh, long * Flag, int atime){
 
                     }
                     
+                    if (*mesh->isSprite){ 
+                                 
+                        SetShadeTex( poly4, 1 );
+                    
+                    }
                     
                         // If tim mode  == 0 | 1, set CLUT coordinates
                         if ( (mesh->tim->mode & 0x3) < 2 ) {
@@ -2323,7 +2364,7 @@ void callback() {
     
     static short cursor = 0;
     
-    static short curCamAngle = 0;
+    //~ static short curCamAngle = 0;
     
     if( !lerpValues[0] ) {
         
@@ -2368,6 +2409,12 @@ void callback() {
             }
 
         } else {
+            
+            if (curCamAngle > 4) {
+
+                curCamAngle = 0;
+
+            }
 
             if (curCamAngle < 5) {
 
@@ -2377,11 +2424,7 @@ void callback() {
 
                 LoadTexture(camPtr->tim_data, camPtr->BGtim);
 
-            } else {
-
-                curCamAngle = 0;
-
-            }
+            } 
         }
 
         lastPad = pad;
