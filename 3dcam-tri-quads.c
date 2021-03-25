@@ -564,6 +564,27 @@ int main() {
                 
             //~ }
             
+            if ( actorPtr->pos2D.vx + actorPtr->body->max.vx / 2 > SCREENXRES ) { 
+            
+            
+            //~ if (curCamAngle > 4) {
+
+                //~ curCamAngle = 0;
+
+            //~ }
+
+                if (curCamAngle < 5) {
+
+                    curCamAngle++;
+
+                    camPtr = camAngles[ curCamAngle ];
+
+                    LoadTexture(camPtr->tim_data, camPtr->BGtim);
+
+                }
+            
+            }
+            
             setCameraPos(camPtr->campos->pos, camPtr->campos->rot);
 
         }
@@ -764,16 +785,18 @@ int main() {
             
             }
             
-            // Moveable prop
+            //~ // Moveable prop
             
-            if (  !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vx &&
-                  !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vz ) {
+            //~ if (  !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vx &&
+                  //~ !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vz ) {
 
-                if ( propPtr->node != curNode->siblings->list[ msh ]){
+                //~ if ( propPtr->node != curNode->siblings->list[ msh ]){
                     
-                    propPtr->node = curNode->siblings->list[ msh ];
-                }
-            } else if ( !getIntCollision( *propPtr->body , *curNode->plane->body).vx &&
+                    //~ propPtr->node = curNode->siblings->list[ msh ];
+                //~ }
+                
+            //~ } else
+             if ( !getIntCollision( *propPtr->body , *curNode->plane->body).vx &&
                         !getIntCollision( *propPtr->body , *curNode->plane->body).vz ) {
             
                     propPtr->node = curNode;
@@ -802,28 +825,13 @@ int main() {
                         
                         col_lvl = getIntCollision( *meshes[k]->body , *levelPtr->body );
                         
-                        //~ col_lvl = getIntCollision( *actorPtr->body , *curNode->plane->body );
                         
-                        //~ for (int plane = 0; plane < curNode->siblings->index; plane++) {
+                        //~ col_sphere = getIntCollision( *propPtr->body, *propPtr->node->plane->body );
                         
-                            //~ col_sphere = getIntCollision( *propPtr->body, *curNode->siblings->list[ plane ]->plane->body);
-                        
-                        //~ }
-                        
-                        col_sphere = getIntCollision( *propPtr->body, *propPtr->node->plane->body );
-                        
-                        //~ col_sphere = getIntCollision( *propPtr->body, *levelPtr->body );
+                        // col_sphere = getIntCollision( *propPtr->body, *levelPtr->body );
                         
                         col_sphere_act = getExtCollision( *actorPtr->body, *propPtr->body );
                         
-                        //~ // If !col, keep moving
-                        
-                        //~ if ( !col_lvl.vx ){ curNode->rigidbodies->list[k]->pos->vx = curNode->rigidbodies->list[k]->body->position.vx; } 
-                        
-                        //~ if ( !col_lvl.vy ){ curNode->rigidbodies->list[k]->pos->vy = curNode->rigidbodies->list[k]->body->position.vy; };//meshes[k]->body->gForce.vy = 0;} // FIXME : Why the 15px offset ? 
-                        
-                        //~ if ( !col_lvl.vz ){ curNode->rigidbodies->list[k]->pos->vz = curNode->rigidbodies->list[k]->body->position.vz; }
-                                               
                         //~ // If no col with ground, fall off
                 
                         if ( col_lvl.vy ) {
@@ -853,12 +861,6 @@ int main() {
                             }
                         }
                         
-                        //~ if (!col_sphere_act.vx){
-                            //~ propPtr->body->velocity.vx = 0;
-                            //~ }
-                        
-                        
-
                         meshes[k]->pos->vx = meshes[k]->body->position.vx;
                         
                         meshes[k]->pos->vy = meshes[k]->body->position.vy ;
@@ -874,10 +876,8 @@ int main() {
                     
                     meshes[k]->body->velocity.vz = 0;
                     
-                    //~ curNode->rigidbodies->list[k]->body->velocity.vx = curNode->rigidbodies->list[k]->body->velocity.vz = 0;
-                    
-                    //~ FntPrint("V:%d ", curNode->rigidbodies->list[k]->body->velocity.vy);
                 }
+
             // }
         }
         
@@ -989,6 +989,8 @@ int main() {
         //~ FntPrint("CurNode : %x\nIndex: %d", curNode, curNode->siblings->index);
         
         FntPrint("Time    : %d dt :%d\n", VSync(-1) / 60, dt);
+        
+        FntPrint("Actor    : %d %d\n", actorPtr->pos2D.vx + actorPtr->body->max.vx / 2, actorPtr->pos2D.vy);
         
         FntFlush(-1);
 		
@@ -1214,6 +1216,8 @@ void drawPoly(MESH * mesh, long * Flag, int atime){
                          
                         // Let's lerp between keyframes
 
+                        // TODO : Finish lerped animation implementation
+                        
                         // Vertex 1
                         
                         mesh->tmesh->v[ mesh->index[ t ].order.vx ].vx = lerpD( mesh->anim->data[mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[t].order.vx].vx << precision , mesh->anim->data[(mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[t].order.vx].vx  << precision, mesh->anim->cursor << precision)  >> precision;
@@ -1238,7 +1242,7 @@ void drawPoly(MESH * mesh, long * Flag, int atime){
                         
                         mesh->tmesh->v[ mesh->index[ t ].order.vy ].vy = lerpD( mesh->anim->data[mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[t].order.vy].vy << precision , mesh->anim->data[(mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[t].order.vy].vy  << precision, mesh->anim->cursor << precision)  >> precision;
                          
-                        mesh->anim->cursor += 2 * mesh->anim->dir;
+                        mesh->anim->cursor += 24 * mesh->anim->dir;
                          
                         // Coord transformation from world space to screen space
                         
@@ -1258,7 +1262,7 @@ void drawPoly(MESH * mesh, long * Flag, int atime){
                                    
                                     Flag
                                 );
-                            
+                                                
                         } else { 
                            
                         // No interpolation
@@ -1305,6 +1309,7 @@ void drawPoly(MESH * mesh, long * Flag, int atime){
                                 
                                 Flag
                             );
+                    
                 }
                 
                 // Do not draw invisible meshes 
@@ -1422,6 +1427,11 @@ void drawPoly(MESH * mesh, long * Flag, int atime){
                         
                         AddPrim(&ot[db][*mesh->OTz-2], poly);
                     }
+                    
+                    mesh->pos2D.vx = *(&poly->x0);
+                    mesh->pos2D.vy = *(&poly->x0 + 1);
+                    //~ mesh->pos2D.vy = poly->x0;
+                    //~ FntPrint("%d %d\n", *(&poly->x0), *(&poly->x0 + 1));
                     
                     nextpri += sizeof(POLY_GT3);
                 }
@@ -2472,7 +2482,9 @@ void callback() {
                 //~ forceApplied -= 150;
         //~ }
         cursor = div - 15;
+        
         timer = 30;
+        
         lastPad = pad;
     }
     
