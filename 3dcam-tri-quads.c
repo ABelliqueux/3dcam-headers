@@ -48,6 +48,12 @@
 
 #define FOV CENTERX                             // With a FOV of 1/2, camera focal length is ~= 16 mm / 90°
                                                 // Lower values mean wider angle
+// Camera frustum : 4:3 aspect ratio
+// normalized to 0-4096
+
+#define HH 3072  // half height == tan(90/2) == 1 
+
+#define HW 4096  // half width == HH * (4/3) ~= 1.333
 
 // pixel > cm : used in physics calculations
 
@@ -73,7 +79,7 @@
 // dotproduct of two vectors
 
 #define dotProduct(v0, v1)  \
-	(v0).vx * (v1).vx +	\
+	(v0).vx * (v1).vx +	    \
 	(v0).vy * (v1).vy +	\
 	(v0).vz * (v1).vz
 
@@ -93,6 +99,11 @@
 	(v0).vy - (v1).vy,	\
 	(v0).vz - (v1).vz	
 
+
+#define normalizeVector(v)                                             \
+    ((v)->vx << 12) >> 8,                                              \
+    ((v)->vy << 12) >> 8,                                              \
+    ((v)->vz << 12) >> 8
 
 // Display and draw environments, double buffered
 
@@ -229,6 +240,24 @@ int lerping    = 0;
 
 short curCamAngle = 0;
 
+// Cam frustum
+
+//~ VECTOR TL = { -CENTERX, -CENTERY, FOV };
+
+//~ VECTOR TR = {  CENTERX, -CENTERY, FOV };
+
+//~ VECTOR BR = {  CENTERX,  CENTERY, FOV };
+
+//~ VECTOR BL = { -CENTERX,  CENTERY, FOV };
+
+VECTOR TL = { -HW, -HH, ONE };
+
+VECTOR TR = {  HW, -HH, ONE };
+
+VECTOR BR = {  HW,  HH, ONE };
+
+VECTOR BL = { -HW,  HH, ONE };
+
 // Inverted Cam coordinates for Forward Vector calc
 
 VECTOR InvCamPos = {0,0,0,0};
@@ -322,7 +351,7 @@ void applyAcceleration(BODY * actor);
 void callback();
 
 int main() {
-	                      
+    
     // FIXME : Poly subdiv
     
     //~ DIVPOLYGON4	div4 = { 0 };
@@ -991,6 +1020,16 @@ int main() {
         FntPrint("Time    : %d dt :%d\n", VSync(-1) / 60, dt);
         
         FntPrint("Actor    : %d %d\n", actorPtr->pos2D.vx + actorPtr->body->max.vx / 2, actorPtr->pos2D.vy);
+        
+        //~ FntPrint("%d %d %d\n", normalizeVector(&TL));
+
+        //~ FntPrint("%d %d %d\n", normalizeVector(&TR));
+
+        //~ FntPrint("%d %d %d\n", normalizeVector(&BR));
+
+        //~ FntPrint("%d %d %d\n", normalizeVector(&BL));
+        
+    
         
         FntFlush(-1);
 		
