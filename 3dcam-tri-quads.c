@@ -80,7 +80,7 @@
 
 #define dotProduct(v0, v1)  \
 	(v0).vx * (v1).vx +	    \
-	(v0).vy * (v1).vy +	\
+	(v0).vy * (v1).vy +	 \
 	(v0).vz * (v1).vz
 
 // min value
@@ -240,24 +240,6 @@ int lerping    = 0;
 
 short curCamAngle = 0;
 
-// Cam frustum
-
-//~ VECTOR TL = { -CENTERX, -CENTERY, FOV };
-
-//~ VECTOR TR = {  CENTERX, -CENTERY, FOV };
-
-//~ VECTOR BR = {  CENTERX,  CENTERY, FOV };
-
-//~ VECTOR BL = { -CENTERX,  CENTERY, FOV };
-
-VECTOR TL = { -HW, -HH, ONE };
-
-VECTOR TR = {  HW, -HH, ONE };
-
-VECTOR BR = {  HW,  HH, ONE };
-
-VECTOR BL = { -HW,  HH, ONE };
-
 // Inverted Cam coordinates for Forward Vector calc
 
 VECTOR InvCamPos = {0,0,0,0};
@@ -318,6 +300,10 @@ VECTOR getVectorTo(VECTOR actor, VECTOR target);
 
 int alignAxisToVect(VECTOR target, short axis, int factor);
 
+void worldToScreen( VECTOR * worldPos, VECTOR * screenPos );
+
+void screenToWorld( VECTOR * screenPos, VECTOR * worldPos );
+
 // Drawing
 
 void transformMesh(MESH * meshes);
@@ -351,6 +337,9 @@ void applyAcceleration(BODY * actor);
 void callback();
 
 int main() {
+    
+   VECTOR sp = {0,0,0};
+   VECTOR wp = {0,0,0};
     
     // FIXME : Poly subdiv
     
@@ -587,13 +576,13 @@ int main() {
         // Fixed Camera angle
         if (camMode == 2) {                              
           
-            //~ if (camPtr->tim_data){
+            if (camPtr->tim_data){
                 
                 //~ drawBG();
                 
             //~ }
             
-            if ( actorPtr->pos2D.vx + actorPtr->body->max.vx / 2 > SCREENXRES ) { 
+                if ( actorPtr->pos2D.vx + actorPtr->body->max.vx / 2 > SCREENXRES ) { 
             
             
             //~ if (curCamAngle > 4) {
@@ -602,14 +591,16 @@ int main() {
 
             //~ }
 
-                if (curCamAngle < 5) {
+                    if (curCamAngle < 5) {
 
-                    curCamAngle++;
+                        curCamAngle++;
 
-                    camPtr = camAngles[ curCamAngle ];
+                        camPtr = camAngles[ curCamAngle ];
 
-                    LoadTexture(camPtr->tim_data, camPtr->BGtim);
+                        LoadTexture(camPtr->tim_data, camPtr->BGtim);
 
+                    }
+                
                 }
             
             }
@@ -910,6 +901,8 @@ int main() {
             // }
         }
         
+        worldToScreen(actorPtr->pos, &actorPtr->pos2D);
+        
     // Camera setup 
         
         // position of cam relative to actor
@@ -932,8 +925,6 @@ int main() {
         
                 //~ // Loop on camAngles
         
-                //~ for ( int angle = 0 ; angle < sizeof(camAngles)/sizeof(camAngles[0]) - 1 ; angle++ ) {
-                
                     for ( int mesh = 0 ; mesh < camAngles[curCamAngle]->index; mesh ++ ) {
                         
                         transformMesh(camAngles[curCamAngle]->objects[mesh]);
@@ -942,8 +933,6 @@ int main() {
                         
                     }
                 
-                //~ }
-            
             //~ }
         }
         
@@ -997,7 +986,7 @@ int main() {
         
         }
     
-    }
+    }    
         
         // Find and apply light rotation matrix
 
@@ -1017,19 +1006,17 @@ int main() {
 
         //~ FntPrint("CurNode : %x\nIndex: %d", curNode, curNode->siblings->index);
         
+        screenToWorld(&sp, &wp);
+        
         FntPrint("Time    : %d dt :%d\n", VSync(-1) / 60, dt);
         
         FntPrint("Actor    : %d %d\n", actorPtr->pos2D.vx + actorPtr->body->max.vx / 2, actorPtr->pos2D.vy);
         
-        //~ FntPrint("%d %d %d\n", normalizeVector(&TL));
-
-        //~ FntPrint("%d %d %d\n", normalizeVector(&TR));
-
-        //~ FntPrint("%d %d %d\n", normalizeVector(&BR));
-
-        //~ FntPrint("%d %d %d\n", normalizeVector(&BL));
+        //~ FntPrint("%d %d\n", actorPtr->pos->vx, actorPtr->pos2D.vx);
+        //~ FntPrint("%d %d\n", actorPtr->pos->vy, actorPtr->pos2D.vy);
+        //~ FntPrint("%d %d\n", actorPtr->pos->vz, actorPtr->pos2D.vz);
         
-    
+        FntPrint("%d - %d %d %d\n", sp.vx , wp.vx, wp.vy, wp.vz);
         
         FntFlush(-1);
 		
@@ -1161,25 +1148,25 @@ void LoadTexture(u_long * tim, TIM_IMAGE * tparam){     // This part is from Lam
 
 void transformMesh(MESH * mesh){
     
-    //~ if (*mesh->isRigidBody || *mesh->isStaticBody){
+        MATRIX mat;
                             
         // Apply rotation matrix
         
-        RotMatrix_gte(mesh->rot, mesh->mat);            
+        RotMatrix_gte(mesh->rot, &mat);            
         
         // Apply translation matrix
         
-        TransMatrix(mesh->mat, mesh->pos);
+        TransMatrix(&mat, mesh->pos);
                           
         // Compose matrix with cam
         
-        CompMatrix(&camera.mat, mesh->mat, mesh->mat);  
+        CompMatrix(&camera.mat, &mat, &mat);  
 
         // Set default rotation and translation matrices
         
-        SetRotMatrix(mesh->mat);                             
+        SetRotMatrix(&mat);                             
         
-        SetTransMatrix(mesh->mat);                           
+        SetTransMatrix(&mat);                           
         
     //~ }
 };
@@ -1467,10 +1454,10 @@ void drawPoly(MESH * mesh, long * Flag, int atime){
                         AddPrim(&ot[db][*mesh->OTz-2], poly);
                     }
                     
-                    mesh->pos2D.vx = *(&poly->x0);
-                    mesh->pos2D.vy = *(&poly->x0 + 1);
-                    //~ mesh->pos2D.vy = poly->x0;
-                    //~ FntPrint("%d %d\n", *(&poly->x0), *(&poly->x0 + 1));
+                    //~ mesh->pos2D.vx = *(&poly->x0);
+                    //~ mesh->pos2D.vy = *(&poly->x0 + 1);
+                    // mesh->pos2D.vy = poly->x0;
+                    // FntPrint("%d %d\n", *(&poly->x0), *(&poly->x0 + 1));
                     
                     nextpri += sizeof(POLY_GT3);
                 }
@@ -1971,6 +1958,75 @@ VECTOR getVectorTo( VECTOR actor, VECTOR target ) {
     
     return Ndirection ;
 
+};
+
+
+// From 'psyq/addons/graphics/ZIMEN/CLIP.C'
+
+void worldToScreen( VECTOR * worldPos, VECTOR * screenPos ) {
+	
+    int	distToScreen; // corresponds to FOV
+	
+    MATRIX	curRot;      // current rotation matrix
+	
+	// Get current matrix and projection */
+    
+	distToScreen = ReadGeomScreen();	
+
+	ReadRotMatrix(&curRot);
+	
+	// Get Rotation, Translation coordinates, apply perspective correction
+    
+    // Muliply world coordinates vector by current rotation matrix, store in s
+    
+	ApplyMatrixLV(&curRot, worldPos, screenPos);
+    
+    // Get world translation vectors from rot and add to s.vx, vy, vz
+	
+    applyVector(screenPos, curRot.t[0], curRot.t[1], curRot.t[2], +=);
+	
+    // Correct perspective
+    
+    screenPos -> vz = distToScreen; // Start with vz to avoid division by 0 below
+    
+    screenPos -> vx = screenPos -> vx * distToScreen / ( screenPos -> vz );
+	
+    screenPos -> vy = screenPos -> vy * distToScreen / ( screenPos -> vz ); 
+    
+};
+
+void screenToWorld( VECTOR * screenPos, VECTOR * worldPos ) {
+	
+    int	distToScreen; // corresponds to FOV
+	
+    MATRIX	curRot, rotT;      // current rotation matrix
+	
+    VECTOR curTrans;
+    
+	// Get current matrix and projection */
+    
+	distToScreen = ReadGeomScreen();	
+
+	ReadRotMatrix(&curRot);
+
+    PushMatrix();
+	
+    // Get current translation
+    
+    curTrans.vx = screenPos->vx - curRot.t[0];
+
+    curTrans.vy = screenPos->vy - curRot.t[1];
+
+    curTrans.vz = screenPos->vz - curRot.t[2];
+
+    TransposeMatrix(&curRot, &rotT);
+    
+    // 
+    
+    ApplyMatrixLV(&rotT, &curTrans, worldPos);
+    
+    PopMatrix();
+    
 };
     
 //~ int alignAxisToVect(VECTOR target, short axis, int factor){    
