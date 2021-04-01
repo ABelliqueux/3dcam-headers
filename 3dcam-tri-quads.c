@@ -48,13 +48,6 @@
 
 #define FOV CENTERX                             // With a FOV of 1/2, camera focal length is ~= 16 mm / 90°
                                                 // Lower values mean wider angle
-// Camera frustum : 4:3 aspect ratio
-// normalized to 0-4096
-
-#define HH 3072  // half height == tan(90/2) == 1 
-
-#define HW 4096  // half width == HH * (4/3) ~= 1.333
-
 // pixel > cm : used in physics calculations
 
 #define SCALE 4
@@ -338,7 +331,7 @@ void callback();
 
 int main() {
     
-   VECTOR sp = {0,0,0};
+   VECTOR sp = {CENTERX,CENTERY,0};
    VECTOR wp = {0,0,0};
     
     // FIXME : Poly subdiv
@@ -419,6 +412,17 @@ int main() {
     // Set camera starting pos
     
     setCameraPos(camPtr->campos->pos, camPtr->campos->rot);
+    
+    // Find curCamAngle if using pre-calculated BGs
+    
+    if (camMode == 2) {                              
+          
+        if (camPtr->tim_data){
+    
+            curCamAngle = 1;
+    
+        }
+    }
     
 	// Main loop
 	
@@ -576,31 +580,71 @@ int main() {
         // Fixed Camera angle
         if (camMode == 2) {                              
           
+          
+            // If BG images exist
+            
             if (camPtr->tim_data){
-                
-                //~ drawBG();
-                
-            //~ }
             
-                if ( actorPtr->pos2D.vx + actorPtr->body->max.vx / 2 > SCREENXRES ) { 
-            
-            
-            //~ if (curCamAngle > 4) {
+                if ( camAngles[ curCamAngle ]->fw.v0.vx ) {
+                    
+                    //~ FntPrint("v3 : %d, v2 : %d\n", camAngles[ curCamAngle ]->fw.v3.vx, camAngles[ curCamAngle ]->fw.v2.vx); 
+                    //~ FntPrint("v1 : %d, v2 : %d\n", camAngles[ curCamAngle ]->fw.v1.vy, camAngles[ curCamAngle ]->fw.v2.vy); 
 
-                //~ curCamAngle = 0;
+                    // If actor in camAngle->fw area of screen
+                    
+                    if ( actorPtr->pos2D.vx + CENTERX > camAngles[ curCamAngle ]->fw.v3.vx &&  
+                         
+                         actorPtr->pos2D.vx + CENTERX < camAngles[ curCamAngle ]->fw.v2.vx &&
+                         
+                         actorPtr->pos2D.vy + CENTERY > camAngles[ curCamAngle ]->fw.v3.vy &&  
+                         
+                         actorPtr->pos2D.vy + CENTERY < camAngles[ curCamAngle ]->fw.v2.vy
+                          
+                        ) { 
+                    
+                        if (curCamAngle < 5) {
 
-            //~ }
+                            curCamAngle++;
 
-                    if (curCamAngle < 5) {
+                            camPtr = camAngles[ curCamAngle ];
 
-                        curCamAngle++;
+                            LoadTexture(camPtr->tim_data, camPtr->BGtim);
 
-                        camPtr = camAngles[ curCamAngle ];
-
-                        LoadTexture(camPtr->tim_data, camPtr->BGtim);
-
+                        }
+                    
                     }
+                    
+                }
                 
+                if ( camAngles[ curCamAngle ]->bw.v0.vx ) {
+                    
+                    FntPrint("v3 : %d, v3 : %d\n", camAngles[ curCamAngle ]->bw.v3.vx, camAngles[ curCamAngle ]->bw.v3.vy); 
+                    FntPrint("v2 : %d, v2 : %d\n", camAngles[ curCamAngle ]->bw.v2.vx, camAngles[ curCamAngle ]->bw.v2.vy);
+                
+                    // If actor in camAngle->bw area of screen
+                    
+                    if ( actorPtr->pos2D.vx + CENTERX < camAngles[ curCamAngle ]->bw.v3.vx &&  
+                         
+                         actorPtr->pos2D.vx + CENTERX > camAngles[ curCamAngle ]->bw.v2.vx &&
+                    
+                         actorPtr->pos2D.vy + CENTERY < camAngles[ curCamAngle ]->bw.v3.vy &&  
+                     
+                         actorPtr->pos2D.vy + CENTERY > camAngles[ curCamAngle ]->bw.v2.vy
+                      
+                        ) { 
+            
+                        if (curCamAngle > 0) {
+
+                            curCamAngle--;
+
+                            camPtr = camAngles[ curCamAngle ];
+
+                            LoadTexture(camPtr->tim_data, camPtr->BGtim);
+
+                        }
+                    
+                    }
+                    
                 }
             
             }
@@ -732,7 +776,7 @@ int main() {
                 //~ FntPrint("Cam %d, %d, %d\n", camera.pos.vx, camera.pos.vy, camera.pos.vz);
                 //~ FntPrint("Pos: %d Cur: %d\nTheta y: %d x: %d\n", camPath.pos, camPath.cursor, theta.vy, theta.vx);
 
-                FntPrint("%d", camAngleToAct.vy);
+                //~ FntPrint("%d", camAngleToAct.vy);
 
                 if ( camAngleToAct.vy < -50 ) {  
           
@@ -786,7 +830,7 @@ int main() {
     
         //~ dt = time/180+1 - time/180;
         
-        // Spatial partitioning
+    // Spatial partitioning
         
         for ( int msh = 0; msh < curNode->siblings->index; msh ++ ) {
         
@@ -804,8 +848,8 @@ int main() {
                 }
             
             }
-            
-            //~ // Moveable prop
+        
+// FIXME !            //~ // Moveable prop
             
             //~ if (  !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vx &&
                   //~ !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vz ) {
@@ -901,8 +945,13 @@ int main() {
             // }
         }
         
-        worldToScreen(actorPtr->pos, &actorPtr->pos2D);
+        if ( (camMode == 2) && (camPtr->tim_data ) ) {
+      
+            worldToScreen(actorPtr->pos, &actorPtr->pos2D);
         
+        }
+
+    
     // Camera setup 
         
         // position of cam relative to actor
@@ -923,9 +972,9 @@ int main() {
                 
                 drawBG();
         
-                //~ // Loop on camAngles
+                // Loop on camAngles
         
-                    for ( int mesh = 0 ; mesh < camAngles[curCamAngle]->index; mesh ++ ) {
+                    for ( int mesh = 0 ; mesh < camAngles[ curCamAngle ]->index; mesh ++ ) {
                         
                         transformMesh(camAngles[curCamAngle]->objects[mesh]);
                         
@@ -933,6 +982,8 @@ int main() {
                         
                     }
                 
+                // Get screen coordinates of actor
+        
             //~ }
         }
         
@@ -987,7 +1038,7 @@ int main() {
         }
     
     }    
-        
+    
         // Find and apply light rotation matrix
 
         RotMatrix(&lgtang, &rotlgt);	
@@ -1006,17 +1057,14 @@ int main() {
 
         //~ FntPrint("CurNode : %x\nIndex: %d", curNode, curNode->siblings->index);
         
-        screenToWorld(&sp, &wp);
-        
         FntPrint("Time    : %d dt :%d\n", VSync(-1) / 60, dt);
+        FntPrint("%d\n", curCamAngle );
+        //~ FntPrint("Actor    : %d %d\n", actorPtr->pos->vx, actorPtr->pos->vy);
         
-        FntPrint("Actor    : %d %d\n", actorPtr->pos2D.vx + actorPtr->body->max.vx / 2, actorPtr->pos2D.vy);
+        FntPrint("%d %d\n", actorPtr->pos->vx, actorPtr->pos->vy);
+        FntPrint("%d %d\n", actorPtr->pos2D.vx + CENTERX, actorPtr->pos2D.vy + CENTERY);
         
-        //~ FntPrint("%d %d\n", actorPtr->pos->vx, actorPtr->pos2D.vx);
-        //~ FntPrint("%d %d\n", actorPtr->pos->vy, actorPtr->pos2D.vy);
-        //~ FntPrint("%d %d\n", actorPtr->pos->vz, actorPtr->pos2D.vz);
-        
-        FntPrint("%d - %d %d %d\n", sp.vx , wp.vx, wp.vy, wp.vz);
+        //~ FntPrint(" %d %d %d\n", wp.vx, wp.vy, wp.vz);
         
         FntFlush(-1);
 		
@@ -1091,8 +1139,8 @@ void init() {
 
 	FntLoad(FNT_POS_X, FNT_POS_Y);
 
-	FntOpen(16, 180, 240, 96, 0, 512);
-	
+	FntOpen(16, 90, 240, 180, 0, 512);
+
     // Lighting setup
     
     SetColorMatrix(&cmat);
@@ -1113,17 +1161,14 @@ void display(void){
 
     ResetGraph(1);
 
-
     PutDispEnv(&disp[db]);
+    
     PutDrawEnv(&draw[db]);
 
     SetDispMask(1);
     
     // Main OT
     DrawOTag(otdisc[db] + OT2LEN - 1);
-    
-    // Secondary OT
-    //~ DrawOTag(ot[db] + OTLEN - 1);
     
     db = !db;
 
@@ -1965,7 +2010,7 @@ VECTOR getVectorTo( VECTOR actor, VECTOR target ) {
 
 void worldToScreen( VECTOR * worldPos, VECTOR * screenPos ) {
 	
-    int	distToScreen; // corresponds to FOV
+    int	distToScreen;    // corresponds to FOV
 	
     MATRIX	curRot;      // current rotation matrix
 	
@@ -1977,53 +2022,68 @@ void worldToScreen( VECTOR * worldPos, VECTOR * screenPos ) {
 	
 	// Get Rotation, Translation coordinates, apply perspective correction
     
-    // Muliply world coordinates vector by current rotation matrix, store in s
+    // Muliply world coordinates vector by current rotation matrix, store in screenPos
     
 	ApplyMatrixLV(&curRot, worldPos, screenPos);
     
-    // Get world translation vectors from rot and add to s.vx, vy, vz
+    // Get world translation vectors from rot and add to screenPos vx, vy, vz
 	
     applyVector(screenPos, curRot.t[0], curRot.t[1], curRot.t[2], +=);
 	
     // Correct perspective
     
-    screenPos -> vz = distToScreen; // Start with vz to avoid division by 0 below
-    
-    screenPos -> vx = screenPos -> vx * distToScreen / ( screenPos -> vz );
+    screenPos -> vx = screenPos -> vx * distToScreen / ( screenPos -> vz + 1 ) ; // Add 1 to avoid division by 0
 	
-    screenPos -> vy = screenPos -> vy * distToScreen / ( screenPos -> vz ); 
+    screenPos -> vy = screenPos -> vy * distToScreen / ( screenPos -> vz + 1 ) ; 
+    
+    screenPos -> vz = distToScreen ;
     
 };
 
 void screenToWorld( VECTOR * screenPos, VECTOR * worldPos ) {
 	
-    int	distToScreen; // corresponds to FOV
+    int	distToScreen;           // corresponds to FOV
 	
-    MATRIX	curRot, rotT;      // current rotation matrix
+    MATRIX	curRot, invRot;    // current rotation matrix, transpose matrix
 	
-    VECTOR curTrans;
+    VECTOR Trans;               // working translation vector
     
-	// Get current matrix and projection */
+	// Get current matrix and projection
     
 	distToScreen = ReadGeomScreen();	
 
-	ReadRotMatrix(&curRot);
+	ReadRotMatrix( &curRot );
 
-    PushMatrix();
+    PushMatrix();               // Store matrix on the stack (slow!)
 	
-    // Get current translation
+    //// worldTrans = invRot * (screenPos - Rot.t)
     
-    curTrans.vx = screenPos->vx - curRot.t[0];
-
-    curTrans.vy = screenPos->vy - curRot.t[1];
-
-    curTrans.vz = screenPos->vz - curRot.t[2];
-
-    TransposeMatrix(&curRot, &rotT);
+    // Get world translation
     
-    // 
+    Trans.vx = screenPos->vx - curRot.t[0]; // Substract world translation from screenpos
+
+    Trans.vy = screenPos->vy - curRot.t[1];
+
+    Trans.vz = screenPos->vz - curRot.t[2];
     
-    ApplyMatrixLV(&rotT, &curTrans, worldPos);
+    
+    // We want the inverse of the current rotation matrix.
+    //
+    // Inverse matrix : M^-1 = 1 / detM * T(M)
+    // We know that the determinant of a rotation matrix is 1, thus:
+    // M^-1 = T(M) 
+    //
+    // Get transpose of current rotation matrix
+    // > The transpose of a matrix is a new matrix whose rows are the columns of the original.
+    // https://www.quora.com/What-is-the-geometric-interpretation-of-the-transpose-of-a-matrix
+    
+    TransposeMatrix( &curRot, &invRot );
+
+    // Multiply the transpose of current rotation matrix by the current translation vector
+    
+    ApplyMatrixLV( &invRot, &Trans, worldPos );
+    
+    // Get original rotation matrix back
     
     PopMatrix();
     
