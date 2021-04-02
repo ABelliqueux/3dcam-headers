@@ -291,11 +291,15 @@ SVECTOR SVlerp(SVECTOR start, SVECTOR end, int factor); // FIXME
 
 VECTOR getVectorTo(VECTOR actor, VECTOR target);
 
-int alignAxisToVect(VECTOR target, short axis, int factor);
+//~ int alignAxisToVect(VECTOR target, short axis, int factor);
 
 void worldToScreen( VECTOR * worldPos, VECTOR * screenPos );
 
 void screenToWorld( VECTOR * screenPos, VECTOR * worldPos );
+
+short checkLineW( VECTOR * pointA, VECTOR * pointB, MESH * mesh );
+
+short checkLineS( VECTOR * pointA, VECTOR * pointB, MESH * mesh );
 
 // Drawing
 
@@ -462,16 +466,6 @@ int main() {
 
         // Sprite system WIP
 
-        //~ posToCam = getVectorTo(*meshPlan.pos, camera.pos);
-        
-        //~ posToCam = getVectorTo(camera.pos, *meshPlan.pos);
-
-        posToCam.vx = -camera.pos.vx - modelPlan_pos.vx ;
-        posToCam.vz = -camera.pos.vz - modelPlan_pos.vz ;
-        posToCam.vy = -camera.pos.vy - modelPlan_pos.vy ;
-        
-        //~ psqrt(posToCam.vx * posToCam.vx + posToCam.vy * posToCam.vy);
-        
         objAngleToCam.vy = patan( posToCam.vx,posToCam.vz );
         objAngleToCam.vx = patan( posToCam.vx,posToCam.vy );
 
@@ -483,8 +477,18 @@ int main() {
         //~ meshPlan.rot->vx = ( (objAngleToCam.vx >> 4) - 3076 ) * ( (objAngleToCam.vz >> 4) - 3076 ) >> 12 ;
         
         meshPlan.rot->vy = -( (objAngleToCam.vy >> 4) + 1024 ) ;
+
+        //~ posToCam = getVectorTo(*meshPlan.pos, camera.pos);
         
-        // Actor Forward vector 
+        //~ posToCam = getVectorTo(camera.pos, *meshPlan.pos);
+
+        posToCam.vx = -camera.pos.vx - modelPlan_pos.vx ;
+        posToCam.vz = -camera.pos.vz - modelPlan_pos.vz ;
+        posToCam.vy = -camera.pos.vy - modelPlan_pos.vy ;
+        
+        //~ psqrt(posToCam.vx * posToCam.vx + posToCam.vy * posToCam.vy);
+        
+        // Actor Forward vector for 3d relative orientation
 
         fVecActor = *actorPtr->pos;
         
@@ -585,22 +589,25 @@ int main() {
             
             if (camPtr->tim_data){
             
+                 checkLineW( &camAngles[ curCamAngle ]->fw.v3, &camAngles[ curCamAngle ]->fw.v2, actorPtr);
+            
                 if ( camAngles[ curCamAngle ]->fw.v0.vx ) {
                     
-                    //~ FntPrint("v3 : %d, v2 : %d\n", camAngles[ curCamAngle ]->fw.v3.vx, camAngles[ curCamAngle ]->fw.v2.vx); 
-                    //~ FntPrint("v1 : %d, v2 : %d\n", camAngles[ curCamAngle ]->fw.v1.vy, camAngles[ curCamAngle ]->fw.v2.vy); 
-
+                    //~ FntPrint("BL x : %d, y : %d\n", camAngles[ curCamAngle ]->fw.v3.vx, camAngles[ curCamAngle ]->fw.v3.vy); 
+                    //~ FntPrint("BR x : %d, y : %d\n", camAngles[ curCamAngle ]->fw.v2.vx, camAngles[ curCamAngle ]->fw.v2.vy); 
+                    
+                    //~ FntPrint("Pos : %d\n", checkLineW( &camAngles[ curCamAngle ]->fw.v3, &camAngles[ curCamAngle ]->fw.v2, actorPtr) );
+                    
+                    //~ FntPrint("Pos : %d\n", checkLineW( &camAngles[ curCamAngle ]->bw.v2, &camAngles[ curCamAngle ]->bw.v3, actorPtr) );
                     // If actor in camAngle->fw area of screen
                     
-                    if ( actorPtr->pos2D.vx + CENTERX > camAngles[ curCamAngle ]->fw.v3.vx &&  
+                    if ( checkLineW( &camAngles[ curCamAngle ]->fw.v3, &camAngles[ curCamAngle ]->fw.v2, actorPtr) == -1  && 
                          
-                         actorPtr->pos2D.vx + CENTERX < camAngles[ curCamAngle ]->fw.v2.vx &&
-                         
-                         actorPtr->pos2D.vy + CENTERY > camAngles[ curCamAngle ]->fw.v3.vy &&  
-                         
-                         actorPtr->pos2D.vy + CENTERY < camAngles[ curCamAngle ]->fw.v2.vy
-                          
-                        ) { 
+                         ( checkLineW( &camAngles[ curCamAngle ]->bw.v2, &camAngles[ curCamAngle ]->bw.v3, actorPtr) >= 0 
+                    
+                           ) 
+                    
+                       ) { 
                     
                         if (curCamAngle < 5) {
 
@@ -618,20 +625,18 @@ int main() {
                 
                 if ( camAngles[ curCamAngle ]->bw.v0.vx ) {
                     
-                    FntPrint("v3 : %d, v3 : %d\n", camAngles[ curCamAngle ]->bw.v3.vx, camAngles[ curCamAngle ]->bw.v3.vy); 
-                    FntPrint("v2 : %d, v2 : %d\n", camAngles[ curCamAngle ]->bw.v2.vx, camAngles[ curCamAngle ]->bw.v2.vy);
+                    FntPrint("BL x : %d, y : %d\n", camAngles[ curCamAngle ]->bw.v3.vx, camAngles[ curCamAngle ]->bw.v3.vy); 
+                    FntPrint("BR x : %d, y : %d\n", camAngles[ curCamAngle ]->bw.v2.vx, camAngles[ curCamAngle ]->bw.v2.vy); 
+                    
+                    //~ // FntPrint("Pos : %d\n", checkLineW( &camAngles[ curCamAngle ]->bw.v2, &camAngles[ curCamAngle ]->bw.v3, actorPtr) );
                 
                     // If actor in camAngle->bw area of screen
                     
-                    if ( actorPtr->pos2D.vx + CENTERX < camAngles[ curCamAngle ]->bw.v3.vx &&  
+                    if ( checkLineW( &camAngles[ curCamAngle ]->fw.v3, &camAngles[ curCamAngle ]->fw.v2, actorPtr) >= 0  && 
                          
-                         actorPtr->pos2D.vx + CENTERX > camAngles[ curCamAngle ]->bw.v2.vx &&
+                         checkLineW( &camAngles[ curCamAngle ]->bw.v2, &camAngles[ curCamAngle ]->bw.v3, actorPtr) == -1 
                     
-                         actorPtr->pos2D.vy + CENTERY < camAngles[ curCamAngle ]->bw.v3.vy &&  
-                     
-                         actorPtr->pos2D.vy + CENTERY > camAngles[ curCamAngle ]->bw.v2.vy
-                      
-                        ) { 
+                       ) {
             
                         if (curCamAngle > 0) {
 
@@ -1061,9 +1066,9 @@ int main() {
         FntPrint("%d\n", curCamAngle );
         //~ FntPrint("Actor    : %d %d\n", actorPtr->pos->vx, actorPtr->pos->vy);
         
-        FntPrint("%d %d\n", actorPtr->pos->vx, actorPtr->pos->vy);
-        FntPrint("%d %d\n", actorPtr->pos2D.vx + CENTERX, actorPtr->pos2D.vy + CENTERY);
-        
+        FntPrint("%d %d\n", actorPtr->pos->vx, actorPtr->pos->vz);
+        //~ FntPrint("%d %d\n", actorPtr->pos2D.vx + CENTERX, actorPtr->pos2D.vy + CENTERY);
+
         //~ FntPrint(" %d %d %d\n", wp.vx, wp.vy, wp.vz);
         
         FntFlush(-1);
@@ -2005,7 +2010,6 @@ VECTOR getVectorTo( VECTOR actor, VECTOR target ) {
 
 };
 
-
 // From 'psyq/addons/graphics/ZIMEN/CLIP.C'
 
 void worldToScreen( VECTOR * worldPos, VECTOR * screenPos ) {
@@ -2088,6 +2092,134 @@ void screenToWorld( VECTOR * screenPos, VECTOR * worldPos ) {
     PopMatrix();
     
 };
+
+short checkLineW( VECTOR * pointA, VECTOR * pointB, MESH * mesh ) {
+
+    long val1 = ( ( mesh->body->position.vx + mesh->body->min.vx ) - pointA->vx ) * ( pointB->vy - pointA->vy ) - ( ( mesh->body->position.vz  + mesh->body->min.vy ) - pointA->vy ) * ( pointB->vx - pointA->vx ) ;
+    
+    long val2 = ( ( mesh->body->position.vx + mesh->body->max.vx ) - pointA->vx ) * ( pointB->vy - pointA->vy ) - ( ( mesh->body->position.vz  + mesh->body->max.vy ) - pointA->vy ) * ( pointB->vx - pointA->vx ) ;
+                
+    if ( val1 > 0 && val2 > 0 ) {
+        
+        // right
+        return 1;
+    }
+        
+    else if ( val1 < 0 && val2 < 0  ) {
+        
+        // left
+        return -1;
+    }
+        
+    else if ( val1 == 0 && val2 == 0 ) {
+        
+        // identical 
+        return 0;
+    }
+        
+    else if ( 
+            
+            ( val1 > 0  && val2 == 0 ) || 
+            
+            ( val1 == 0 && val2 > 0 ) 
+            
+            ) {
+        
+        // right
+        return 1;
+    }
+        
+    else if ( 
+         
+            ( val1 < 0  && val2 == 0 ) ||
+         
+            ( val1 == 0 && val2 < 0 ) 
+         
+            ) {
+        
+        // left
+        return -1;
+    }
+        
+    else if ( 
+         
+            ( val1 < 0 && val2 > 0 ) ||
+         
+            ( val1 > 0 && val2 < 0 ) 
+         
+            ) {
+        
+        // intersect
+        return 3;
+    }
+    
+};
+
+// Screen space variant
+short checkLineS( VECTOR * pointA, VECTOR * pointB, MESH * mesh ) {
+
+    // FIXME : mesh->body->min.vx is not in screen space
+    
+    int val1 = ( ( mesh->pos2D.vx + mesh->body->min.vx ) - pointA->vx ) * ( pointB->vy - pointA->vy ) - ( ( mesh->pos2D.vy  + mesh->body->min.vy ) - pointA->vy ) * ( pointB->vx - pointA->vx ) ;
+            
+    int val2 = ( ( mesh->pos2D.vx + mesh->body->max.vx ) - pointA->vx ) * ( pointB->vy - pointA->vy ) - ( ( mesh->pos2D.vy  + mesh->body->max.vy ) - pointA->vy ) * ( pointB->vx - pointA->vx ) ;
+            
+    if ( val1 > 0 && val2 > 0 ) {
+        
+        // right
+        return 1;
+    }
+        
+    else if ( val1 < 0 && val2 < 0 ) {
+        
+        // left
+        return -1;
+    }
+        
+    else if ( val1 == 0 && val2 == 0 ) {
+        
+        // identical
+        return 2;
+    }
+        
+    else if ( 
+            
+            ( val1 > 0  && val2 == 0 ) || 
+            
+            ( val1 == 0 && val2 > 0 ) 
+            
+            ) {
+        
+        // right
+        return 1;
+    }
+        
+    else if ( 
+         
+            ( val1 < 0  && val2 == 0 ) ||
+         
+            ( val1 == 0 && val2 < 0 ) 
+         
+            ) {
+        
+        // left
+        return -1;
+    }
+        
+    else if ( 
+         
+            ( val1 < 0 && val2 > 0 ) ||
+         
+            ( val1 > 0 && val2 < 0 ) 
+         
+            ) {
+        
+        // intersect
+        return 3;
+    }
+    
+};
+
     
 //~ int alignAxisToVect(VECTOR target, short axis, int factor){    
     //~ }
