@@ -115,12 +115,12 @@ CAMPOS camPos_camPath = {
 };
 
 CAMPOS camPos_camPath_001 = {
-	{520,101,113},
+	{490,101,113},
 	{282,-192,0}
 };
 
 CAMPOS camPos_camPath_002 = {
-	{166,309,-48},
+	{221,309,-48},
 	{866,0,0}
 };
 
@@ -145,7 +145,7 @@ CAMPATH camPath = {
 	0,
 	{
 		{-205,156,-17},
-		{166,309,-48},
+		{221,309,-48},
 		{-159,57,61},
 		{-208,216,-86},
 		{-167,160,-624}
@@ -11126,14 +11126,12 @@ CAMANGLE camAngle_camPath = {
 	&tim_bg_camPath,
 	_binary_TIM_bg_camPath_tim_start,
 	// Write quad NW, NE, SE, SW
-// <bpy_struct, Object("Portal.001")>
 	{
-		{ -112, 185, 166, 0 },
-		{ -112, -41, 166, 0 },
-		{ -113, -40, 15, 0 },
-		{ -113, 185, 15, 0 }
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 },
+		{ 0, 0, 0, 0 }
 	},
-// <bpy_struct, Object("Portal.002")>
 	{
 		{ -45, 206, 142, 0 },
 		{ 186, 198, 142, 0 },
@@ -11168,12 +11166,11 @@ CAMANGLE camAngle_camPath_001 = {
 		{ 0, 0, 0, 0 },
 		{ 0, 0, 0, 0 }
 	},
-// <bpy_struct, Object("Portal")>
 	{
-		{ -399, 176, 118, 0 },
-		{ -399, -50, 118, 0 },
-		{ -399, -49, 15, 0 },
-		{ -399, 176, 15, 0 }
+		{ -368, 176, 118, 0 },
+		{ -368, -50, 118, 0 },
+		{ -368, -49, 15, 0 },
+		{ -368, 176, 15, 0 }
 	},
 	2,
 	{
@@ -11193,26 +11190,22 @@ CAMANGLE camAngle_camPath_002 = {
 	&tim_bg_camPath_002,
 	_binary_TIM_bg_camPath_002_tim_start,
 	// Write quad NW, NE, SE, SW
-// <bpy_struct, Object("Portal")>
 	{
-		{ -399, 176, 118, 0 },
-		{ -399, -50, 118, 0 },
-		{ -399, -49, 15, 0 },
-		{ -399, 176, 15, 0 }
+		{ -368, 176, 118, 0 },
+		{ -368, -50, 118, 0 },
+		{ -368, -49, 15, 0 },
+		{ -368, 176, 15, 0 }
 	},
-// <bpy_struct, Object("Portal.001")>
 	{
 		{ -112, 185, 166, 0 },
 		{ -112, -41, 166, 0 },
 		{ -113, -40, 15, 0 },
 		{ -113, 185, 15, 0 }
 	},
-	5,
+	3,
 	{
 		&meshCube,
-		&meshLara,
 		&meshPlan,
-		&meshSphere_001,
 		&meshSphere
 	}
 };
@@ -11228,14 +11221,12 @@ CAMANGLE camAngle_camPath_003 = {
 	&tim_bg_camPath_003,
 	_binary_TIM_bg_camPath_003_tim_start,
 	// Write quad NW, NE, SE, SW
-// <bpy_struct, Object("Portal.001")>
 	{
 		{ -112, 185, 166, 0 },
 		{ -112, -41, 166, 0 },
 		{ -113, -40, 15, 0 },
 		{ -113, 185, 15, 0 }
 	},
-// <bpy_struct, Object("Portal.002")>
 	{
 		{ -45, 206, 142, 0 },
 		{ 186, 198, 142, 0 },
@@ -11263,14 +11254,12 @@ CAMANGLE camAngle_camPath_004 = {
 	&tim_bg_camPath_004,
 	_binary_TIM_bg_camPath_004_tim_start,
 	// Write quad NW, NE, SE, SW
-// <bpy_struct, Object("Portal.001")>
 	{
 		{ -112, 185, 166, 0 },
 		{ -112, -41, 166, 0 },
 		{ -113, -40, 15, 0 },
 		{ -113, 185, 15, 0 }
 	},
-// <bpy_struct, Object("Portal.002")>
 	{
 		{ -45, 206, 142, 0 },
 		{ 186, 198, 142, 0 },
@@ -11299,7 +11288,6 @@ CAMANGLE camAngle_camPath_005 = {
 	&tim_bg_camPath_005,
 	_binary_TIM_bg_camPath_005_tim_start,
 	// Write quad NW, NE, SE, SW
-// <bpy_struct, Object("Portal.002")>
 	{
 		{ -45, 206, 142, 0 },
 		{ 186, 198, 142, 0 },
@@ -11329,13 +11317,73 @@ CAMANGLE * camAngles[6] = {
 	&camAngle_camPath_005,
 };
 
+NODE nodegnd_003;
+
+NODE nodegnd_001;
+
 NODE nodegnd_002;
 
 NODE nodegnd;
 
-NODE nodegnd_001;
+SIBLINGS nodegnd_003_siblings = {
+	1,
+	{
+		&nodegnd
+	}
+};
 
-NODE nodegnd_003;
+CHILDREN nodegnd_003_objects = {
+	0,
+	{
+		0
+	}
+};
+
+CHILDREN nodegnd_003_rigidbodies = {
+	2,
+	{
+		&meshSphere,
+		&meshSphere_001
+	}
+};
+
+NODE nodegnd_003 = {
+	&meshgnd_003,
+	&nodegnd_003_siblings,
+	&nodegnd_003_objects,
+	&nodegnd_003_rigidbodies
+};
+
+SIBLINGS nodegnd_001_siblings = {
+	1,
+	{
+		&nodegnd
+	}
+};
+
+CHILDREN nodegnd_001_objects = {
+	3,
+	{
+		&meshwall_002,
+		&meshwall_003,
+		&meshCylindre
+	}
+};
+
+CHILDREN nodegnd_001_rigidbodies = {
+	2,
+	{
+		&meshSphere,
+		&meshSphere_001
+	}
+};
+
+NODE nodegnd_001 = {
+	&meshgnd_001,
+	&nodegnd_001_siblings,
+	&nodegnd_001_objects,
+	&nodegnd_001_rigidbodies
+};
 
 SIBLINGS nodegnd_002_siblings = {
 	1,
@@ -11369,21 +11417,21 @@ NODE nodegnd_002 = {
 SIBLINGS nodegnd_siblings = {
 	3,
 	{
-		&nodegnd_001,
+		&nodegnd_003,
 		&nodegnd_002,
-		&nodegnd_003
+		&nodegnd_001
 	}
 };
 
 CHILDREN nodegnd_objects = {
 	6,
 	{
-		&meshSphere_001,
-		&meshCube,
+		&meshPlan,
 		&meshwall_001,
 		&meshwall,
+		&meshSphere_001,
 		&meshLara,
-		&meshPlan
+		&meshCube
 	}
 };
 
@@ -11400,66 +11448,6 @@ NODE nodegnd = {
 	&nodegnd_siblings,
 	&nodegnd_objects,
 	&nodegnd_rigidbodies
-};
-
-SIBLINGS nodegnd_001_siblings = {
-	1,
-	{
-		&nodegnd
-	}
-};
-
-CHILDREN nodegnd_001_objects = {
-	3,
-	{
-		&meshwall_003,
-		&meshwall_002,
-		&meshCylindre
-	}
-};
-
-CHILDREN nodegnd_001_rigidbodies = {
-	2,
-	{
-		&meshSphere,
-		&meshSphere_001
-	}
-};
-
-NODE nodegnd_001 = {
-	&meshgnd_001,
-	&nodegnd_001_siblings,
-	&nodegnd_001_objects,
-	&nodegnd_001_rigidbodies
-};
-
-SIBLINGS nodegnd_003_siblings = {
-	1,
-	{
-		&nodegnd
-	}
-};
-
-CHILDREN nodegnd_003_objects = {
-	0,
-	{
-		0
-	}
-};
-
-CHILDREN nodegnd_003_rigidbodies = {
-	2,
-	{
-		&meshSphere,
-		&meshSphere_001
-	}
-};
-
-NODE nodegnd_003 = {
-	&meshgnd_003,
-	&nodegnd_003_siblings,
-	&nodegnd_003_objects,
-	&nodegnd_003_rigidbodies
 };
 
 MESH * actorPtr = &meshSphere;

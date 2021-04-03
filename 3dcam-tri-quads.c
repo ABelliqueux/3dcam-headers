@@ -28,13 +28,15 @@
 #include <stdint.h>
 #include <stddef.h>
 
-// Precalculated sin/cos values
+// Precalculated arctan values
 
 #include "atan.c"
 
 // Sample level
 
 #include "coridor2.c"
+
+//
 
 #define VMODE       0
 
@@ -625,8 +627,9 @@ int main() {
                 
                 if ( camAngles[ curCamAngle ]->bw.v0.vx ) {
                     
-                    FntPrint("BL x : %d, y : %d\n", camAngles[ curCamAngle ]->bw.v3.vx, camAngles[ curCamAngle ]->bw.v3.vy); 
-                    FntPrint("BR x : %d, y : %d\n", camAngles[ curCamAngle ]->bw.v2.vx, camAngles[ curCamAngle ]->bw.v2.vy); 
+                    //~ FntPrint("BL x : %d, y : %d\n", camAngles[ curCamAngle ]->bw.v3.vx, camAngles[ curCamAngle ]->bw.v3.vy); 
+                    
+                    //~ FntPrint("BR x : %d, y : %d\n", camAngles[ curCamAngle ]->bw.v2.vx, camAngles[ curCamAngle ]->bw.v2.vy); 
                     
                     //~ // FntPrint("Pos : %d\n", checkLineW( &camAngles[ curCamAngle ]->bw.v2, &camAngles[ curCamAngle ]->bw.v3, actorPtr) );
                 
@@ -842,6 +845,7 @@ int main() {
             // Actor
         
             if ( !getIntCollision( *actorPtr->body , *curNode->siblings->list[msh]->plane->body).vx &&
+            
                  !getIntCollision( *actorPtr->body , *curNode->siblings->list[msh]->plane->body).vz )
             {
             
@@ -1062,11 +1066,11 @@ int main() {
 
         //~ FntPrint("CurNode : %x\nIndex: %d", curNode, curNode->siblings->index);
         
-        FntPrint("Time    : %d dt :%d\n", VSync(-1) / 60, dt);
-        FntPrint("%d\n", curCamAngle );
+        //~ FntPrint("Time    : %d dt :%d\n", VSync(-1) / 60, dt);
+        //~ FntPrint("%d\n", curCamAngle );
         //~ FntPrint("Actor    : %d %d\n", actorPtr->pos->vx, actorPtr->pos->vy);
         
-        FntPrint("%d %d\n", actorPtr->pos->vx, actorPtr->pos->vz);
+        //~ FntPrint("%d %d\n", actorPtr->pos->vx, actorPtr->pos->vz);
         //~ FntPrint("%d %d\n", actorPtr->pos2D.vx + CENTERX, actorPtr->pos2D.vy + CENTERY);
 
         //~ FntPrint(" %d %d %d\n", wp.vx, wp.vy, wp.vz);
@@ -1396,6 +1400,8 @@ void drawPoly(MESH * mesh, long * Flag, int atime){
                     SetPolyGT3( poly );
                     
                     // If isPrism flag is set, use it
+
+                    // FIXME : Doesn't work in 8bpp/4bpp
 
                     if ( *mesh->isPrism ) { 
                         
@@ -1940,7 +1946,9 @@ void drawBG(void){
         
             camPtr->BGtim->mode & 0x3, 0,       
         
-            camPtr->BGtim->prect->x + 128, 
+            // X offset width depends on TIM's mode
+        
+            camPtr->BGtim->prect->x + ( 64 << ( camPtr->BGtim->mode & 0x3 ) ), 
             
             camPtr->BGtim->prect->y
     
