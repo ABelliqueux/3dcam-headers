@@ -56,7 +56,7 @@
 
 #define FNT_POS_X 960
 
-#define FNT_POS_Y 0
+#define FNT_POS_Y 256
 
 
 #define OT2LEN	    8	                   
@@ -227,7 +227,7 @@ u_short timer = 0;
 
 // Cam stuff 
 
-int camMode = 2;
+int camMode = 5;
 
 long timeB = 0;
 
@@ -469,6 +469,7 @@ int main() {
         // Sprite system WIP
 
         objAngleToCam.vy = patan( posToCam.vx,posToCam.vz );
+        
         objAngleToCam.vx = patan( posToCam.vx,posToCam.vy );
 
         //~ objAngleToCam.vz = patan( posToCam.vz,posToCam.vy );
@@ -485,7 +486,9 @@ int main() {
         //~ posToCam = getVectorTo(camera.pos, *meshPlan.pos);
 
         posToCam.vx = -camera.pos.vx - modelPlan_pos.vx ;
+        
         posToCam.vz = -camera.pos.vz - modelPlan_pos.vz ;
+        
         posToCam.vy = -camera.pos.vy - modelPlan_pos.vy ;
         
         //~ psqrt(posToCam.vx * posToCam.vx + posToCam.vy * posToCam.vy);
@@ -519,6 +522,7 @@ int main() {
         }
         
         // Camera follows actor with lerp for rotations
+        
         if(camMode == 0) {
             
             dist = 150;
@@ -548,6 +552,7 @@ int main() {
         }
         
         // Camera rotates continuously around actor
+        
         if (camMode == 1) {                      
             
             dist = 150;
@@ -742,6 +747,8 @@ int main() {
             // track actor. If theta (actor/cam rotation angle) is above or below an arbitrary angle, 
             // move cam so that the angle doesn't increase/decrease anymore.
             
+            short cameraSpeed = 40;
+            
             if (camPath.len) {
          
             // Lerping sequence has not begun
@@ -784,17 +791,17 @@ int main() {
                 //~ FntPrint("Cam %d, %d, %d\n", camera.pos.vx, camera.pos.vy, camera.pos.vz);
                 //~ FntPrint("Pos: %d Cur: %d\nTheta y: %d x: %d\n", camPath.pos, camPath.cursor, theta.vy, theta.vx);
 
-                //~ FntPrint("%d", camAngleToAct.vy);
+                FntPrint("%d %d\n", camAngleToAct.vy, dist);
 
                 if ( camAngleToAct.vy < -50 ) {  
           
-                    camPath.pos += 40;
+                    camPath.pos += dist < cameraSpeed ? 0 : cameraSpeed ;
           
                 }
           
                 if ( camAngleToAct.vy > 50 ) {  
           
-                    camPath.pos -= 40;
+                    camPath.pos -= dist < cameraSpeed ? 0 : cameraSpeed;
           
                 }
                 
@@ -1066,8 +1073,8 @@ int main() {
 
         //~ FntPrint("CurNode : %x\nIndex: %d", curNode, curNode->siblings->index);
         
-        //~ FntPrint("Time    : %d dt :%d\n", VSync(-1) / 60, dt);
-        //~ FntPrint("%d\n", curCamAngle );
+        FntPrint("Time    : %d dt :%d\n", VSync(-1) / 60, dt);
+        FntPrint("%d\n", curCamAngle );
         //~ FntPrint("Actor    : %d %d\n", actorPtr->pos->vx, actorPtr->pos->vy);
         
         //~ FntPrint("%d %d\n", actorPtr->pos->vx, actorPtr->pos->vz);
@@ -1401,7 +1408,7 @@ void drawPoly(MESH * mesh, long * Flag, int atime){
                     
                     // If isPrism flag is set, use it
 
-                    // FIXME : Doesn't work in 8bpp/4bpp
+                    // FIXME : Doesn't work with pre-rendered BGs
 
                     if ( *mesh->isPrism ) { 
                         
@@ -1416,19 +1423,19 @@ void drawPoly(MESH * mesh, long * Flag, int atime){
                                                                  draw[db].clip.y
                                                        );
                         
-                        // Use projected coordinates (results from RotAverage...) as UV coords and clamp them to 0-255,0-224 
+                        // Use projected coordinates (results from RotAverage...) as UV coords and clamp them to 0-255,0-224 Why 224 though ?
 
-                        setUV3(poly,  (poly->x0 < 0? 0 : poly->x0 > 255? 255 : poly->x0),
+                        setUV3(poly,  (poly->x0 < 0 ? 0 : poly->x0 > 255 ? 255 : poly->x0),
                          
-                                      (poly->y0 < 0? 0 : poly->y0 > 224? 224 : poly->y0), 
+                                      (poly->y0 < 0 ? 0 : poly->y0 > 240 ? 240 : poly->y0), 
                         
-                                      (poly->x1 < 0? 0 : poly->x1 > 255? 255 : poly->x1), 
+                                      (poly->x1 < 0 ? 0 : poly->x1 > 255 ? 255 : poly->x1), 
                         
-                                      (poly->y1 < 0? 0 : poly->y1 > 224? 224 : poly->y1), 
+                                      (poly->y1 < 0 ? 0 : poly->y1 > 240 ? 240 : poly->y1), 
                         
-                                      (poly->x2 < 0? 0 : poly->x2 > 255? 255 : poly->x2), 
+                                      (poly->x2 < 0 ? 0 : poly->x2 > 255 ? 255 : poly->x2), 
                         
-                                      (poly->y2 < 0? 0 : poly->y2 > 224? 224 : poly->y2)
+                                      (poly->y2 < 0 ? 0 : poly->y2 > 240 ? 240 : poly->y2)
                         
                                       );
                         
