@@ -786,11 +786,7 @@ int main() {
          
                 camera.pos.vz = lerpD(camPath.points[camPath.cursor].vz << precision, camPath.points[camPath.cursor + 1].vz << precision, camPath.pos << precision) >> precision;
                 
-                //~ FntPrint("Cam %d, %d\n", (int32_t)camPath.points[camPath.cursor].vx, camPath.points[camPath.cursor+1].vx);
-                //~ FntPrint("Cam %d, %d, %d\n", camera.pos.vx, camera.pos.vy, camera.pos.vz);
-                //~ FntPrint("Pos: %d Cur: %d\nTheta y: %d x: %d\n", camPath.pos, camPath.cursor, theta.vy, theta.vx);
-
-                FntPrint("%d %d %d %d\n", camAngleToAct.vy, camera.pos.vx, camera.rot.vy, dist);
+                //~ FntPrint("%d %d %d %d\n", camAngleToAct.vy, camera.pos.vx, camera.rot.vy, dist);
 
                 // Ony move cam if position is between first camPath.vx and last camPath.vx
 
@@ -816,7 +812,6 @@ int main() {
           
                     camPath.cursor ++;
           
-                    //~ camPath.dir = 1;
                 } 
                 
                 if (camPath.pos < -100 ){
@@ -825,7 +820,6 @@ int main() {
           
                     camPath.cursor --;
                 
-                    //~ camPath.dir *= -1;
                 }                   
                 
                 // Last key pos is reached, reset cursor to first key pos, lerping sequence is over
@@ -838,6 +832,7 @@ int main() {
                 }
                 
             } else { 
+                
                 // if no key pos exists, switch to next camMode
           
                 camMode ++;
@@ -846,8 +841,6 @@ int main() {
             
         }
     
-        //~ dt = time/180+1 - time/180;
-        
     // Spatial partitioning
         
         for ( int msh = 0; msh < curNode->siblings->index; msh ++ ) {
@@ -868,7 +861,7 @@ int main() {
             
             }
         
-            // FIXME !
+            // DONTNEED ?
             // Moveable prop
             
             //~ if ( !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vx &&
@@ -1005,28 +998,22 @@ int main() {
         
         if ( (camMode == 2) && (camPtr->tim_data ) ) {
       
-            //~ if (camPtr->tim_data){
+            drawBG();
+    
+            // Loop on camAngles
+        
+            for ( int mesh = 0 ; mesh < camAngles[ curCamAngle ]->index; mesh ++ ) {
                 
-                drawBG();
-        
-                // Loop on camAngles
-        
-                    for ( int mesh = 0 ; mesh < camAngles[ curCamAngle ]->index; mesh ++ ) {
-                        
-                        transformMesh(camAngles[curCamAngle]->objects[mesh]);
-                        
-                        drawPoly(camAngles[curCamAngle]->objects[mesh], &Flag, atime);
-                        
-                    }
+                transformMesh(camAngles[curCamAngle]->objects[mesh]);
                 
-                // Get screen coordinates of actor
-        
-            //~ }
+                drawPoly(camAngles[curCamAngle]->objects[mesh], &Flag, atime);
+                
+            }
+                
         }
         
         else {
-        //~ long t = 0;
-        
+            
         // Draw current node's plane
 
         drawPoly( curNode->plane, &Flag, atime);
@@ -1096,6 +1083,7 @@ int main() {
         
         FntPrint("Time    : %d dt :%d\n", VSync(-1) / 60, dt);
         FntPrint("%d\n", curCamAngle );
+       
         //~ FntPrint("Actor    : %d %d\n", actorPtr->pos->vx, actorPtr->pos->vy);
         
         //~ FntPrint("%d %d\n", actorPtr->pos->vx, actorPtr->pos->vz);
