@@ -227,7 +227,7 @@ u_short timer = 0;
 
 // Cam stuff 
 
-int camMode = 5;
+int camMode = 0;
 
 long timeB = 0;
 
@@ -395,10 +395,6 @@ int main() {
     
     VECTOR objAngleToCam = {0, 0, 0, 0};
     
-    //~ long objAngleToCam = 0;
-    
-    
-    
     int angle     = 0;                      //PSX units = 4096 == 360° = 2Pi
     
     int dist      = 0;                      //PSX units 
@@ -473,10 +469,13 @@ int main() {
         objAngleToCam.vx = patan( posToCam.vx,posToCam.vy );
 
         //~ objAngleToCam.vz = patan( posToCam.vz,posToCam.vy );
+        
         //~ objAngleToCam.vx = patan( psqrt(posToCam.vx * posToCam.vx + posToCam.vy * posToCam.vy), posToCam.vy );
 
         //~ meshPlan.rot->vx = -( (objAngleToCam.vx >> 4) - 3076 ) ;
+        
         //~ meshPlan.rot->vx = (( (objAngleToCam.vx >> 4) - 3076 ) * ( (objAngleToCam.vz >> 4) - 3076 ) >> 12) * (nsin(posToCam.vz) >> 10 < 0 ? -1 : 1);
+        
         //~ meshPlan.rot->vx = ( (objAngleToCam.vx >> 4) - 3076 ) * ( (objAngleToCam.vz >> 4) - 3076 ) >> 12 ;
         
         meshPlan.rot->vy = -( (objAngleToCam.vy >> 4) + 1024 ) ;
@@ -772,7 +771,7 @@ int main() {
                     camPath.pos = 0;
                     
                     }
-                    
+                
                 // Pre calculated sqrt ( see psqrt() )
                 
                 dist = psqrt( (posToActor.vx * posToActor.vx ) + (posToActor.vz * posToActor.vz));
@@ -791,15 +790,19 @@ int main() {
                 //~ FntPrint("Cam %d, %d, %d\n", camera.pos.vx, camera.pos.vy, camera.pos.vz);
                 //~ FntPrint("Pos: %d Cur: %d\nTheta y: %d x: %d\n", camPath.pos, camPath.cursor, theta.vy, theta.vx);
 
-                FntPrint("%d %d\n", camAngleToAct.vy, dist);
+                FntPrint("%d %d %d %d\n", camAngleToAct.vy, camera.pos.vx, camera.rot.vy, dist);
 
-                if ( camAngleToAct.vy < -50 ) {  
+                // Ony move cam if position is between first camPath.vx and last camPath.vx
+
+                if ( camAngleToAct.vy < -50 && camera.pos.vx > camPath.points[camPath.len - 1].vx ) {  
           
+                    // Clamp camPath position to cameraSpeed
+                    
                     camPath.pos += dist < cameraSpeed ? 0 : cameraSpeed ;
           
                 }
           
-                if ( camAngleToAct.vy > 50 ) {  
+                if ( camAngleToAct.vy > 50 && camera.pos.vx > camPath.points[camPath.cursor].vx ) {  
           
                     camPath.pos -= dist < cameraSpeed ? 0 : cameraSpeed;
           
@@ -865,21 +868,25 @@ int main() {
             
             }
         
-// FIXME !            //~ // Moveable prop
+            // FIXME !
+            // Moveable prop
             
-            //~ if (  !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vx &&
-                  //~ !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vz ) {
+            //~ if ( !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vx &&
+            
+                 //~ !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vz ) {
 
                 //~ if ( propPtr->node != curNode->siblings->list[ msh ]){
                     
                     //~ propPtr->node = curNode->siblings->list[ msh ];
                 //~ }
                 
-            //~ } else
-             if ( !getIntCollision( *propPtr->body , *curNode->plane->body).vx &&
-                        !getIntCollision( *propPtr->body , *curNode->plane->body).vz ) {
+            //~ }
             
-                    propPtr->node = curNode;
+            if ( !getIntCollision( *propPtr->body , *curNode->plane->body).vx &&
+            
+                 !getIntCollision( *propPtr->body , *curNode->plane->body).vz ) {
+            
+                propPtr->node = curNode;
             
             }
             
@@ -906,37 +913,51 @@ int main() {
                         col_lvl = getIntCollision( *meshes[k]->body , *levelPtr->body );
                         
                         
-                        //~ col_sphere = getIntCollision( *propPtr->body, *propPtr->node->plane->body );
+                        col_sphere = getIntCollision( *propPtr->body, *propPtr->node->plane->body );
                         
                         // col_sphere = getIntCollision( *propPtr->body, *levelPtr->body );
                         
                         col_sphere_act = getExtCollision( *actorPtr->body, *propPtr->body );
                         
-                        //~ // If no col with ground, fall off
+                        // If no col with ground, fall off
                 
                         if ( col_lvl.vy ) {
                         
-                            if (!col_lvl.vx && !col_lvl.vz){actorPtr->body->position.vy = actorPtr->body->min.vy;}
-                        
-                        }
-                        if (col_sphere.vy){
-                            if (!col_sphere.vx && !col_sphere.vz){propPtr->body->position.vy = propPtr->body->min.vy; }
-                        }
-                        
-                        if (col_sphere_act.vx && col_sphere_act.vz ){
-
-                            propPtr->body->velocity.vx += actorPtr->body->velocity.vx;// * ONE / propPtr->body->restitution ;
-                            propPtr->body->velocity.vz += actorPtr->body->velocity.vz;// * ONE / propPtr->body->restitution ;
+                            if ( !col_lvl.vx && !col_lvl.vz ) { 
+                                
+                                actorPtr->body->position.vy = actorPtr->body->min.vy;
                             
-                            if (propPtr->body->velocity.vx){
+                            }
+                        
+                        }
+                        
+                        if (col_sphere.vy){
+                        
+                            if ( !col_sphere.vx && !col_sphere.vz ) {
+                                
+                                propPtr->body->position.vy = propPtr->body->min.vy;
+                            
+                            }
+                        
+                        }
+                        
+                        if (col_sphere_act.vx && col_sphere_act.vz ) {
+
+                            propPtr->body->velocity.vx += actorPtr->body->velocity.vx;
+                            
+                            propPtr->body->velocity.vz += actorPtr->body->velocity.vz;
+                            
+                            if ( propPtr->body->velocity.vx ) {
                                 
                                 VECTOR L = angularMom(*propPtr->body);
+                                
                                 propPtr->rot->vz -= L.vx;
                             }
                             
-                            if (propPtr->body->velocity.vz){
+                            if ( propPtr->body->velocity.vz ) {
                                 
-                                VECTOR L = angularMom(*propPtr->body);
+                                VECTOR L = angularMom( *propPtr->body );
+                                
                                 propPtr->rot->vx -= L.vz;
                             }
                         }

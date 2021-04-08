@@ -13,7 +13,7 @@
   "emulator": {
     "8Megs": false,
     "AutoVideo": true,
-    "Bios": "/home/arthus/.epsxe/bios/openbios.bin",
+    "Bios": "/home/arthus/build/pcsx-redux/src/mips/openbios/openbios.bin",
     "BnWMdec": false,
     "CDDA": 1,
     "Debug": true,
@@ -22,7 +22,7 @@
     "GdbServer": true,
     "GdbServerPort": 3333,
     "GdbServerTrace": false,
-    "IsoPath": "/home/arthus/build/psx-stuff/roms/UNIROM_RELEASE_8.0.D",
+    "IsoPath": "/home/arthus/Jeux/emul/psx/Vagrant Story (USA)",
     "Locale": "",
     "Logfile": "",
     "Mcd1": "memcard1.mcd",
@@ -31,7 +31,7 @@
     "Mcd2Inserted": true,
     "Overlay": [],
     "PpfDir": "",
-    "PsxExe": "UNIROM_B.EXE;1",
+    "PsxExe": "SLUS_010.40;1",
     "RCntFix": false,
     "SioIrq": false,
     "SpuIrq": false,
@@ -53,5 +53,5 @@
     "WindowSizeX": 719,
     "WindowSizeY": 542
   },
-  "imgui": "[Window][Debug##Default]\nPos=60,60\nSize=400,400\nCollapsed=0\n\n[Window][Emulation Configuration]\nViewportPos=39,142\nViewportId=0xA515CB4B\nSize=316,619\nCollapsed=0\n\n[Window][Logs]\nViewportPos=-86,644\nViewportId=0x50BD6962\nSize=720,450\nCollapsed=0\n\n[Window][Soft GPU configuration]\nPos=288,182\nSize=300,200\nCollapsed=0\n\n[Window][Main VRAM Viewer]\nViewportPos=1157,-262\nViewportId=0xD2F1ACB4\nSize=1321,900\nCollapsed=0\n\n[Window][Registers]\nViewportPos=1244,-4\nViewportId=0xA4D966FE\nSize=493,512\nCollapsed=0\nDockId=0x00000002,0\n\n[Window][Breakpoints]\nViewportPos=1283,-4\nViewportId=0xA4D966FE\nPos=250,0\nSize=243,512\nCollapsed=0\nDockId=0x00000003,0\n\n[Window][Assembly]\nViewportPos=1077,89\nViewportId=0xE37F8D5D\nSize=623,751\nCollapsed=0\n\n[Window][Output]\nPos=160,48\nSize=810,532\nCollapsed=0\n\n[Window][About]\nPos=199,66\nSize=880,600\nCollapsed=0\n\n[Window][Dear ImGui Demo]\nPos=669,25\nSize=550,680\nCollapsed=0\n\n[Window][SPU configuration]\nPos=69,56\nSize=550,220\nCollapsed=0\n\n[Window][SPU Debug]\nViewportPos=962,725\nViewportId=0xE5F7C643\nSize=1200,430\nCollapsed=0\n\n[Window][Memory Editor #1]\nViewportPos=1139,76\nViewportId=0xE9869392\nSize=584,539\nCollapsed=0\n\n[Window][Source]\nViewportPos=61,86\nViewportId=0x58267A45\nSize=416,536\nCollapsed=0\n\n[Window][Callstack]\nViewportPos=48,90\nViewportId=0xA9FDEE8E\nSize=426,525\nCollapsed=0\n\n[Window][Dwarf]\nPos=60,60\nSize=404,388\nCollapsed=0\n\n[Window][Symbols]\nPos=60,60\nSize=147,62\nCollapsed=0\n\n[Window][Scratch Pad]\nViewportPos=719,-7\nViewportId=0xB7AD35A5\nSize=484,480\nCollapsed=0\n\n[Window][Hardware Registers]\nViewportPos=847,221\nViewportId=0x311B7332\nSize=584,612\nCollapsed=0\n\n[Window][CLUT VRAM selector]\nViewportPos=737,320\nViewportId=0xF0235A86\nPos=0,5\nSize=330,252\nCollapsed=0\n\n[Docking][Data]\nDockNode    ID=0x00000001 Pos=1244,-4 Size=493,512 Split=X\n  DockNode  ID=0x00000002 Parent=0x00000001 SizeRef=105,512 Selected=0x837A6095\n  DockNode  ID=0x00000003 Parent=0x00000001 SizeRef=103,512 Selected=0x0263173C\n\n"
+  "imgui": "[Window][Debug##Default]\nPos=60,60\nSize=400,400\nCollapsed=0\n\n[Window][Emulation Configuration]\nViewportPos=882,165\nViewportId=0xA515CB4B\nSize=316,619\nCollapsed=0\n\n[Window][Logs]\nViewportPos=-158,629\nViewportId=0x50BD6962\nSize=720,450\nCollapsed=0\n\n[Window][Soft GPU configuration]\nPos=288,182\nSize=300,200\nCollapsed=0\n\n[Window][Main VRAM Viewer]\nViewportPos=1157,-262\nViewportId=0xD2F1ACB4\nSize=1321,900\nCollapsed=0\n\n[Window][Registers]\nViewportPos=1244,-4\nViewportId=0xA4D966FE\nSize=493,512\nCollapsed=0\nDockId=0x00000002,0\n\n[Window][Breakpoints]\nViewportPos=1244,-4\nViewportId=0xA4D966FE\nSize=639,660\nCollapsed=0\nDockId=0x00000003,0\n\n[Window][Assembly]\nViewportPos=1077,89\nViewportId=0xE37F8D5D\nSize=623,751\nCollapsed=0\n\n[Window][Output]\nPos=160,48\nSize=810,532\nCollapsed=0\n\n[Window][About]\nPos=199,66\nSize=880,600\nCollapsed=0\n\n[Window][Dear ImGui Demo]\nPos=669,25\nSize=550,680\nCollapsed=0\n\n[Window][SPU configuration]\nPos=69,56\nSize=550,220\nCollapsed=0\n\n[Window][SPU Debug]\nViewportPos=962,725\nViewportId=0xE5F7C643\nSize=1200,430\nCollapsed=0\n\n[Window][Memory Editor #1]\nViewportPos=1139,76\nViewportId=0xE9869392\nSize=584,539\nCollapsed=0\n\n[Window][Source]\nViewportPos=61,86\nViewportId=0x58267A45\nSize=416,536\nCollapsed=0\n\n[Window][Callstack]\nViewportPos=48,90\nViewportId=0xA9FDEE8E\nSize=426,525\nCollapsed=0\n\n[Window][Dwarf]\nPos=60,60\nSize=404,388\nCollapsed=0\n\n[Window][Symbols]\nPos=60,60\nSize=147,62\nCollapsed=0\n\n[Window][Scratch Pad]\nViewportPos=719,-7\nViewportId=0xB7AD35A5\nSize=484,480\nCollapsed=0\n\n[Window][Hardware Registers]\nViewportPos=847,221\nViewportId=0x311B7332\nSize=584,612\nCollapsed=0\n\n[Window][CLUT VRAM selector]\nViewportPos=737,320\nViewportId=0xF0235A86\nPos=0,5\nSize=330,252\nCollapsed=0\n\n[Docking][Data]\nDockNode    ID=0x00000001 Pos=1244,-4 Size=639,660 Split=X\n  DockNode  ID=0x00000002 Parent=0x00000001 SizeRef=105,512 Selected=0x837A6095\n  DockNode  ID=0x00000003 Parent=0x00000001 SizeRef=103,512 Selected=0x0263173C\n\n"
 }
