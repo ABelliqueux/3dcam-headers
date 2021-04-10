@@ -1,7 +1,13 @@
-TARGET = 3dcam-tri-quads
+TARGET = main
 TYPE = ps-exe
 
-SRCS = 3dcam-tri-quads.c \
+SRCS = main.c \
+math.c \
+camera.c \
+physics.c \
+graphics.c \
+psx.c \
+space.c \
 ../common/crt0/crt0.s \
 TIM/home.tim \
 TIM/cat.tim \
