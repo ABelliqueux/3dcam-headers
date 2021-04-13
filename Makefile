@@ -8,6 +8,7 @@ physics.c \
 graphics.c \
 psx.c \
 space.c \
+levels/level.c \
 ../common/crt0/crt0.s \
 TIM/home.tim \
 TIM/cat.tim \
@@ -18,6 +19,9 @@ TIM/bg_camPath_002.tim \
 TIM/bg_camPath_003.tim \
 TIM/bg_camPath_004.tim \
 TIM/bg_camPath_005.tim \
+
+#~ OVERLAYSCRIPT  ?= overlay.ld
+#~ OVERLAYSECTION ?= .ovly0 .ovly1
 
 # img2tim -t -bpp 8 -org 320 0 -plt 0 481 -o bg.tim bg.png
 

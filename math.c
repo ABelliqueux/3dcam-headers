@@ -1,10 +1,13 @@
 #include "math.h"
 
 // Stolen from grumpycoder
+// this is from here : https://github.com/grumpycoders/Balau/blob/master/tests/test-Handles.cc#L20-L102
 
-static int m_cosTable[512];                     // precalc costable
+// precalc costable
 
-static const unsigned int DC_2PI = 2048;        // this is from here : https://github.com/grumpycoders/Balau/blob/master/tests/test-Handles.cc#L20-L102
+static int m_cosTable[512];                     
+
+static const unsigned int DC_2PI = 2048;        
 
 static const unsigned int DC_PI  = 1024;
 
@@ -12,6 +15,7 @@ static const unsigned int DC_PI2 = 512;
 
 // f(n) = cos(n * 2pi / 2048) <- 2048 is == DC_2PI value
 // f(n) = 2 * f(1) * f(n - 1) - f(n - 2)
+
 void generateTable(void){
     
     m_cosTable[0] = 16777216;               // 2^24 * cos(0 * 2pi / 2048) => 2^24 * 1 = 2^24 : here, 2^24 defines the precision we want after the decimal point
@@ -58,6 +62,7 @@ int ncos(unsigned int t) {
 };
 
 // sin(x) = cos(x - pi / 2)
+
 int nsin(unsigned int t) {
 
     t %= DC_2PI;
@@ -70,8 +75,6 @@ int nsin(unsigned int t) {
 
     return ncos(t - DC_PI2);
 };
-
-
 
 // https://github.com/Arsunt/TR2Main/blob/411cacb35914c616cb7960c0e677e00c71c7ee88/3dsystem/phd_math.cpp#L432
 long long patan(long x, long y){
@@ -160,6 +163,7 @@ u_int psqrt(u_int n){
 };
 
 // From : https://github.com/grumpycoders/pcsx-redux/blob/7438e9995833db5bc1e14da735bbf9dc78300f0b/src/mips/shell/math.h
+
 int32_t dMul(int32_t a, int32_t b) {
  
     long long r = a;

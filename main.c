@@ -20,15 +20,7 @@
 // Blender debug mode
 // bpy. app. debug = True 
 
-//~ #include <sys/types.h>
-//~ #include <libgte.h>
-//~ #include <libgpu.h>
-//~ #include <libetc.h>
-//~ #include <stdio.h>
-//~ #include <stdint.h>
-//~ #include <stddef.h>
-
-//~ #include "coridor2.h"
+//~ #define _WCHAR_T
 
 #include "psx.h"
 #include "math.h"
@@ -37,34 +29,40 @@
 #include "graphics.h"
 #include "space.h"
 
-#include "coridor2.c"
+#include "defines.h"
 
-//~ #define VMODE       0
+// START OVERLAY
 
-//~ #define SCREENXRES 320
+//~ extern u_long __load_start_ovly0;
 
-//~ #define SCREENYRES 240
+//~ #define RUN_OVERLAY1
+//~ #define USE_POINTER
 
-//~ #define CENTERX		SCREENXRES/2
+//~ #ifdef RUN_OVERLAY1
+  //~ static const char*const overlayFile = "\\LEVEL.bin;1";
+//~ #else
+  //~ static const char*const overlayFile = "\\LEVEL1.bin;1";
+//~ #endif
 
-//~ #define CENTERY		SCREENYRES/2
+//~ #ifdef USE_POINTER
 
-//~ #define FOV CENTERX                             // With a FOV of 1/2, camera focal length is ~= 16 mm / 90°
-                                                //~ // Lower values mean wider angle
-//~ // pixel > cm : used in physics calculations
+//~ #ifdef RUN_OVERLAY1
+  //~ #include "levels/level.h"
+//~ #else
+  //~ #include "levels/level1.h"
+//~ #endif
 
-//~ #define SCALE 4
+//~ #else
+//~ #define str (char*)(&__load_start_ovly0)
+//~ #endif
 
-//~ #define FNT_POS_X 960
+// START OVERLAY
 
-//~ #define FNT_POS_Y 256
-
-
-//~ #define OT2LEN	    8	                   
-
-//~ #define OTLEN	    256	                        // Maximum number of OT entries
-
-//~ #define PRIMBUFFLEN	4096 * sizeof(POLY_GT4)	    // Maximum number of POLY_GT3 primitives
+//~ #if LEVEL == 0
+#include "levels/level.h"
+//~ #elif LEVEL == 1
+  //~ #include "levels/level1.h"
+//~ #endif
 
 // Display and draw environments, double buffered
 
@@ -91,31 +89,7 @@ char		    db	= 0;                        // Current buffer counter
 
 CVECTOR BGc = {50, 50, 75, 0};                  // Far color
 
-VECTOR BKc = {128, 128, 128, 0};                // Back color
-
-// Local color matrix   
-
-//~ static MATRIX	cmat = {
-//~ /* light source    #0, #1, #2, */
-		//~ ONE,  0,  0, /* R */
-		//~ 0,    ONE,  0, /* G */
-		//~ 0,    0,  ONE, /* B */
-//~ };
-
-//~ // local light matrix : Direction and reach of each light source. 
-//~ // Each light is aligned with the axis, hence direction is in the same coordinate system as the PSX (Y-axis down)
-//~ // One == 4096 is reach/intensity of light source
-
-//~ static MATRIX lgtmat = {
-//~ //  X     Y     Z   
-    //~ ONE, 0,  0,	    // Light 0  
-	//~ 0,0,0,	    // Light 1 
-	//~ 0,0,0	    // Light 2 
-//~ };
-
-// Light 
-
-//~ MATRIX	    rottrans;	
+VECTOR BKc = {128, 128, 128, 0};                // Back color	
 
 MATRIX		rotlgt;	
 
@@ -143,9 +117,6 @@ u_short timer = 0;
 
 // Cam stuff 
 
-
-//~ long timeB = 0;
-
 int lerping    = 0;
 
 short curCamAngle = 0;
@@ -158,18 +129,57 @@ VECTOR fVecActor = {0,0,0,0};
 
 u_long triCount = 0;
 
-// Drawing
-
-//~ void drawBG(void);
-
-//~ void drawPoly(MESH * meshes, long * Flag, int atime);
-
+    // Get needed pointers from level file
+    
+    MATRIX * cmat = &level_cmat;
+    
+    MATRIX * lgtmat = &level_lgtmat;
+    
+    MESH * actorPtr, * levelPtr, * propPtr;
+    
+    NODE * curNode;
+    
+    MESH ** meshes = level_meshes;
+    
+    int * meshes_length = &level_meshes_length;
+    
+    CAMPATH * camPath;
+    
+    CAMANGLE * camPtr; 
+    
+    CAMANGLE ** camAngles = level_camAngles;
+    
+    // Get rid of those
+    
+    MESH * meshPlan = &level_meshPlan;
+    
+    VECTOR * modelPlan_pos = &level_modelPlan_pos;
 
 // Pad 
 
 void callback();
 
 int main() {
+    
+    actorPtr = level_actorPtr;
+
+    levelPtr = level_levelPtr;
+
+    propPtr = level_propPtr;
+    
+    camPtr  = level_camPtr;
+    
+    curNode = level_curNode;
+    
+    camPath = &level_camPath;
+    
+    // Overlay 
+    
+    //~ CdInit();
+	
+	//~ CdReadFile( (char *)(overlayFile), &__load_start_ovly0, 0);
+	
+    //~ CdReadSync(0, NULL);
     
     //~ cmatP = &cmat;
     
@@ -190,7 +200,7 @@ int main() {
 	//~ div3.piv = SCREENYRES;
     //~ div3.ndiv = 1;
     
-	init(disp, draw, db, &cmat, &BGc, &BKc);
+	init(disp, draw, db, cmat, &BGc, &BKc);
     
 
     generateTable();
@@ -199,7 +209,7 @@ int main() {
 
     // Load textures
     
-    for (int k = 0; k < sizeof(meshes)/sizeof(TMESH *); k++){
+    for (int k = 0; k < *meshes_length ; k++){
     
         LoadTexture(meshes[k]->tim_data, meshes[k]->tim);
     
@@ -243,7 +253,7 @@ int main() {
     
     // Polycount
     
-    for (int k = 0; k < sizeof(meshes)/sizeof(meshes[0]); k++){
+    for (int k = 0; k < *meshes_length; k++){
     
             triCount += meshes[k]->tmesh->len;
     
@@ -316,17 +326,17 @@ int main() {
         
         //~ meshPlan.rot->vx = ( (objAngleToCam.vx >> 4) - 3076 ) * ( (objAngleToCam.vz >> 4) - 3076 ) >> 12 ;
         
-        meshPlan.rot->vy = -( (objAngleToCam.vy >> 4) + 1024 ) ;
+        meshPlan->rot->vy = -( (objAngleToCam.vy >> 4) + 1024 ) ;
 
         //~ posToCam = getVectorTo(*meshPlan.pos, camera.pos);
         
         //~ posToCam = getVectorTo(camera.pos, *meshPlan.pos);
 
-        posToCam.vx = -camera.pos.vx - modelPlan_pos.vx ;
+        posToCam.vx = -camera.pos.vx - modelPlan_pos->vx ;
         
-        posToCam.vz = -camera.pos.vz - modelPlan_pos.vz ;
+        posToCam.vz = -camera.pos.vz - modelPlan_pos->vz ;
         
-        posToCam.vy = -camera.pos.vy - modelPlan_pos.vy ;
+        posToCam.vy = -camera.pos.vy - modelPlan_pos->vy ;
         
         //~ psqrt(posToCam.vx * posToCam.vx + posToCam.vy * posToCam.vy);
         
@@ -509,7 +519,7 @@ int main() {
             
             // If key pos exist for camera
            
-            if (camPath.len) {
+            if (camPath->len) {
                 
                 // Lerping sequence has not begun
            
@@ -517,17 +527,17 @@ int main() {
                     
                     // Set cam start position ( first key pos )
            
-                    camera.pos.vx = camPath.points[camPath.cursor].vx;
+                    camera.pos.vx = camPath->points[camPath->cursor].vx;
            
-                    camera.pos.vy = camPath.points[camPath.cursor].vy;
+                    camera.pos.vy = camPath->points[camPath->cursor].vy;
            
-                    camera.pos.vz = camPath.points[camPath.cursor].vz;
+                    camera.pos.vz = camPath->points[camPath->cursor].vz;
                     
                     // Lerping sequence is starting
                     lerping = 1;
                     
                     // Set cam pos index to 0
-                    camPath.pos = 0;
+                    camPath->pos = 0;
                     
                     }
                     
@@ -538,36 +548,36 @@ int main() {
            
                 int precision = 12;
                 
-                camera.pos.vx = lerpD(camPath.points[camPath.cursor].vx << precision, camPath.points[camPath.cursor+1].vx << precision, camPath.pos << precision) >> precision;
+                camera.pos.vx = lerpD(camPath->points[camPath->cursor].vx << precision, camPath->points[camPath->cursor+1].vx << precision, camPath->pos << precision) >> precision;
            
-                camera.pos.vy = lerpD(camPath.points[camPath.cursor].vy << precision, camPath.points[camPath.cursor+1].vy << precision, camPath.pos << precision) >> precision;
+                camera.pos.vy = lerpD(camPath->points[camPath->cursor].vy << precision, camPath->points[camPath->cursor+1].vy << precision, camPath->pos << precision) >> precision;
            
-                camera.pos.vz = lerpD(camPath.points[camPath.cursor].vz << precision, camPath.points[camPath.cursor+1].vz << precision, camPath.pos << precision) >> precision;
+                camera.pos.vz = lerpD(camPath->points[camPath->cursor].vz << precision, camPath->points[camPath->cursor+1].vz << precision, camPath->pos << precision) >> precision;
                 
-                //~ FntPrint("Cam %d, %d\n", (int32_t)camPath.points[camPath.cursor].vx, camPath.points[camPath.cursor+1].vx);
+                //~ FntPrint("Cam %d, %d\n", (int32_t)camPath->points[camPath->cursor].vx, camPath->points[camPath->cursor+1].vx);
                 //~ FntPrint("Cam %d, %d, %d\n", camera.pos.vx, camera.pos.vy, camera.pos.vz);
                 //~ FntPrint("Theta y: %d x: %d\n", theta.vy, theta.vx);
-                //~ FntPrint("Pos: %d Cur: %d\nTheta y: %d x: %d\n", camPath.pos, camPath.cursor, theta.vy, theta.vx);
+                //~ FntPrint("Pos: %d Cur: %d\nTheta y: %d x: %d\n", camPath->pos, camPath->cursor, theta.vy, theta.vx);
 
                 // Linearly increment the lerp factor
            
-                camPath.pos += 20;
+                camPath->pos += 20;
                 
                 // If camera has reached next key pos, reset pos index, move cursor to next key pos
-                if (camPath.pos > (1 << precision) ){
+                if (camPath->pos > (1 << precision) ){
            
-                    camPath.pos = 0;
+                    camPath->pos = 0;
            
-                    camPath.cursor ++;
+                    camPath->cursor ++;
            
                 }                    
                 
                 // Last key pos is reached, reset cursor to first key pos, lerping sequence is over
-                if ( camPath.cursor == camPath.len - 1 ){
+                if ( camPath->cursor == camPath->len - 1 ){
            
                     lerping = 0;
            
-                    camPath.cursor = 0;
+                    camPath->cursor = 0;
                 }
                 
             } else { 
@@ -586,7 +596,7 @@ int main() {
             
             short cameraSpeed = 40;
             
-            if (camPath.len) {
+            if (camPath->len) {
          
             // Lerping sequence has not begun
          
@@ -594,11 +604,11 @@ int main() {
                     
                     // Set cam start position ( first key pos )
          
-                    camera.pos.vx = camPath.points[camPath.cursor].vx;
+                    camera.pos.vx = camPath->points[camPath->cursor].vx;
          
-                    camera.pos.vy = camPath.points[camPath.cursor].vy;
+                    camera.pos.vy = camPath->points[camPath->cursor].vy;
          
-                    camera.pos.vz = camPath.points[camPath.cursor].vz;
+                    camera.pos.vz = camPath->points[camPath->cursor].vz;
                     
                     // Lerping sequence is starting
                     
@@ -606,7 +616,7 @@ int main() {
                     
                     // Set cam pos index to 0
                     
-                    camPath.pos = 0;
+                    camPath->pos = 0;
                     
                     }
                 
@@ -618,55 +628,55 @@ int main() {
                 
                 short precision = 12;
                                     
-                camera.pos.vx = lerpD(camPath.points[camPath.cursor].vx << precision, camPath.points[camPath.cursor + 1].vx << precision, camPath.pos << precision) >> precision;
+                camera.pos.vx = lerpD(camPath->points[camPath->cursor].vx << precision, camPath->points[camPath->cursor + 1].vx << precision, camPath->pos << precision) >> precision;
          
-                camera.pos.vy = lerpD(camPath.points[camPath.cursor].vy << precision, camPath.points[camPath.cursor + 1].vy << precision, camPath.pos << precision) >> precision;
+                camera.pos.vy = lerpD(camPath->points[camPath->cursor].vy << precision, camPath->points[camPath->cursor + 1].vy << precision, camPath->pos << precision) >> precision;
          
-                camera.pos.vz = lerpD(camPath.points[camPath.cursor].vz << precision, camPath.points[camPath.cursor + 1].vz << precision, camPath.pos << precision) >> precision;
+                camera.pos.vz = lerpD(camPath->points[camPath->cursor].vz << precision, camPath->points[camPath->cursor + 1].vz << precision, camPath->pos << precision) >> precision;
                 
                 //~ FntPrint("%d %d %d %d\n", camAngleToAct.vy, camera.pos.vx, camera.rot.vy, dist);
 
-                // Ony move cam if position is between first camPath.vx and last camPath.vx
+                // Ony move cam if position is between first camPath->vx and last camPath->vx
 
-                if ( camAngleToAct.vy < -50 && camera.pos.vx > camPath.points[camPath.len - 1].vx ) {  
+                if ( camAngleToAct.vy < -50 && camera.pos.vx > camPath->points[camPath->len - 1].vx ) {  
           
                     // Clamp camPath position to cameraSpeed
                     
-                    camPath.pos += dist < cameraSpeed ? 0 : cameraSpeed ;
+                    camPath->pos += dist < cameraSpeed ? 0 : cameraSpeed ;
           
                 }
           
-                if ( camAngleToAct.vy > 50 && camera.pos.vx > camPath.points[camPath.cursor].vx ) {  
+                if ( camAngleToAct.vy > 50 && camera.pos.vx > camPath->points[camPath->cursor].vx ) {  
           
-                    camPath.pos -= dist < cameraSpeed ? 0 : cameraSpeed;
+                    camPath->pos -= dist < cameraSpeed ? 0 : cameraSpeed;
           
                 }
                 
                 // If camera has reached next key pos, reset pos index, move cursor to next key pos
                 
-                if (camPath.pos > (1 << precision) ){
+                if (camPath->pos > (1 << precision) ){
           
-                    camPath.pos = 0;
+                    camPath->pos = 0;
           
-                    camPath.cursor ++;
+                    camPath->cursor ++;
           
                 } 
                 
-                if (camPath.pos < -100 ){
+                if (camPath->pos < -100 ){
           
-                    camPath.pos = 1 << precision;
+                    camPath->pos = 1 << precision;
           
-                    camPath.cursor --;
+                    camPath->cursor --;
                 
                 }                   
                 
                 // Last key pos is reached, reset cursor to first key pos, lerping sequence is over
                 
-                if ( camPath.cursor == camPath.len - 1 || camPath.cursor < 0 ){
+                if ( camPath->cursor == camPath->len - 1 || camPath->cursor < 0 ){
           
                     lerping = 0;
           
-                    camPath.cursor = 0;
+                    camPath->cursor = 0;
                 }
                 
             } else { 
@@ -729,7 +739,7 @@ int main() {
             
             // if(time%1 == 0){
                 
-                 for ( int k = 0; k < sizeof(meshes)/sizeof(meshes[0]);k ++ ) {
+                 for ( int k = 0; k < *meshes_length; k ++ ) {
                 //~ for ( int k = 0; k < curNode->objects->index ; k ++){
                                         
                      if ( ( *meshes[k]->isRigidBody == 1 ) ) {
@@ -906,7 +916,7 @@ int main() {
 
         RotMatrix(&lgtang, &rotlgt);	
 
-        MulMatrix0(&lgtmat, &rotlgt, &light);
+        MulMatrix0(lgtmat, &rotlgt, &light);
 
         SetLightMatrix(&light);
 
@@ -941,630 +951,6 @@ int main() {
 	}
     return 0;
 }
-
-
-//void drawPoly(MESH * mesh, long * Flag, int atime){
-
-    //long nclip, t = 0;
-    
-    //// mesh is POLY_GT3 ( triangle )
-    
-    //if (mesh->index[t].code == 4) {
-        
-        //POLY_GT3 * poly;                        
-    
-        //// len member == # vertices, but here it's # of triangle... So, for each tri * 3 vertices ...
-        
-        //for ( int i = 0; i < (mesh->tmesh->len * 3); i += 3 ) {               
-            
-            //// If mesh is not part of precalculated background, draw them, else, discard
-            
-            //if ( !( *mesh->isBG ) || camMode != 2) {
-            
-                //poly = (POLY_GT3 *)nextpri;
-                
-                //// If Vertex Anim flag is set, use it
-                
-                //if (*mesh->isAnim){
-                
-                    //// If interpolation flag is set, use it
-                    
-                    //if(mesh->anim->interpolate){
-                        
-                         //// Ping pong 
-                         
-                         ////~ //if (mesh->anim->cursor > 4096 || mesh->anim->cursor < 0){
-                         
-                         ////~ //   mesh->anim->dir *= -1;
-                         
-                         ////~ //}
-                         
-                         
-                         //// Fixed point math precision
-                         
-                         //short precision = 12;
-
-                         //// Find next keyframe 
-                         
-                         //if (mesh->anim->cursor > (1 << precision)) {
-                            
-                            //// There are still keyframes to interpolate between
-                            
-                            //if ( mesh->anim->lerpCursor < mesh->anim->nframes - 1 ) {
-                            
-                                //mesh->anim->lerpCursor ++;
-                            
-                                //mesh->anim->cursor = 0;
-                            
-                            //}
-                            
-                            //// We've reached last frame, go back to first frame
-                            
-                            //if ( mesh->anim->lerpCursor == mesh->anim->nframes - 1 ) {
-
-                                //mesh->anim->lerpCursor = 0;
-                            
-                                //mesh->anim->cursor = 0;
-                            
-                            //}
-                         
-                         //}
-                         
-                        //// Let's lerp between keyframes
-
-                        //// TODO : Finish lerped animation implementation
-                        
-                        //// Vertex 1
-                        
-                        //mesh->tmesh->v[ mesh->index[ t ].order.vx ].vx = lerpD( mesh->anim->data[mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[t].order.vx].vx << precision , mesh->anim->data[(mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[t].order.vx].vx  << precision, mesh->anim->cursor << precision)  >> precision;
-                        
-                        //mesh->tmesh->v[ mesh->index[ t ].order.vx ].vz = lerpD( mesh->anim->data[mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[t].order.vx].vz << precision , mesh->anim->data[(mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[t].order.vx].vz  << precision, mesh->anim->cursor << precision)  >> precision;
-                        
-                        //mesh->tmesh->v[ mesh->index[ t ].order.vx ].vy = lerpD( mesh->anim->data[mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[t].order.vx].vy << precision , mesh->anim->data[(mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[t].order.vx].vy  << precision, mesh->anim->cursor << precision)  >> precision;
-                        
-                        //// Vertex 2
-                        
-                        //mesh->tmesh->v[ mesh->index[ t ].order.vz ].vx = lerpD( mesh->anim->data[mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[t].order.vz].vx << precision , mesh->anim->data[(mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[t].order.vz].vx  << precision, mesh->anim->cursor << precision)  >> precision;
-                        
-                        //mesh->tmesh->v[ mesh->index[ t ].order.vz ].vz = lerpD( mesh->anim->data[mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[t].order.vz].vz << precision , mesh->anim->data[(mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[t].order.vz].vz  << precision, mesh->anim->cursor << precision)  >> precision;
-                        
-                        //mesh->tmesh->v[ mesh->index[ t ].order.vz ].vy = lerpD( mesh->anim->data[mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[t].order.vz].vy << precision , mesh->anim->data[(mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[t].order.vz].vy  << precision, mesh->anim->cursor << precision)  >> precision;
-                        
-                        //// Vertex 3
-                        
-                        //mesh->tmesh->v[ mesh->index[ t ].order.vy ].vx = lerpD( mesh->anim->data[mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[t].order.vy].vx << precision , mesh->anim->data[(mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[t].order.vy].vx  << precision, mesh->anim->cursor << precision)  >> precision;
-                        
-                        //mesh->tmesh->v[ mesh->index[ t ].order.vy ].vz = lerpD( mesh->anim->data[mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[t].order.vy].vz << precision , mesh->anim->data[(mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[t].order.vy].vz  << precision, mesh->anim->cursor << precision)  >> precision;
-                        
-                        //mesh->tmesh->v[ mesh->index[ t ].order.vy ].vy = lerpD( mesh->anim->data[mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[t].order.vy].vy << precision , mesh->anim->data[(mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[t].order.vy].vy  << precision, mesh->anim->cursor << precision)  >> precision;
-                         
-                        //mesh->anim->cursor += 24 * mesh->anim->dir;
-                         
-                        //// Coord transformation from world space to screen space
-                        
-                        //nclip = RotAverageNclip3(
-                                   
-                                    //&mesh->tmesh->v[ mesh->index[t].order.vx ],  
-                                   
-                                    //&mesh->tmesh->v[ mesh->index[t].order.vz ],
-                                   
-                                    //&mesh->tmesh->v[ mesh->index[t].order.vy ],
-                                   
-                                    //( long* ) &poly->x0, ( long* ) &poly->x1, ( long* ) &poly->x2,
-                                   
-                                    //mesh->p,
-                                   
-                                    //mesh->OTz,
-                                   
-                                    //Flag
-                                //);
-                                                
-                        //} else { 
-                           
-                        //// No interpolation
-                        
-                            //// Use the pre-calculated vertices coordinates from the animation data
-                           
-                            //nclip = RotAverageNclip3(
-                                        
-                                        //&mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.vx ],
-                                        
-                                        //&mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.vz ],
-                                        
-                                        //&mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.vy ],
-                                        
-                                        //( long* ) &poly->x0, ( long* ) &poly->x1, ( long* ) &poly->x2,
-                                        
-                                        //mesh->p,
-                                        
-                                        //mesh->OTz,
-                                        
-                                        //Flag
-                                    //);
-                    //}
-                        
-                //} else {
-                                            
-                //// No animation
-                
-                    //// Use model's regular vertex coordinates
-
-                    //nclip = RotAverageNclip3(
-
-                                //&mesh->tmesh->v[ mesh->index[t].order.vx ],  
-                                
-                                //&mesh->tmesh->v[ mesh->index[t].order.vz ],
-                                
-                                //&mesh->tmesh->v[ mesh->index[t].order.vy ],
-                                
-                                //( long * ) &poly->x0, ( long * ) &poly->x1, ( long * ) &poly->x2,
-                                
-                                //mesh->p,
-                                
-                                //mesh->OTz,
-                                
-                                //Flag
-                            //);
-                    
-                //}
-                
-                //// Do not draw invisible meshes 
-                
-                //if ( nclip > 0 && *mesh->OTz > 0 && (*mesh->p < 4096) ) {
-
-                    
-                    //SetPolyGT3( poly );
-                    
-                    //// If isPrism flag is set, use it
-
-                    //// FIXME : Doesn't work with pre-rendered BGs
-
-                    //if ( *mesh->isPrism ) { 
-                        
-                        //// Transparency effect :
-                        
-                        //// Use current DRAWENV clip as TPAGE instead of regular textures
-
-                        //( (POLY_GT3 *) poly )->tpage = getTPage( mesh->tim->mode&0x3, 0,
-                                                                 
-                                                                 //draw[db].clip.x,
-                                                                 
-                                                                 //draw[db].clip.y
-                                                       //);
-                        
-                        //// Use projected coordinates (results from RotAverage...) as UV coords and clamp them to 0-255,0-224 Why 224 though ?
-
-                        //setUV3(poly,  (poly->x0 < 0 ? 0 : poly->x0 > 255 ? 255 : poly->x0),
-                         
-                                      //(poly->y0 < 0 ? 0 : poly->y0 > 240 ? 240 : poly->y0), 
-                        
-                                      //(poly->x1 < 0 ? 0 : poly->x1 > 255 ? 255 : poly->x1), 
-                        
-                                      //(poly->y1 < 0 ? 0 : poly->y1 > 240 ? 240 : poly->y1), 
-                        
-                                      //(poly->x2 < 0 ? 0 : poly->x2 > 255 ? 255 : poly->x2), 
-                        
-                                      //(poly->y2 < 0 ? 0 : poly->y2 > 240 ? 240 : poly->y2)
-                        
-                                      //);
-                        
-     
-                    //} else {
-                    
-                    //// No transparency effect
-                    
-                        //// Use regular TPAGE
-                        
-                        //( (POLY_GT3 *) poly )->tpage = getTPage(mesh->tim->mode&0x3, 0,
-                        
-                                                         //mesh->tim->prect->x,
-                        
-                                                         //mesh->tim->prect->y
-                        //);
-                        
-                        //setUV3(poly,  mesh->tmesh->u[i].vx  , mesh->tmesh->u[i].vy   + mesh->tim->prect->y,
-                        
-                                      //mesh->tmesh->u[i+2].vx, mesh->tmesh->u[i+2].vy + mesh->tim->prect->y,
-                        
-                                      //mesh->tmesh->u[i+1].vx, mesh->tmesh->u[i+1].vy + mesh->tim->prect->y);
-                    //}
-
-                    //// CLUT setup
-                    //// If tim mode == 0 | 1 (4bits/8bits image), set CLUT coordinates
-
-                    //if ( (mesh->tim->mode & 0x3 ) < 2){
-                        
-                        //setClut(poly,             
-                        
-                                //mesh->tim->crect->x,
-                        
-                                //mesh->tim->crect->y);
-                    //}
-                    
-                    //if (*mesh->isSprite){ 
-                                 
-                        //SetShadeTex( poly, 1 );
-                    
-                    //}
-                    //// Defaults depth color to neutral grey
-
-                    //CVECTOR outCol  = { 128,128,128,0 };
-                    
-                    //CVECTOR outCol1 = { 128,128,128,0 };
-                    
-                    //CVECTOR outCol2 = { 128,128,128,0 };
-                    
-                    //NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vx ], &mesh->tmesh->c[ mesh->index[t].order.vx ], *mesh->p, &outCol);
-
-                    //NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vz ], &mesh->tmesh->c[ mesh->index[t].order.vz ], *mesh->p, &outCol1);
-
-                    //NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vy ], &mesh->tmesh->c[ mesh->index[t].order.vy ], *mesh->p, &outCol2);                           
-                
-                    //// If transparent effect is in use, inhibate shadows
-                
-                    //if (*mesh->isPrism){ 
-                        
-                        //// Use un-interpolated (i.e: no light, no fog) colors
-
-                        //setRGB0(poly, mesh->tmesh->c[i].r,   mesh->tmesh->c[i].g, mesh->tmesh->c[i].b);
-
-                        //setRGB1(poly, mesh->tmesh->c[i+1].r, mesh->tmesh->c[i+1].g, mesh->tmesh->c[i+1].b);
-
-                        //setRGB2(poly, mesh->tmesh->c[i+2].r, mesh->tmesh->c[i+2].g, mesh->tmesh->c[i+2].b);
-                    
-                    //} else {
-                        
-                        //setRGB0(poly, outCol.r, outCol.g  , outCol.b);
-                        
-                        //setRGB1(poly, outCol1.r, outCol1.g, outCol1.b);
-                        
-                        //setRGB2(poly, outCol2.r, outCol2.g, outCol2.b);
-                    //} 
-                           
-                    //if ( (*mesh->OTz > 0) && (*mesh->OTz < OTLEN) && (*mesh->p < 4096) ) {
-                        
-                        //AddPrim(&ot[db][*mesh->OTz-2], poly);
-                    //}
-                    
-                    ////~ mesh->pos2D.vx = *(&poly->x0);
-                    ////~ mesh->pos2D.vy = *(&poly->x0 + 1);
-                    //// mesh->pos2D.vy = poly->x0;
-                    //// FntPrint("%d %d\n", *(&poly->x0), *(&poly->x0 + 1));
-                    
-                    //nextpri += sizeof(POLY_GT3);
-                //}
-            
-                //t+=1;
-
-            //}
-        //}
-    
-    //}
-    
-    //// If mesh is quad
-    
-    //if (mesh->index[t].code == 8) {
-        
-        //POLY_GT4 * poly4;
-        
-        //for (int i = 0; i < (mesh->tmesh->len * 4); i += 4) {               
-            
-            //// if mesh is not part of BG, draw them, else, discard
-            
-            //if ( !(*mesh->isBG) || camMode != 2 ) {
-            
-                //poly4 = (POLY_GT4 *)nextpri;
-                                
-                //// Vertex Anim 
-
-                //if (*mesh->isAnim){
-                    
-                    //// with interpolation
-
-                    //if ( mesh->anim->interpolate ){
-                        
-                        //// ping pong
-                        ////~ if (mesh->anim->cursor > 4096 || mesh->anim->cursor < 0){
-                           ////~ mesh->anim->dir *= -1;
-                        ////~ }
-                        
-                        //short precision = 12;
-
-                        //if ( mesh->anim->cursor > 1<<precision ) {
-
-                            //if ( mesh->anim->lerpCursor < mesh->anim->nframes - 1 ) {
-
-                                //mesh->anim->lerpCursor ++;
-
-                                //mesh->anim->cursor = 0;
-
-                            //}
-
-                            //if ( mesh->anim->lerpCursor == mesh->anim->nframes - 1 ) {
-
-                                //mesh->anim->lerpCursor = 0;
-
-                                //mesh->anim->cursor = 0;
-                            //}
-                        //}
-                        
-                        //// Vertex 1
-                        
-                        //mesh->tmesh->v[ mesh->index[ t ].order.vx ].vx = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.vx ].vx << 12 , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.vx ].vx  << 12, mesh->anim->cursor << 12)  >> 12;
-                        
-                        //mesh->tmesh->v[ mesh->index[ t ].order.vx ].vz = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.vx ].vz << 12 , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.vx ].vz  << 12, mesh->anim->cursor << 12)  >> 12;
-                        
-                        //mesh->tmesh->v[ mesh->index[ t ].order.vx ].vy = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.vx ].vy << 12 , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.vx ].vy  << 12, mesh->anim->cursor << 12)  >> 12;
-                        
-                        //// Vertex 2
-                        
-                        //mesh->tmesh->v[ mesh->index[ t ].order.vz ].vx = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.vz ].vx << 12 , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.vz ].vx  << 12, mesh->anim->cursor << 12)  >> 12;
-                        
-                        //mesh->tmesh->v[ mesh->index[ t ].order.vz ].vz = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.vz ].vz << 12 , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.vz ].vz  << 12, mesh->anim->cursor << 12)  >> 12;
-                        
-                        //mesh->tmesh->v[ mesh->index[ t ].order.vz ].vy = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.vz ].vy << 12 , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.vz ].vy  << 12, mesh->anim->cursor << 12)  >> 12;
-                        
-                        //// Vertex 3
-                        
-                        //mesh->tmesh->v[ mesh->index[ t ].order.vy ].vx = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.vy ].vx << 12 , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.vy ].vx  << 12, mesh->anim->cursor << 12)  >> 12;
-                        
-                        //mesh->tmesh->v[ mesh->index[ t ].order.vy ].vz = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.vy ].vz << 12 , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.vy ].vz  << 12, mesh->anim->cursor << 12)  >> 12;
-                        
-                        //mesh->tmesh->v[ mesh->index[ t ].order.vy ].vy = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.vy ].vy << 12 , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.vy ].vy  << 12, mesh->anim->cursor << 12)  >> 12;
-                        
-                        //// Vertex 4
-                        
-                        //mesh->tmesh->v[ mesh->index[ t ].order.pad ].vx = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.pad ].vx << 12 , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.pad ].vx  << 12, mesh->anim->cursor << 12) >> 12;
-                        
-                        //mesh->tmesh->v[ mesh->index[ t ].order.pad ].vz = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.pad ].vz << 12 , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.pad ].vz  << 12, mesh->anim->cursor << 12) >> 12;
-                        
-                        //mesh->tmesh->v[ mesh->index[ t ].order.pad ].vy = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.pad ].vy << 12 , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.pad ].vy  << 12, mesh->anim->cursor << 12) >> 12;
-                        
-                        //mesh->anim->cursor += 2 * mesh->anim->dir;
-                        
-                        //// Coord transformations
-                        //nclip = RotAverageNclip4(
-                                
-                                    //&mesh->tmesh->v[ mesh->index[t].order.pad ],  
-                                    
-                                    //&mesh->tmesh->v[ mesh->index[t].order.vz],
-                                    
-                                    //&mesh->tmesh->v[ mesh->index[t].order.vx ],
-                                    
-                                    //&mesh->tmesh->v[ mesh->index[t].order.vy ],
-                                    
-                                    //( long* )&poly4->x0, ( long* )&poly4->x1, ( long* )&poly4->x2, ( long* )&poly4->x3,
-                                    
-                                    //mesh->p,
-                                    
-                                    //mesh->OTz,
-                                    
-                                    //Flag
-                                
-                                //);
-                            
-                    //} else {
-                        
-                        //// No interpolation, use all vertices coordinates in anim data
-                         
-                        //nclip = RotAverageNclip4(
-                            
-                                    //&mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.pad ],
-                                    
-                                    //&mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.vz ],
-                                    
-                                    //&mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.vx ],
-                                    
-                                    //&mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.vy ],
-                                    
-                                    //( long* )&poly4->x0, ( long* )&poly4->x1, ( long* )&poly4->x2, ( long* )&poly4->x3,
-                                    
-                                    //mesh->p,
-                                    
-                                    //mesh->OTz,
-                                    
-                                    //Flag
-                                //);
-                    //}
-                            
-                //} else {                        
-                
-                    //// No animation
-                    //// Use regulare vertex coords
-                    
-                    //nclip = RotAverageNclip4(
-                               
-                                //&mesh->tmesh->v[ mesh->index[t].order.pad ],  
-                               
-                                //&mesh->tmesh->v[ mesh->index[t].order.vz],
-                               
-                                //&mesh->tmesh->v[ mesh->index[t].order.vx ],
-                               
-                                //&mesh->tmesh->v[ mesh->index[t].order.vy ],
-                               
-                                //(long*)&poly4->x0, (long*)&poly4->x1, (long*)&poly4->x2, (long*)&poly4->x3,
-                               
-                                //mesh->p,
-                               
-                                //mesh->OTz,
-                               
-                                //Flag
-                            //);
-                //}
-                
-                //if (nclip > 0 && *mesh->OTz > 0 && (*mesh->p < 4096)) {
-             
-                    //SetPolyGT4(poly4);
-                        
-                    //// FIXME : Polygon subdiv - is it working ?
-                    
-                    ////~ OTc = *mesh->OTz >> 4;
-                    ////~ FntPrint("OTC:%d", OTc);
-                    
-                    ////~ if (OTc < 4) {
-                    
-                        ////~ if (OTc > 1) div4.ndiv = 1; else div4.ndiv = 2;
-                            
-                            ////~ DivideGT4(
-                                ////~ // Vertex coord
-                                ////~ &mesh->tmesh->v[ mesh->index[t].order.pad ],  
-                                ////~ &mesh->tmesh->v[ mesh->index[t].order.vz ],
-                                ////~ &mesh->tmesh->v[ mesh->index[t].order.vx ],
-                                ////~ &mesh->tmesh->v[ mesh->index[t].order.vy ],
-                                ////~ // UV coord
-                                ////~ mesh->tmesh->u[i+3],
-                                ////~ mesh->tmesh->u[i+2],
-                                ////~ mesh->tmesh->u[i+0],
-                                ////~ mesh->tmesh->u[i+1],
-                                
-                                ////~ // Color
-                                ////~ mesh->tmesh->c[i], 
-                                ////~ mesh->tmesh->c[i+1], 
-                                ////~ mesh->tmesh->c[i+2], 
-                                ////~ mesh->tmesh->c[i+3], 
-
-                                ////~ // Gpu packet
-                                ////~ poly4,
-                                ////~ &ot[db][*mesh->OTz],
-                                ////~ &div4);
-                                        
-                            ////~ // Increment primitive list pointer
-                            ////~ nextpri  += ( (sizeof(POLY_GT4) + 3) / 4 ) * (( 1 << ( div4.ndiv )) << ( div4.ndiv ));
-                            ////~ triCount = ((1<<(div4.ndiv))<<(div4.ndiv));
-                    
-                    ////~ } else if (OTc < 48) {
-                
-                    //// Transparency effect
-                    
-                    //if (*mesh->isPrism){ 
-                        
-                        //// Use current DRAWENV clip as TPAGE
-                        
-                        //( (POLY_GT4 *) poly4)->tpage = getTPage(mesh->tim->mode&0x3, 0,
-                                                                 //draw[db].clip.x,
-                                                                 //draw[db].clip.y
-                                                       //);
-                        
-                        //// Use projected coordinates
-                        
-                        //setUV4( poly4, 
-                              
-                                //(poly4->x0 < 0? 0 : poly4->x0 > 255? 255 : poly4->x0), 
-                              
-                                //(poly4->y0 < 0? 0 : poly4->y0 > 224? 224 : poly4->y0), 
-                              
-                                //(poly4->x1 < 0? 0 : poly4->x1 > 255? 255 : poly4->x1), 
-                              
-                                //(poly4->y1 < 0? 0 : poly4->y1 > 224? 224 : poly4->y1), 
-                              
-                                //(poly4->x2 < 0? 0 : poly4->x2 > 255? 255 : poly4->x2), 
-                              
-                                //(poly4->y2 < 0? 0 : poly4->y2 > 224? 224 : poly4->y2),
-                              
-                                //(poly4->x3 < 0? 0 : poly4->x3 > 255? 255 : poly4->x3), 
-                              
-                                //(poly4->y3 < 0? 0 : poly4->y3 > 224? 224 : poly4->y3)
-                        //);
-                        
-     
-                    //} else {
-                        
-                        //// Use regular TPAGE
-                        //( (POLY_GT4 *) poly4)->tpage = getTPage( 
-                                                        
-                                                         //mesh->tim->mode&0x3, 0,
-                        
-                                                         //mesh->tim->prect->x,
-                        
-                                                         //mesh->tim->prect->y
-                                                     //);
-                        
-                        //// Use model UV coordinates
-                        
-                        //setUV4( poly4, 
-                                //mesh->tmesh->u[i+3].vx, mesh->tmesh->u[i+3].vy   + mesh->tim->prect->y,
-                                
-                                //mesh->tmesh->u[i+2].vx, mesh->tmesh->u[i+2].vy + mesh->tim->prect->y,
-                            
-                                //mesh->tmesh->u[i+0].vx, mesh->tmesh->u[i+0].vy + mesh->tim->prect->y,
-                            
-                                //mesh->tmesh->u[i+1].vx, mesh->tmesh->u[i+1].vy + mesh->tim->prect->y
-                        //);
-
-                    //}
-                    
-                    //if (*mesh->isSprite){ 
-                                 
-                        //SetShadeTex( poly4, 1 );
-                    
-                    //}
-                    
-                        //// If tim mode  == 0 | 1, set CLUT coordinates
-                        //if ( (mesh->tim->mode & 0x3) < 2 ) {
-                            
-                            //setClut(poly4,             
-                            
-                                    //mesh->tim->crect->x,
-                            
-                                    //mesh->tim->crect->y
-                            //);
-                            
-                        //}
-                        
-                        //CVECTOR outCol  = {128,128,128,0};
-                        
-                        //CVECTOR outCol1 = {128,128,128,0};
-                        
-                        //CVECTOR outCol2 = {128,128,128,0};
-                        
-                        //CVECTOR outCol3 = {128,128,128,0};
-
-                        //NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.pad ]  , &mesh->tmesh->c[ mesh->index[t].order.pad ], *mesh->p, &outCol);
-                        
-                        //NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vz ], &mesh->tmesh->c[ mesh->index[t].order.vz ], *mesh->p, &outCol1);
-                        
-                        //NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vx ], &mesh->tmesh->c[ mesh->index[t].order.vx ], *mesh->p, &outCol2);
-                        
-                        //NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vy ], &mesh->tmesh->c[  mesh->index[t].order.vy ], *mesh->p, &outCol3);
-
-                    //if (*mesh->isPrism){ 
-                        
-                        //setRGB0(poly4, mesh->tmesh->c[i].r, mesh->tmesh->c[i].g, mesh->tmesh->c[i].b);
-
-                        //setRGB1(poly4, mesh->tmesh->c[i+1].r, mesh->tmesh->c[i+1].g, mesh->tmesh->c[i+1].b);
-
-                        //setRGB2(poly4, mesh->tmesh->c[i+2].r, mesh->tmesh->c[i+2].g, mesh->tmesh->c[i+2].b);
-
-                        //setRGB3(poly4, mesh->tmesh->c[i+3].r, mesh->tmesh->c[i+3].g, mesh->tmesh->c[i+3].b);
-                    
-                    //} else {
-                        
-                        //setRGB0(poly4, outCol.r, outCol.g  , outCol.b);
-
-                        //setRGB1(poly4, outCol1.r, outCol1.g, outCol1.b);
-
-                        //setRGB2(poly4, outCol2.r, outCol2.g, outCol2.b);
-
-                        //setRGB3(poly4, outCol3.r, outCol3.g, outCol3.b);
-                    //} 
-                           
-                    //if ( (*mesh->OTz > 0) && (*mesh->OTz < OTLEN) && (*mesh->p < 4096) ) {
-
-                        //AddPrim( &ot[ db ][ *mesh->OTz-3 ], poly4 );      
-                    //}
-                    
-                    //nextpri += sizeof( POLY_GT4 );
-                    
-                //}
-            
-            //t += 1;
-
-            //}
-        //}
-    //} 
-
-//};
-
 
 void callback() {
     
@@ -1617,7 +1003,7 @@ void callback() {
             
                 setCameraPos(&camera, camPtr->campos->pos, camPtr->campos->rot);
             
-                camPath.cursor = 0;
+                camPath->cursor = 0;
             
                 camMode = 0;
             

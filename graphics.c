@@ -26,7 +26,7 @@ void transformMesh(CAMERA * camera, MESH * mesh){
     //~ }
 };
 
-// Drawing
+//TODO : Break this monster in tiny bits ?
 
 void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw) {
 

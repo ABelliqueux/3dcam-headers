@@ -1,3 +1,4 @@
+#pragma once
 #include <sys/types.h>
 #include <libgte.h>
 #include <libgpu.h>

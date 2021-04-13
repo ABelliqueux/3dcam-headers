@@ -1,8 +1,6 @@
 #pragma once
 
 #include <sys/types.h>
-//~ #include <stddef.h>
-//~ #include <stdint.h>
 #include <libgte.h>
 #include <libgpu.h>
 
@@ -10,7 +8,10 @@
 
 #include "macros.h"
 
-#include "coridor2.h"
+//~ #ifndef TYPES
+    #include "custom_types.h"
+    //~ #define TYPES 1 
+//~ #endif
 
 short checkLineW( VECTOR * pointA, VECTOR * pointB, MESH * mesh );
 
