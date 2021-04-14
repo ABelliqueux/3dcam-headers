@@ -8,10 +8,7 @@
 
 #include "macros.h"
 
-//~ #ifndef TYPES
-    #include "custom_types.h"
-    //~ #define TYPES 1 
-//~ #endif
+#include "custom_types.h"
 
 short checkLineW( VECTOR * pointA, VECTOR * pointB, MESH * mesh );
 

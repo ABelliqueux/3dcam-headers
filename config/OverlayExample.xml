@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iso_project image_name="OverlayExample.bin" cue_sheet="OverlayExample.cue" no_xa="0">
+	<track type="data">
+		<identifiers
+			system			= "PLAYSTATION"
+			application		= "PLAYSTATION"
+			volume			= "MYDISC"
+			volume_set		= "MYDISC"
+			publisher		= "JABY"
+			data_preparer	= "MKPSXISO"
+			copyright		= "COPYLEFT"
+		/>
+		<license file="LICENSEE.DAT"/>
+		<directory_tree>
+			<file name="system.cnf"	  type="data"	source="config/OverlayExample.cnf"/>
+			<file name="SCES_003.90"  type="data"	source="main.ps-exe"/>
+			<file name="LEVEL.bin"  type="data"   source="Overlay.ovly0" />
+			<file name="LEVEL1.bin"  type="data"   source="Overlay.ovly1" />
+			<dummy sectors="1024"/>	
+		</directory_tree>
+	</track>
+</iso_project>

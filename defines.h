@@ -1,5 +1,3 @@
-#define LEVEL       1
-
 #define VMODE       0
 
 #define SCREENXRES 320

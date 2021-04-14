@@ -29,40 +29,46 @@
 #include "graphics.h"
 #include "space.h"
 
-#include "defines.h"
+#include <libcd.h>
+
+//~ #include "defines.h"
 
 // START OVERLAY
 
-//~ extern u_long __load_start_ovly0;
+extern u_long __load_start_ovly0;
 
-//~ #define RUN_OVERLAY1
-//~ #define USE_POINTER
+//~ #define LEVEL 0
+//#define USE_POINTER
 
-//~ #ifdef RUN_OVERLAY1
-  //~ static const char*const overlayFile = "\\LEVEL.bin;1";
+//~ #if LEVEL == 0
+  //~ static const char*const overlayFile = "\\level.bin;1";
 //~ #else
-  //~ static const char*const overlayFile = "\\LEVEL1.bin;1";
+  //~ static const char*const overlayFile = "\\level1.bin;1";
 //~ #endif
 
 //~ #ifdef USE_POINTER
 
-//~ #ifdef RUN_OVERLAY1
+//~ #if LEVEL == 0
   //~ #include "levels/level.h"
 //~ #else
   //~ #include "levels/level1.h"
 //~ #endif
 
 //~ #else
-//~ #define str (char*)(&__load_start_ovly0)
+  //~ #define str (char*)(&__load_start_ovly0)
 //~ #endif
 
-// START OVERLAY
+// END OVERLAY
 
 //~ #if LEVEL == 0
 #include "levels/level.h"
 //~ #elif LEVEL == 1
-  //~ #include "levels/level1.h"
+#include "levels/level1.h"
 //~ #endif
+
+static char* overlayFile;
+    
+char level = 1;
 
 // Display and draw environments, double buffered
 
@@ -129,31 +135,28 @@ VECTOR fVecActor = {0,0,0,0};
 
 u_long triCount = 0;
 
+
+// TODO : Add switch case to get the correct pointers
+
     // Get needed pointers from level file
-    
-    MATRIX * cmat = &level_cmat;
-    
-    MATRIX * lgtmat = &level_lgtmat;
-    
-    MESH * actorPtr, * levelPtr, * propPtr;
-    
+
+    MATRIX * cmat, *lgtmat;
+
+    MESH * actorPtr, * levelPtr, * propPtr, ** meshes;
+
+    int * meshes_length;
+
     NODE * curNode;
-    
-    MESH ** meshes = level_meshes;
-    
-    int * meshes_length = &level_meshes_length;
-    
+
     CAMPATH * camPath;
-    
-    CAMANGLE * camPtr; 
-    
-    CAMANGLE ** camAngles = level_camAngles;
-    
+
+    CAMANGLE * camPtr, ** camAngles;
+
     // Get rid of those
-    
-    MESH * meshPlan = &level_meshPlan;
-    
-    VECTOR * modelPlan_pos = &level_modelPlan_pos;
+
+    MESH * meshPlan;
+
+    VECTOR * modelPlan_pos;
 
 // Pad 
 
@@ -161,27 +164,85 @@ void callback();
 
 int main() {
     
-    actorPtr = level_actorPtr;
+    CdInit();
 
-    levelPtr = level_levelPtr;
+    int cdread = 0, cdsync = 1;
+    
+    if ( level == 0) {
+        
+        overlayFile = "\\level.bin;1";
+    
+    } else {
+        
+        overlayFile = "\\level1.bin;1";
+    }
+	
+	cdread = CdReadFile( (char *)(overlayFile), &__load_start_ovly0, 0);
+	
+    cdsync = CdReadSync(0, NULL);
 
-    propPtr = level_propPtr;
+    if ( level == 0) {
     
-    camPtr  = level_camPtr;
+        cmat = &level_cmat;
     
-    curNode = level_curNode;
+        lgtmat = &level_lgtmat;
     
-    camPath = &level_camPath;
+        meshes = level_meshes;
     
+        meshes_length = &level_meshes_length;
+    
+        actorPtr = level_actorPtr;
+
+        levelPtr = level_levelPtr;
+
+        propPtr = level_propPtr;
+        
+        camPtr  = level_camPtr;
+        
+        camPath = &level_camPath;
+        
+        camAngles = level_camAngles;
+        
+        curNode = level_curNode;
+        
+        // Move these to drawPoly()
+    
+        meshPlan = &level_meshPlan;
+        
+        modelPlan_pos = &level_modelPlan_pos;
+        
+    } else if ( level == 1) {
+    
+        cmat = &level1_cmat;
+    
+        lgtmat = &level1_lgtmat;
+    
+        meshes = level1_meshes;
+    
+        meshes_length = &level1_meshes_length;
+    
+        actorPtr = level1_actorPtr;
+
+        levelPtr = level1_levelPtr;
+
+        propPtr = level1_propPtr;
+        
+        camPtr  = level1_camPtr;
+        
+        camPath = &level1_camPath;
+        
+        camAngles = level1_camAngles;
+        
+        curNode = level1_curNode;
+        
+        // Move these to drawPoly()
+    
+        meshPlan = &level1_meshPlan;
+        
+        modelPlan_pos = &level1_modelPlan_pos;
+        
+    }
     // Overlay 
-    
-    //~ CdInit();
-	
-	//~ CdReadFile( (char *)(overlayFile), &__load_start_ovly0, 0);
-	
-    //~ CdReadSync(0, NULL);
-    
-    //~ cmatP = &cmat;
     
     VECTOR sp = {CENTERX,CENTERY,0};
     
@@ -202,7 +263,6 @@ int main() {
     
 	init(disp, draw, db, cmat, &BGc, &BKc);
     
-
     generateTable();
 
     VSyncCallback(callback);
@@ -279,6 +339,8 @@ int main() {
     //~ while (1) {
     
     while ( VSync(1) ) {
+        
+        FntPrint("%d %d %x\n", cdread, cdsync, __load_start_ovly0);
         
         // Clear the main OT
 		
@@ -930,7 +992,7 @@ int main() {
 
         //~ FntPrint("CurNode : %x\nIndex: %d", curNode, curNode->siblings->index);
         
-        FntPrint("Time    : %d dt :%d\n", VSync(-1) / 60, dt);
+        FntPrint("Time    : %d dt :%d level: %d\n", VSync(-1) / 60, dt, level);
         //~ FntPrint("%d\n", curCamAngle );
         //~ FntPrint("%x\n", primbuff[db]);
        
@@ -1049,6 +1111,7 @@ void callback() {
     if ( pad & PADL1 ) {
     
         lgtang.vz += 32;
+        level = !level;
     
     }
     
