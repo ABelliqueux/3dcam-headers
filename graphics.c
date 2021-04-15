@@ -7,11 +7,11 @@ void transformMesh(CAMERA * camera, MESH * mesh){
                             
         // Apply rotation matrix
         
-        RotMatrix_gte(mesh->rot, &mat);            
+        RotMatrix_gte(&mesh->rot, &mat);            
         
         // Apply translation matrix
         
-        TransMatrix(&mat, mesh->pos);
+        TransMatrix(&mat, &mesh->pos);
                           
         // Compose matrix with cam
         
@@ -44,13 +44,13 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
             
             // If mesh is not part of precalculated background, draw them, else, discard
             
-            if ( !( *mesh->isBG ) || *camMode != 2) {
+            if ( !( mesh->isBG ) || *camMode != 2) {
             
                 poly = (POLY_GT3 *)*nextpri;
                 
                 // If Vertex Anim flag is set, use it
                 
-                if (*mesh->isAnim){
+                if (mesh->isAnim){
                 
                     // If interpolation flag is set, use it
                     
@@ -137,9 +137,9 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                                    
                                     ( long* ) &poly->x0, ( long* ) &poly->x1, ( long* ) &poly->x2,
                                    
-                                    mesh->p,
+                                    &mesh->p,
                                    
-                                    mesh->OTz,
+                                    &mesh->OTz,
                                    
                                     Flag
                                 );
@@ -160,9 +160,9 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                                         
                                         ( long* ) &poly->x0, ( long* ) &poly->x1, ( long* ) &poly->x2,
                                         
-                                        mesh->p,
+                                        &mesh->p,
                                         
-                                        mesh->OTz,
+                                        &mesh->OTz,
                                         
                                         Flag
                                     );
@@ -184,9 +184,9 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                                 
                                 ( long * ) &poly->x0, ( long * ) &poly->x1, ( long * ) &poly->x2,
                                 
-                                mesh->p,
+                                &mesh->p,
                                 
-                                mesh->OTz,
+                                &mesh->OTz,
                                 
                                 Flag
                             );
@@ -195,7 +195,7 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                 
                 // Do not draw invisible meshes 
                 
-                if ( nclip > 0 && *mesh->OTz > 0 && (*mesh->p < 4096) ) {
+                if ( nclip > 0 && mesh->OTz > 0 && (mesh->p < 4096) ) {
 
                     
                     SetPolyGT3( poly );
@@ -204,7 +204,7 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
 
                     // FIXME : Doesn't work with pre-rendered BGs
 
-                    if ( *mesh->isPrism ) { 
+                    if ( mesh->isPrism ) { 
                         
                         // Transparency effect :
                         
@@ -266,7 +266,7 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                                 mesh->tim->crect->y);
                     }
                     
-                    if (*mesh->isSprite){ 
+                    if ( mesh->isSprite ) { 
                                  
                         SetShadeTex( poly, 1 );
                     
@@ -279,15 +279,15 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                     
                     CVECTOR outCol2 = { 128,128,128,0 };
                     
-                    NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vx ], &mesh->tmesh->c[ mesh->index[t].order.vx ], *mesh->p, &outCol);
+                    NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vx ], &mesh->tmesh->c[ mesh->index[t].order.vx ], mesh->p, &outCol);
 
-                    NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vz ], &mesh->tmesh->c[ mesh->index[t].order.vz ], *mesh->p, &outCol1);
+                    NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vz ], &mesh->tmesh->c[ mesh->index[t].order.vz ], mesh->p, &outCol1);
 
-                    NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vy ], &mesh->tmesh->c[ mesh->index[t].order.vy ], *mesh->p, &outCol2);                           
+                    NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vy ], &mesh->tmesh->c[ mesh->index[t].order.vy ], mesh->p, &outCol2);                           
                 
                     // If transparent effect is in use, inhibate shadows
                 
-                    if (*mesh->isPrism){ 
+                    if (mesh->isPrism){ 
                         
                         // Use un-interpolated (i.e: no light, no fog) colors
 
@@ -306,9 +306,9 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                         setRGB2(poly, outCol2.r, outCol2.g, outCol2.b);
                     } 
                            
-                    if ( (*mesh->OTz > 0) /*&& (*mesh->OTz < OTLEN)*/ && (*mesh->p < 4096) ) {
+                    if ( (mesh->OTz > 0) /*&& (*mesh->OTz < OTLEN)*/ && (mesh->p < 4096) ) {
                         
-                        AddPrim(&ot[ *mesh->OTz-2 ], poly);
+                        AddPrim(&ot[ mesh->OTz-2 ], poly);
                     }
                     
                     //~ mesh->pos2D.vx = *(&poly->x0);
@@ -336,13 +336,13 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
             
             // if mesh is not part of BG, draw them, else, discard
             
-            if ( !(*mesh->isBG) || *camMode != 2 ) {
+            if ( !(mesh->isBG) || *camMode != 2 ) {
             
                 poly4 = (POLY_GT4 *)*nextpri;
                                 
                 // Vertex Anim 
 
-                if (*mesh->isAnim){
+                if (mesh->isAnim){
                     
                     // with interpolation
 
@@ -420,9 +420,9 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                                     
                                     ( long* )&poly4->x0, ( long* )&poly4->x1, ( long* )&poly4->x2, ( long* )&poly4->x3,
                                     
-                                    mesh->p,
+                                    &mesh->p,
                                     
-                                    mesh->OTz,
+                                    &mesh->OTz,
                                     
                                     Flag
                                 
@@ -444,9 +444,9 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                                     
                                     ( long* )&poly4->x0, ( long* )&poly4->x1, ( long* )&poly4->x2, ( long* )&poly4->x3,
                                     
-                                    mesh->p,
+                                    &mesh->p,
                                     
-                                    mesh->OTz,
+                                    &mesh->OTz,
                                     
                                     Flag
                                 );
@@ -469,15 +469,15 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                                
                                 (long*)&poly4->x0, (long*)&poly4->x1, (long*)&poly4->x2, (long*)&poly4->x3,
                                
-                                mesh->p,
+                                &mesh->p,
                                
-                                mesh->OTz,
+                                &mesh->OTz,
                                
                                 Flag
                             );
                 }
                 
-                if (nclip > 0 && *mesh->OTz > 0 && (*mesh->p < 4096)) {
+                if (nclip > 0 && mesh->OTz > 0 && (mesh->p < 4096)) {
              
                     SetPolyGT4(poly4);
                         
@@ -521,7 +521,7 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                 
                     // Transparency effect
                     
-                    if (*mesh->isPrism){ 
+                    if (mesh->isPrism){ 
                         
                         // Use current DRAWENV clip as TPAGE
                         
@@ -580,7 +580,7 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
 
                     }
                     
-                    if (*mesh->isSprite){ 
+                    if (mesh->isSprite){ 
                                  
                         SetShadeTex( poly4, 1 );
                     
@@ -606,15 +606,15 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                         
                         CVECTOR outCol3 = {128,128,128,0};
 
-                        NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.pad ]  , &mesh->tmesh->c[ mesh->index[t].order.pad ], *mesh->p, &outCol);
+                        NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.pad ] , &mesh->tmesh->c[ mesh->index[t].order.pad ], mesh->p, &outCol);
                         
-                        NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vz ], &mesh->tmesh->c[ mesh->index[t].order.vz ], *mesh->p, &outCol1);
+                        NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vz ], &mesh->tmesh->c[ mesh->index[t].order.vz ], mesh->p, &outCol1);
                         
-                        NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vx ], &mesh->tmesh->c[ mesh->index[t].order.vx ], *mesh->p, &outCol2);
+                        NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vx ], &mesh->tmesh->c[ mesh->index[t].order.vx ], mesh->p, &outCol2);
                         
-                        NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vy ], &mesh->tmesh->c[  mesh->index[t].order.vy ], *mesh->p, &outCol3);
+                        NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vy ], &mesh->tmesh->c[  mesh->index[t].order.vy ], mesh->p, &outCol3);
 
-                    if (*mesh->isPrism){ 
+                    if (mesh->isPrism){ 
                         
                         setRGB0(poly4, mesh->tmesh->c[i].r, mesh->tmesh->c[i].g, mesh->tmesh->c[i].b);
 
@@ -635,9 +635,9 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                         setRGB3(poly4, outCol3.r, outCol3.g, outCol3.b);
                     } 
                            
-                    if ( (*mesh->OTz > 0) /*&& (*mesh->OTz < OTLEN)*/ && (*mesh->p < 4096) ) {
+                    if ( (mesh->OTz > 0) /*&& (*mesh->OTz < OTLEN)*/ && (mesh->p < 4096) ) {
 
-                        AddPrim( &ot[ *mesh->OTz-3 ], poly4 );      
+                        AddPrim( &ot[ mesh->OTz-3 ], poly4 );      
                     }
                     
                     *nextpri += sizeof( POLY_GT4 );

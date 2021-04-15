@@ -20,7 +20,7 @@
 // Blender debug mode
 // bpy. app. debug = True 
 
-//~ #define _WCHAR_T
+#define _WCHAR_T
 
 #include "psx.h"
 #include "math.h"
@@ -29,22 +29,28 @@
 #include "graphics.h"
 #include "space.h"
 
-#include <libcd.h>
 
-//~ #include "defines.h"
+//~ #define USECD
 
 // START OVERLAY
 
-extern u_long __load_start_ovly0;
+extern u_long load_all_overlays_here;
+extern u_long __lvl0_end;
+extern u_long __lvl1_end;
 
-//~ #define LEVEL 0
+#define LLEVEL 1
+
 //#define USE_POINTER
 
-//~ #if LEVEL == 0
-  //~ static const char*const overlayFile = "\\level.bin;1";
-//~ #else
-  //~ static const char*const overlayFile = "\\level1.bin;1";
-//~ #endif
+#if LLEVEL == 0
+
+    static const char*const overlayFile = "\\level0.bin;1";
+
+#else
+
+    static const char*const overlayFile = "\\level1.bin;1";
+
+#endif
 
 //~ #ifdef USE_POINTER
 
@@ -60,15 +66,13 @@ extern u_long __load_start_ovly0;
 
 // END OVERLAY
 
-//~ #if LEVEL == 0
-#include "levels/level.h"
-//~ #elif LEVEL == 1
-#include "levels/level1.h"
-//~ #endif
+#include "levels/level0.h"
 
-static char* overlayFile;
+#include "levels/level1.h"
+
+//~ static char* overlayFile;
     
-char level = 1;
+//~ char level = 0;
 
 // Display and draw environments, double buffered
 
@@ -138,25 +142,25 @@ u_long triCount = 0;
 
 // TODO : Add switch case to get the correct pointers
 
-    // Get needed pointers from level file
+// Get needed pointers from level file
 
-    MATRIX * cmat, *lgtmat;
+MATRIX * cmat, *lgtmat;
 
-    MESH * actorPtr, * levelPtr, * propPtr, ** meshes;
+MESH * actorPtr, * levelPtr, * propPtr, ** meshes;
 
-    int * meshes_length;
+int * meshes_length;
 
-    NODE * curNode;
+NODE * curNode;
 
-    CAMPATH * camPath;
+CAMPATH * camPath;
 
-    CAMANGLE * camPtr, ** camAngles;
+CAMANGLE * camPtr, ** camAngles;
 
-    // Get rid of those
+// Get rid of those
 
-    MESH * meshPlan;
+MESH * meshPlan;
 
-    VECTOR * modelPlan_pos;
+VECTOR * modelPlan_pos;
 
 // Pad 
 
@@ -164,84 +168,106 @@ void callback();
 
 int main() {
     
-    CdInit();
+    // Load overlay
+    
+    
 
-    int cdread = 0, cdsync = 1;
+    #ifdef USECD
     
-    if ( level == 0) {
-        
-        overlayFile = "\\level.bin;1";
+        CdInit();
     
-    } else {
-        
-        overlayFile = "\\level1.bin;1";
-    }
-	
-	cdread = CdReadFile( (char *)(overlayFile), &__load_start_ovly0, 0);
-	
-    cdsync = CdReadSync(0, NULL);
+        LoadLevel(overlayFile, &load_all_overlays_here);
+    
+    #endif
 
-    if ( level == 0) {
+    if ( LLEVEL == 0 ) {
     
-        cmat = &level_cmat;
+        cmat    = level0.cmat;
     
-        lgtmat = &level_lgtmat;
+        lgtmat  = level0.lgtmat;
     
-        meshes = level_meshes;
+        meshes  = (MESH **)level0.meshes;
     
-        meshes_length = &level_meshes_length;
+        meshes_length = level0.meshes_length;
     
-        actorPtr = level_actorPtr;
+        actorPtr = level0.actorPtr;
 
-        levelPtr = level_levelPtr;
+        levelPtr = level0.levelPtr;
 
-        propPtr = level_propPtr;
+        propPtr  = level0.propPtr;
         
-        camPtr  = level_camPtr;
+        camPtr   = level0.camPtr;
         
-        camPath = &level_camPath;
+        camPath  = level0.camPath;
         
-        camAngles = level_camAngles;
+        camAngles = (CAMANGLE **)level0.camAngles;
         
-        curNode = level_curNode;
+        curNode   = level0.curNode;
         
         // Move these to drawPoly()
     
-        meshPlan = &level_meshPlan;
+        meshPlan  = level0.meshPlan;
         
-        modelPlan_pos = &level_modelPlan_pos;
-        
-    } else if ( level == 1) {
+        //~ cmat    = &level_cmat;
     
-        cmat = &level1_cmat;
+        //~ lgtmat  = &level_lgtmat;
     
-        lgtmat = &level1_lgtmat;
+        //~ meshes  = level_meshes;
     
-        meshes = level1_meshes;
+        //~ meshes_length = &level_meshes_length;
     
-        meshes_length = &level1_meshes_length;
-    
-        actorPtr = level1_actorPtr;
+        //~ actorPtr = level_actorPtr;
 
-        levelPtr = level1_levelPtr;
+        //~ levelPtr = level_levelPtr;
 
-        propPtr = level1_propPtr;
+        //~ propPtr  = level_propPtr;
         
-        camPtr  = level1_camPtr;
+        //~ camPtr   = level_camPtr;
         
-        camPath = &level1_camPath;
+        //~ camPath  = &level_camPath;
         
-        camAngles = level1_camAngles;
+        //~ camAngles = level_camAngles;
         
-        curNode = level1_curNode;
+        //~ curNode   = level_curNode;
+        
+        //~ // Move these to drawPoly()
+    
+        //~ meshPlan  = &level_meshPlan;
+        
+        //~ modelPlan_pos = &level_meshPlan.pos;
+        
+    } else if ( LLEVEL == 1) {
+    
+        cmat    = level1.cmat;
+    
+        lgtmat  = level1.lgtmat;
+    
+        meshes  = (MESH **)level1.meshes;
+    
+        meshes_length = level1.meshes_length;
+    
+        actorPtr = level1.actorPtr;
+
+        levelPtr = level1.levelPtr;
+
+        propPtr  = level1.propPtr;
+        
+        camPtr   = level1.camPtr;
+        
+        camPath  = level1.camPath;
+        
+        camAngles = (CAMANGLE **)level1.camAngles;
+        
+        curNode   = level1.curNode;
         
         // Move these to drawPoly()
     
-        meshPlan = &level1_meshPlan;
+        meshPlan  = level1.meshPlan;
         
-        modelPlan_pos = &level1_modelPlan_pos;
+        //~ modelPlan_pos = level1_meshPlan->pos;
         
     }
+    
     // Overlay 
     
     VECTOR sp = {CENTERX,CENTERY,0};
@@ -340,7 +366,7 @@ int main() {
     
     while ( VSync(1) ) {
         
-        FntPrint("%d %d %x\n", cdread, cdsync, __load_start_ovly0);
+        //~ FntPrint("%d %d %x %x\n", cdread, cdsync, &load_all_overlays_here, &__ovly0_end);
         
         // Clear the main OT
 		
@@ -388,27 +414,27 @@ int main() {
         
         //~ meshPlan.rot->vx = ( (objAngleToCam.vx >> 4) - 3076 ) * ( (objAngleToCam.vz >> 4) - 3076 ) >> 12 ;
         
-        meshPlan->rot->vy = -( (objAngleToCam.vy >> 4) + 1024 ) ;
+        meshPlan->rot.vy = -( (objAngleToCam.vy >> 4) + 1024 ) ;
 
         //~ posToCam = getVectorTo(*meshPlan.pos, camera.pos);
         
         //~ posToCam = getVectorTo(camera.pos, *meshPlan.pos);
 
-        posToCam.vx = -camera.pos.vx - modelPlan_pos->vx ;
+        posToCam.vx = -camera.pos.vx - meshPlan->pos.vx ;
         
-        posToCam.vz = -camera.pos.vz - modelPlan_pos->vz ;
+        posToCam.vz = -camera.pos.vz - meshPlan->pos.vz ;
         
-        posToCam.vy = -camera.pos.vy - modelPlan_pos->vy ;
+        posToCam.vy = -camera.pos.vy - meshPlan->pos.vy ;
         
         //~ psqrt(posToCam.vx * posToCam.vx + posToCam.vy * posToCam.vy);
         
         // Actor Forward vector for 3d relative orientation
 
-        fVecActor = *actorPtr->pos;
+        fVecActor = actorPtr->pos;
         
-        fVecActor.vx = actorPtr->pos->vx + (nsin(actorPtr->rot->vy/2));
+        fVecActor.vx = actorPtr->pos.vx + (nsin(actorPtr->rot.vy/2));
         
-        fVecActor.vz = actorPtr->pos->vz - (ncos(actorPtr->rot->vy/2));
+        fVecActor.vz = actorPtr->pos.vz - (ncos(actorPtr->rot.vy/2));
 
     // Camera modes
 
@@ -448,11 +474,11 @@ int main() {
         
             //~ applyVector(&InvCamPos, -1,-1,-1, *=);
             
-            angle = -actorPtr->rot->vy / 2;
+            angle = -actorPtr->rot.vy / 2;
             
             //~ angle = actorPtr->rot->vy;
 
-            getCameraXZ(&camera.x, &camera.z, actorPtr->pos->vx, actorPtr->pos->vz, angle, dist);
+            getCameraXZ(&camera.x, &camera.z, actorPtr->pos.vx, actorPtr->pos.vz, angle, dist);
 
             // FIXME! camera lerping to pos
             //~ angle += lerp(camera.rot.vy, -actorPtr->rot->vy, 128);
@@ -478,7 +504,7 @@ int main() {
             //~ fVecActor.vz = actorPtr->pos->vz - (ncos(actorPtr->rot->vy));
             
             
-            getCameraXZ(&camera.x, &camera.z, actorPtr->pos->vx, actorPtr->pos->vz, angle, dist);
+            getCameraXZ(&camera.x, &camera.z, actorPtr->pos.vx, actorPtr->pos.vz, angle, dist);
            
             angle += 10;
         }
@@ -804,12 +830,12 @@ int main() {
                  for ( int k = 0; k < *meshes_length; k ++ ) {
                 //~ for ( int k = 0; k < curNode->objects->index ; k ++){
                                         
-                     if ( ( *meshes[k]->isRigidBody == 1 ) ) {
+                     if ( ( meshes[k]->isRigidBody == 1 ) ) {
                     //~ if ( ( *curNode->rigidbodies->list[k]->isRigidBody == 1 ) ) {
 
                         //~ applyAcceleration(curNode->rigidbodies->list[k]->body);
                         
-                        applyAcceleration(meshes[k]->body);
+                        applyAcceleration( meshes[k]->body );
                     
                         // Get col with level                         ( modelgnd_body )        
                         
@@ -852,24 +878,24 @@ int main() {
                             
                             if ( propPtr->body->velocity.vx ) {
                                 
-                                VECTOR L = angularMom(*propPtr->body);
+                                VECTOR L = angularMom( *propPtr->body );
                                 
-                                propPtr->rot->vz -= L.vx;
+                                propPtr->rot.vz -= L.vx;
                             }
                             
                             if ( propPtr->body->velocity.vz ) {
                                 
                                 VECTOR L = angularMom( *propPtr->body );
                                 
-                                propPtr->rot->vx -= L.vz;
+                                propPtr->rot.vx -= L.vz;
                             }
                         }
                         
-                        meshes[k]->pos->vx = meshes[k]->body->position.vx;
+                        meshes[k]->pos.vx = meshes[k]->body->position.vx;
                         
-                        meshes[k]->pos->vy = meshes[k]->body->position.vy ;
+                        meshes[k]->pos.vy = meshes[k]->body->position.vy ;
                         
-                        meshes[k]->pos->vz = meshes[k]->body->position.vz;
+                        meshes[k]->pos.vz = meshes[k]->body->position.vz;
                         
                         
                     }
@@ -887,7 +913,7 @@ int main() {
         
         if ( (camMode == 2) && (camPtr->tim_data ) ) {
       
-            worldToScreen(actorPtr->pos, &actorPtr->pos2D);
+            worldToScreen( &actorPtr->pos, &actorPtr->pos2D );
         
         }
 
@@ -896,11 +922,11 @@ int main() {
         
         // position of cam relative to actor
         
-        posToActor.vx = actorPtr->pos->vx + camera.pos.vx;
+        posToActor.vx = actorPtr->pos.vx + camera.pos.vx;
         
-        posToActor.vz = actorPtr->pos->vz + camera.pos.vz;
+        posToActor.vz = actorPtr->pos.vz + camera.pos.vz;
         
-        posToActor.vy = actorPtr->pos->vy + camera.pos.vy;
+        posToActor.vy = actorPtr->pos.vy + camera.pos.vy;
         
     // Polygon drawing
         
@@ -992,7 +1018,7 @@ int main() {
 
         //~ FntPrint("CurNode : %x\nIndex: %d", curNode, curNode->siblings->index);
         
-        FntPrint("Time    : %d dt :%d level: %d\n", VSync(-1) / 60, dt, level);
+        FntPrint("Time    : %d dt :%d level: %d\n", VSync(-1) / 60, dt);
         //~ FntPrint("%d\n", curCamAngle );
         //~ FntPrint("%x\n", primbuff[db]);
        
@@ -1111,19 +1137,18 @@ void callback() {
     if ( pad & PADL1 ) {
     
         lgtang.vz += 32;
-        level = !level;
     
     }
     
     if ( pad & PADRup && !timer ){
     
-        if (*actorPtr->isPrism){
+        if (actorPtr->isPrism){
     
-            *actorPtr->isPrism = 0;
+            actorPtr->isPrism = 0;
     
         } else {
      
-            *actorPtr->isPrism = 1;
+            actorPtr->isPrism = 1;
      
         }
      
@@ -1166,9 +1191,9 @@ void callback() {
         
     if ( pad & PADLup ) {
         
-        actorPtr->body->gForce.vz = getVectorTo(fVecActor, *actorPtr->pos).vz >> 8 ;
+        actorPtr->body->gForce.vz = getVectorTo(fVecActor, actorPtr->pos).vz >> 8 ;
         
-        actorPtr->body->gForce.vx = -getVectorTo(fVecActor, *actorPtr->pos).vx >> 8 ;
+        actorPtr->body->gForce.vx = -getVectorTo(fVecActor, actorPtr->pos).vx >> 8 ;
         
         lastPad = pad;
     }
@@ -1182,9 +1207,9 @@ void callback() {
     
     if ( pad & PADLdown ) {
 
-        actorPtr->body->gForce.vz = -getVectorTo(fVecActor, *actorPtr->pos).vz >> 8 ;
+        actorPtr->body->gForce.vz = -getVectorTo(fVecActor, actorPtr->pos).vz >> 8 ;
 
-        actorPtr->body->gForce.vx = getVectorTo(fVecActor, *actorPtr->pos).vx >> 8 ;
+        actorPtr->body->gForce.vx = getVectorTo(fVecActor, actorPtr->pos).vx >> 8 ;
 
         lastPad = pad;
     }
@@ -1201,7 +1226,7 @@ void callback() {
     
     if ( pad & PADLleft ) {
 
-        actorPtr->rot->vy -= 32;
+        actorPtr->rot.vy -= 32;
 
         lastPad = pad;
 
@@ -1209,7 +1234,7 @@ void callback() {
     
     if ( pad & PADLright ) {
 
-        actorPtr->rot->vy += 32;
+        actorPtr->rot.vy += 32;
 
         lastPad = pad;
     }

@@ -1,36 +1,36 @@
-#include "level.h"
+#include "level0.h"
 
-CAMPOS level_camPos_camPath = {
+CAMPOS level0_camPos_camPath = {
 	{ -205,156,-17 },
 	{ 371,707,0 }
 };
 
-CAMPOS level_camPos_camPath_001 = {
+CAMPOS level0_camPos_camPath_001 = {
 	{ 490,101,113 },
 	{ 282,-192,0 }
 };
 
-CAMPOS level_camPos_camPath_002 = {
+CAMPOS level0_camPos_camPath_002 = {
 	{ 221,309,-48 },
 	{ 866,0,0 }
 };
 
-CAMPOS level_camPos_camPath_003 = {
+CAMPOS level0_camPos_camPath_003 = {
 	{ -159,57,61 },
 	{ 210,542,0 }
 };
 
-CAMPOS level_camPos_camPath_004 = {
+CAMPOS level0_camPos_camPath_004 = {
 	{ -208,216,-86 },
 	{ 447,800,0 }
 };
 
-CAMPOS level_camPos_camPath_005 = {
+CAMPOS level0_camPos_camPath_005 = {
 	{ -167,160,-624 },
 	{ 391,1419,0 }
 };
 
-CAMPATH level_camPath = {
+CAMPATH level0_camPath = {
 	5,
 	0,
 	0,
@@ -43,19 +43,19 @@ CAMPATH level_camPath = {
 	}
 };
 
-MATRIX level_lgtmat = {
+MATRIX level0_lgtmat = {
 	784,	1558,	2188,
 	-1742,	1368,	1710,
 	-1554,	1368,	-1882
 	};
 
-MATRIX level_cmat = {
+MATRIX level0_cmat = {
 	13,4096,0,
 	4096,0,36,
 	0,5,4096
 	};
 
-SVECTOR level_modelCube_mesh[] = {
+SVECTOR level0_modelCube_mesh[] = {
 	{ -32,21,-24 },
 	{ -32,-8,-26 },
 	{ -32,18,26 },
@@ -114,7 +114,7 @@ SVECTOR level_modelCube_mesh[] = {
 	{ -15,28,20 }
 };
 
-SVECTOR level_modelCube_normal[] = {
+SVECTOR level0_modelCube_normal[] = {
 	2258,624,3360, 0,
 	2625,2223,2224, 0,
 	2760,-1911,-2347, 0,
@@ -173,7 +173,7 @@ SVECTOR level_modelCube_normal[] = {
 	-800,-1875,3553, 0
 };
 
-SVECTOR level_modelCube_uv[] = {
+SVECTOR level0_modelCube_uv[] = {
 	19,123, 0, 0,
 	27,102, 0, 0,
 	19,112, 0, 0,
@@ -500,7 +500,7 @@ SVECTOR level_modelCube_uv[] = {
 	47,123, 0, 0
 };
 
-CVECTOR level_modelCube_color[] = {
+CVECTOR level0_modelCube_color[] = {
 	80, 80, 80, 0,
 	128, 128, 128, 0,
 	128, 128, 128, 0,
@@ -827,7 +827,7 @@ CVECTOR level_modelCube_color[] = {
 	128, 128, 128, 0
 };
 
-PRIM level_modelCube_index[] = {
+PRIM level0_modelCube_index[] = {
 	1,46,0,0,4,
 	2,3,48,0,4,
 	7,30,6,0,4,
@@ -938,20 +938,7 @@ PRIM level_modelCube_index[] = {
 	49,28,3,0,4
 };
 
-MATRIX level_modelCube_matrix = {0};
-VECTOR level_modelCube_pos    = {-282,-45,128, 0};
-SVECTOR level_modelCube_rot   = {0,899,0};
-short level_modelCube_isRigidBody = 0;
-short level_modelCube_isStaticBody = 1;
-short level_modelCube_isPrism = 0;
-short level_modelCube_isAnim = 0;
-short level_modelCube_isActor = 0;
-short level_modelCube_isLevel = 0;
-short level_modelCube_isBG = 0;
-short level_modelCube_isSprite = 0;
-long level_modelCube_p = 0;
-long level_modelCube_OTz = 0;
-BODY level_modelCube_body = {
+BODY level0_modelCube_body = {
 	{0, 0, 0, 0},
 	-282,-45,128, 0,
 	0,899,0, 0,
@@ -962,11 +949,11 @@ BODY level_modelCube_body = {
 	1024,
 	};
 
-TMESH level_modelCube = {
-	level_modelCube_mesh,
-	level_modelCube_normal,
-	level_modelCube_uv,
-	level_modelCube_color, 
+TMESH level0_modelCube = {
+	level0_modelCube_mesh,
+	level0_modelCube_normal,
+	level0_modelCube_uv,
+	level0_modelCube_color, 
 	108
 };
 
@@ -974,33 +961,33 @@ extern unsigned long _binary_TIM_cat_tim_start[];
 extern unsigned long _binary_TIM_cat_tim_end[];
 extern unsigned long _binary_TIM_cat_tim_length;
 
-TIM_IMAGE tim_cat;
+TIM_IMAGE level0_tim_cat;
 
-MESH level_meshCube = {
-	&level_modelCube,
-	level_modelCube_index,
-	&tim_cat,
+MESH level0_meshCube = {
+	&level0_modelCube,
+	level0_modelCube_index,
+	&level0_tim_cat,
 	_binary_TIM_cat_tim_start,
-	&level_modelCube_matrix,
-	&level_modelCube_pos,
-	&level_modelCube_rot,
-	&level_modelCube_isRigidBody,
-	&level_modelCube_isStaticBody,
-	&level_modelCube_isPrism,
-	&level_modelCube_isAnim,
-	&level_modelCube_isActor,
-	&level_modelCube_isLevel,
-	&level_modelCube_isBG,
-	&level_modelCube_isSprite,
-	&level_modelCube_p,
-	&level_modelCube_OTz,
-	&level_modelCube_body,
+	{0},
+	{-282,-45,128, 0},
+	{0,899,0},
+	0,
+	1,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	&level0_modelCube_body,
 	0,
 	0,
 	0
 };
 
-SVECTOR level_modelCylindre_mesh[] = {
+SVECTOR level0_modelCylindre_mesh[] = {
 	{ -2,35,10 },
 	{ 5,-30,41 },
 	{ 4,35,7 },
@@ -1024,7 +1011,7 @@ SVECTOR level_modelCylindre_mesh[] = {
 	{ -18,-30,37 }
 };
 
-SVECTOR level_modelCylindre_normal[] = {
+SVECTOR level0_modelCylindre_normal[] = {
 	-397,-1844,-3636, 0,
 	-369,3301,-2396, 0,
 	-2743,-1808,-2446, 0,
@@ -1048,7 +1035,7 @@ SVECTOR level_modelCylindre_normal[] = {
 	1056,3329,-2140, 0
 };
 
-SVECTOR level_modelCylindre_uv[] = {
+SVECTOR level0_modelCylindre_uv[] = {
 	32,134, 0, 0,
 	25,153, 0, 0,
 	33,153, 0, 0,
@@ -1165,7 +1152,7 @@ SVECTOR level_modelCylindre_uv[] = {
 	24,177, 0, 0
 };
 
-CVECTOR level_modelCylindre_color[] = {
+CVECTOR level0_modelCylindre_color[] = {
 	153,137,141, 0,
 	255,255,255, 0,
 	255,255,255, 0,
@@ -1282,7 +1269,7 @@ CVECTOR level_modelCylindre_color[] = {
 	255,255,255, 0
 };
 
-PRIM level_modelCylindre_index[] = {
+PRIM level0_modelCylindre_index[] = {
 	1,2,0,0,4,
 	3,4,2,0,4,
 	5,6,4,0,4,
@@ -1323,7 +1310,7 @@ PRIM level_modelCylindre_index[] = {
 	13,17,0,0,4
 };
 
-VANIM level_modelCylindre_anim = {
+VANIM level0_modelCylindre_anim = {
 	20,
 	21,
 	0,
@@ -1793,20 +1780,7 @@ VANIM level_modelCylindre_anim = {
 
 	}
 };
-MATRIX level_modelCylindre_matrix = {0};
-VECTOR level_modelCylindre_pos    = {-1,-57,523, 0};
-SVECTOR level_modelCylindre_rot   = {0,0,0};
-short level_modelCylindre_isRigidBody = 0;
-short level_modelCylindre_isStaticBody = 1;
-short level_modelCylindre_isPrism = 0;
-short level_modelCylindre_isAnim = 1;
-short level_modelCylindre_isActor = 0;
-short level_modelCylindre_isLevel = 0;
-short level_modelCylindre_isBG = 0;
-short level_modelCylindre_isSprite = 0;
-long level_modelCylindre_p = 0;
-long level_modelCylindre_OTz = 0;
-BODY level_modelCylindre_body = {
+BODY level0_modelCylindre_body = {
 	{0, 0, 0, 0},
 	-1,-57,523, 0,
 	0,0,0, 0,
@@ -1817,11 +1791,11 @@ BODY level_modelCylindre_body = {
 	0,
 	};
 
-TMESH level_modelCylindre = {
-	level_modelCylindre_mesh,
-	level_modelCylindre_normal,
-	level_modelCylindre_uv,
-	level_modelCylindre_color, 
+TMESH level0_modelCylindre = {
+	level0_modelCylindre_mesh,
+	level0_modelCylindre_normal,
+	level0_modelCylindre_uv,
+	level0_modelCylindre_color, 
 	38
 };
 
@@ -1829,33 +1803,33 @@ extern unsigned long _binary_TIM_home_tim_start[];
 extern unsigned long _binary_TIM_home_tim_end[];
 extern unsigned long _binary_TIM_home_tim_length;
 
-TIM_IMAGE tim_home;
+TIM_IMAGE level0_tim_home;
 
-MESH level_meshCylindre = {
-	&level_modelCylindre,
-	level_modelCylindre_index,
-	&tim_home,
+MESH level0_meshCylindre = {
+	&level0_modelCylindre,
+	level0_modelCylindre_index,
+	&level0_tim_home,
 	_binary_TIM_home_tim_start,
-	&level_modelCylindre_matrix,
-	&level_modelCylindre_pos,
-	&level_modelCylindre_rot,
-	&level_modelCylindre_isRigidBody,
-	&level_modelCylindre_isStaticBody,
-	&level_modelCylindre_isPrism,
-	&level_modelCylindre_isAnim,
-	&level_modelCylindre_isActor,
-	&level_modelCylindre_isLevel,
-	&level_modelCylindre_isBG,
-	&level_modelCylindre_isSprite,
-	&level_modelCylindre_p,
-	&level_modelCylindre_OTz,
-	&level_modelCylindre_body,
-	&level_modelCylindre_anim,
+	{0},
+	{-1,-57,523, 0},
+	{0,0,0},
+	0,
+	1,
+	0,
+	1,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	&level0_modelCylindre_body,
+	&level0_modelCylindre_anim,
 	0,
 	0
 };
 
-SVECTOR level_modelgnd_mesh[] = {
+SVECTOR level0_modelgnd_mesh[] = {
 	{ 200,0,-98 },
 	{ 103,0,-98 },
 	{ 200,0,-1 },
@@ -1894,7 +1868,7 @@ SVECTOR level_modelgnd_mesh[] = {
 	{ -580,0,194 }
 };
 
-SVECTOR level_modelgnd_normal[] = {
+SVECTOR level0_modelgnd_normal[] = {
 	0,4096,0, 0,
 	0,4096,0, 0,
 	0,4096,0, 0,
@@ -1933,154 +1907,154 @@ SVECTOR level_modelgnd_normal[] = {
 	0,4096,0, 0
 };
 
-SVECTOR level_modelgnd_uv[] = {
-	64,64, 0, 0,
-	64,127, 0, 0,
-	127,127, 0, 0,
-	64,0, 0, 0,
-	127,64, 0, 0,
-	127,0, 0, 0,
-	64,64, 0, 0,
-	127,127, 0, 0,
-	127,64, 0, 0,
-	127,0, 0, 0,
-	64,0, 0, 0,
-	64,64, 0, 0,
-	64,0, 0, 0,
-	64,64, 0, 0,
-	127,64, 0, 0,
-	64,0, 0, 0,
-	127,64, 0, 0,
-	127,0, 0, 0,
-	64,64, 0, 0,
-	127,127, 0, 0,
-	127,64, 0, 0,
-	0,0, 0, 0,
-	0,64, 0, 0,
-	64,64, 0, 0,
-	0,0, 0, 0,
-	64,64, 0, 0,
-	64,0, 0, 0,
-	127,0, 0, 0,
-	64,64, 0, 0,
-	127,64, 0, 0,
-	64,64, 0, 0,
-	64,127, 0, 0,
-	127,127, 0, 0,
-	64,64, 0, 0,
-	64,127, 0, 0,
-	127,127, 0, 0,
-	127,0, 0, 0,
-	64,0, 0, 0,
-	64,64, 0, 0,
-	64,0, 0, 0,
-	64,64, 0, 0,
-	127,64, 0, 0,
-	64,64, 0, 0,
-	127,127, 0, 0,
-	127,64, 0, 0,
-	255,63, 0, 0,
-	255,0, 0, 0,
-	191,0, 0, 0,
-	255,63, 0, 0,
-	191,0, 0, 0,
-	191,63, 0, 0,
-	127,0, 0, 0,
-	64,64, 0, 0,
-	127,64, 0, 0,
-	64,0, 0, 0,
-	127,64, 0, 0,
-	127,0, 0, 0,
-	64,64, 0, 0,
-	127,127, 0, 0,
-	127,64, 0, 0,
-	64,64, 0, 0,
-	64,127, 0, 0,
-	127,127, 0, 0,
-	64,0, 0, 0,
-	64,64, 0, 0,
-	127,64, 0, 0,
-	127,64, 0, 0,
-	64,0, 0, 0,
-	64,64, 0, 0,
-	127,64, 0, 0,
-	127,0, 0, 0,
-	64,0, 0, 0,
-	64,0, 0, 0,
-	127,64, 0, 0,
-	127,0, 0, 0,
-	64,64, 0, 0,
-	127,127, 0, 0,
-	127,64, 0, 0,
-	64,64, 0, 0,
-	64,127, 0, 0,
-	127,127, 0, 0,
-	127,64, 0, 0,
-	64,0, 0, 0,
-	64,64, 0, 0,
-	64,0, 0, 0,
-	64,64, 0, 0,
-	127,64, 0, 0,
-	127,64, 0, 0,
-	127,0, 0, 0,
-	64,0, 0, 0,
-	64,0, 0, 0,
-	127,64, 0, 0,
-	127,0, 0, 0,
-	64,64, 0, 0,
-	127,127, 0, 0,
-	127,64, 0, 0,
-	127,64, 0, 0,
-	64,0, 0, 0,
-	64,64, 0, 0,
-	64,64, 0, 0,
-	64,127, 0, 0,
-	127,127, 0, 0,
-	64,0, 0, 0,
-	64,64, 0, 0,
-	127,64, 0, 0,
-	127,64, 0, 0,
-	127,0, 0, 0,
-	64,0, 0, 0,
-	64,0, 0, 0,
-	127,64, 0, 0,
-	127,0, 0, 0,
-	64,64, 0, 0,
-	127,127, 0, 0,
-	127,64, 0, 0,
-	127,64, 0, 0,
-	64,0, 0, 0,
-	64,64, 0, 0,
-	64,64, 0, 0,
-	64,127, 0, 0,
-	127,127, 0, 0,
-	64,0, 0, 0,
-	64,64, 0, 0,
-	127,64, 0, 0,
-	127,64, 0, 0,
-	127,0, 0, 0,
-	64,0, 0, 0,
-	0,64, 0, 0,
-	64,0, 0, 0,
-	0,0, 0, 0,
-	64,64, 0, 0,
-	127,127, 0, 0,
-	127,64, 0, 0,
-	64,64, 0, 0,
-	0,0, 0, 0,
-	0,64, 0, 0,
-	64,64, 0, 0,
-	64,127, 0, 0,
-	127,127, 0, 0,
-	0,64, 0, 0,
-	64,64, 0, 0,
-	64,0, 0, 0,
-	64,64, 0, 0,
-	64,0, 0, 0,
-	0,0, 0, 0
+SVECTOR level0_modelgnd_uv[] = {
+	65,63, 0, 0,
+	65,126, 0, 0,
+	128,126, 0, 0,
+	65,0, 0, 0,
+	128,63, 0, 0,
+	128,0, 0, 0,
+	65,63, 0, 0,
+	128,126, 0, 0,
+	128,63, 0, 0,
+	128,0, 0, 0,
+	65,0, 0, 0,
+	65,63, 0, 0,
+	65,0, 0, 0,
+	65,63, 0, 0,
+	128,63, 0, 0,
+	65,0, 0, 0,
+	128,63, 0, 0,
+	128,0, 0, 0,
+	65,63, 0, 0,
+	128,126, 0, 0,
+	128,63, 0, 0,
+	1,0, 0, 0,
+	1,63, 0, 0,
+	65,63, 0, 0,
+	1,0, 0, 0,
+	65,63, 0, 0,
+	65,0, 0, 0,
+	128,0, 0, 0,
+	65,63, 0, 0,
+	128,63, 0, 0,
+	65,63, 0, 0,
+	65,126, 0, 0,
+	128,126, 0, 0,
+	65,63, 0, 0,
+	65,126, 0, 0,
+	128,126, 0, 0,
+	128,0, 0, 0,
+	65,0, 0, 0,
+	65,63, 0, 0,
+	65,0, 0, 0,
+	65,63, 0, 0,
+	128,63, 0, 0,
+	65,63, 0, 0,
+	128,126, 0, 0,
+	128,63, 0, 0,
+	192,62, 0, 0,
+	192,0, 0, 0,
+	129,0, 0, 0,
+	192,62, 0, 0,
+	129,0, 0, 0,
+	129,62, 0, 0,
+	128,0, 0, 0,
+	65,63, 0, 0,
+	128,63, 0, 0,
+	65,0, 0, 0,
+	128,63, 0, 0,
+	128,0, 0, 0,
+	65,63, 0, 0,
+	128,126, 0, 0,
+	128,63, 0, 0,
+	65,63, 0, 0,
+	65,126, 0, 0,
+	128,126, 0, 0,
+	65,0, 0, 0,
+	65,63, 0, 0,
+	128,63, 0, 0,
+	128,63, 0, 0,
+	65,0, 0, 0,
+	65,63, 0, 0,
+	128,63, 0, 0,
+	128,0, 0, 0,
+	65,0, 0, 0,
+	65,0, 0, 0,
+	128,63, 0, 0,
+	128,0, 0, 0,
+	65,63, 0, 0,
+	128,126, 0, 0,
+	128,63, 0, 0,
+	65,63, 0, 0,
+	65,126, 0, 0,
+	128,126, 0, 0,
+	128,63, 0, 0,
+	65,0, 0, 0,
+	65,63, 0, 0,
+	65,0, 0, 0,
+	65,63, 0, 0,
+	128,63, 0, 0,
+	128,63, 0, 0,
+	128,0, 0, 0,
+	65,0, 0, 0,
+	65,0, 0, 0,
+	128,63, 0, 0,
+	128,0, 0, 0,
+	65,63, 0, 0,
+	128,126, 0, 0,
+	128,63, 0, 0,
+	128,63, 0, 0,
+	65,0, 0, 0,
+	65,63, 0, 0,
+	65,63, 0, 0,
+	65,126, 0, 0,
+	128,126, 0, 0,
+	65,0, 0, 0,
+	65,63, 0, 0,
+	128,63, 0, 0,
+	128,63, 0, 0,
+	128,0, 0, 0,
+	65,0, 0, 0,
+	65,0, 0, 0,
+	128,63, 0, 0,
+	128,0, 0, 0,
+	65,63, 0, 0,
+	128,126, 0, 0,
+	128,63, 0, 0,
+	128,63, 0, 0,
+	65,0, 0, 0,
+	65,63, 0, 0,
+	65,63, 0, 0,
+	65,126, 0, 0,
+	128,126, 0, 0,
+	65,0, 0, 0,
+	65,63, 0, 0,
+	128,63, 0, 0,
+	128,63, 0, 0,
+	128,0, 0, 0,
+	65,0, 0, 0,
+	1,63, 0, 0,
+	65,0, 0, 0,
+	1,0, 0, 0,
+	65,63, 0, 0,
+	128,126, 0, 0,
+	128,63, 0, 0,
+	65,63, 0, 0,
+	1,0, 0, 0,
+	1,63, 0, 0,
+	65,63, 0, 0,
+	65,126, 0, 0,
+	128,126, 0, 0,
+	1,63, 0, 0,
+	65,63, 0, 0,
+	65,0, 0, 0,
+	65,63, 0, 0,
+	65,0, 0, 0,
+	1,0, 0, 0
 };
 
-CVECTOR level_modelgnd_color[] = {
+CVECTOR level0_modelgnd_color[] = {
 	80, 80, 80, 0,
 	128, 128, 128, 0,
 	128, 128, 128, 0,
@@ -2227,7 +2201,7 @@ CVECTOR level_modelgnd_color[] = {
 	128, 128, 128, 0
 };
 
-PRIM level_modelgnd_index[] = {
+PRIM level0_modelgnd_index[] = {
 	9,5,3,0,4,
 	5,1,3,0,4,
 	9,3,7,0,4,
@@ -2278,20 +2252,7 @@ PRIM level_modelgnd_index[] = {
 	35,34,30,0,4
 };
 
-MATRIX level_modelgnd_matrix = {0};
-VECTOR level_modelgnd_pos    = {0,0,0, 0};
-SVECTOR level_modelgnd_rot   = {0,0,0};
-short level_modelgnd_isRigidBody = 0;
-short level_modelgnd_isStaticBody = 0;
-short level_modelgnd_isPrism = 0;
-short level_modelgnd_isAnim = 0;
-short level_modelgnd_isActor = 0;
-short level_modelgnd_isLevel = 1;
-short level_modelgnd_isBG = 0;
-short level_modelgnd_isSprite = 0;
-long level_modelgnd_p = 0;
-long level_modelgnd_OTz = 0;
-BODY level_modelgnd_body = {
+BODY level0_modelgnd_body = {
 	{0, 0, 0, 0},
 	0,0,0, 0,
 	0,0,0, 0,
@@ -2302,39 +2263,39 @@ BODY level_modelgnd_body = {
 	4096,
 	};
 
-TMESH level_modelgnd = {
-	level_modelgnd_mesh,
-	level_modelgnd_normal,
-	level_modelgnd_uv,
-	level_modelgnd_color, 
+TMESH level0_modelgnd = {
+	level0_modelgnd_mesh,
+	level0_modelgnd_normal,
+	level0_modelgnd_uv,
+	level0_modelgnd_color, 
 	48
 };
 
-MESH level_meshgnd = {
-	&level_modelgnd,
-	level_modelgnd_index,
-	&tim_home,
+MESH level0_meshgnd = {
+	&level0_modelgnd,
+	level0_modelgnd_index,
+	&level0_tim_home,
 	_binary_TIM_home_tim_start,
-	&level_modelgnd_matrix,
-	&level_modelgnd_pos,
-	&level_modelgnd_rot,
-	&level_modelgnd_isRigidBody,
-	&level_modelgnd_isStaticBody,
-	&level_modelgnd_isPrism,
-	&level_modelgnd_isAnim,
-	&level_modelgnd_isActor,
-	&level_modelgnd_isLevel,
-	&level_modelgnd_isBG,
-	&level_modelgnd_isSprite,
-	&level_modelgnd_p,
-	&level_modelgnd_OTz,
-	&level_modelgnd_body,
+	{0},
+	{0,0,0, 0},
+	{0,0,0},
+	0,
+	0,
+	0,
+	0,
+	0,
+	1,
+	0,
+	0,
+	0,
+	0,
+	&level0_modelgnd_body,
 	0,
 	0,
 	0
 };
 
-SVECTOR level_modelgnd_001_mesh[] = {
+SVECTOR level0_modelgnd_001_mesh[] = {
 	{ 200,0,194 },
 	{ 103,0,194 },
 	{ 5,0,194 },
@@ -2361,7 +2322,7 @@ SVECTOR level_modelgnd_001_mesh[] = {
 	{ -92,0,682 }
 };
 
-SVECTOR level_modelgnd_001_normal[] = {
+SVECTOR level0_modelgnd_001_normal[] = {
 	0,4096,0, 0,
 	0,4096,0, 0,
 	0,4096,0, 0,
@@ -2388,100 +2349,100 @@ SVECTOR level_modelgnd_001_normal[] = {
 	0,4096,0, 0
 };
 
-SVECTOR level_modelgnd_001_uv[] = {
-	64,64, 0, 0,
-	64,0, 0, 0,
-	0,0, 0, 0,
-	0,127, 0, 0,
-	64,127, 0, 0,
-	64,64, 0, 0,
-	64,64, 0, 0,
-	0,0, 0, 0,
-	0,64, 0, 0,
-	64,64, 0, 0,
-	0,64, 0, 0,
-	0,127, 0, 0,
-	64,64, 0, 0,
-	0,127, 0, 0,
-	64,127, 0, 0,
-	0,127, 0, 0,
-	64,64, 0, 0,
-	0,64, 0, 0,
-	64,64, 0, 0,
-	64,0, 0, 0,
-	0,0, 0, 0,
-	0,127, 0, 0,
-	64,127, 0, 0,
-	64,64, 0, 0,
-	64,64, 0, 0,
-	0,64, 0, 0,
-	0,127, 0, 0,
-	64,64, 0, 0,
-	0,0, 0, 0,
-	0,64, 0, 0,
-	64,64, 0, 0,
-	0,127, 0, 0,
-	64,127, 0, 0,
-	0,127, 0, 0,
-	64,64, 0, 0,
-	0,64, 0, 0,
-	64,64, 0, 0,
-	64,0, 0, 0,
-	0,0, 0, 0,
-	0,127, 0, 0,
-	64,127, 0, 0,
-	64,64, 0, 0,
-	64,64, 0, 0,
-	0,64, 0, 0,
-	0,127, 0, 0,
-	64,64, 0, 0,
-	0,0, 0, 0,
-	0,64, 0, 0,
-	64,64, 0, 0,
-	0,127, 0, 0,
-	64,127, 0, 0,
-	0,127, 0, 0,
-	64,64, 0, 0,
-	0,64, 0, 0,
-	64,64, 0, 0,
-	64,0, 0, 0,
-	0,0, 0, 0,
-	0,127, 0, 0,
-	64,127, 0, 0,
-	64,64, 0, 0,
-	64,64, 0, 0,
-	0,64, 0, 0,
-	0,127, 0, 0,
-	64,64, 0, 0,
-	0,0, 0, 0,
-	0,64, 0, 0,
-	64,64, 0, 0,
-	0,127, 0, 0,
-	64,127, 0, 0,
-	0,127, 0, 0,
-	64,64, 0, 0,
-	0,64, 0, 0,
-	64,64, 0, 0,
-	64,0, 0, 0,
-	0,0, 0, 0,
-	64,127, 0, 0,
-	128,127, 0, 0,
-	128,64, 0, 0,
-	64,64, 0, 0,
-	64,127, 0, 0,
-	128,127, 0, 0,
-	64,64, 0, 0,
-	0,0, 0, 0,
-	0,64, 0, 0,
-	64,64, 0, 0,
-	128,127, 0, 0,
-	128,64, 0, 0,
-	64,127, 0, 0,
-	128,64, 0, 0,
-	64,64, 0, 0
+SVECTOR level0_modelgnd_001_uv[] = {
+	191,64, 0, 0,
+	191,0, 0, 0,
+	127,0, 0, 0,
+	127,127, 0, 0,
+	191,127, 0, 0,
+	191,64, 0, 0,
+	191,64, 0, 0,
+	127,0, 0, 0,
+	127,64, 0, 0,
+	191,64, 0, 0,
+	127,64, 0, 0,
+	127,127, 0, 0,
+	191,64, 0, 0,
+	127,127, 0, 0,
+	191,127, 0, 0,
+	127,127, 0, 0,
+	191,64, 0, 0,
+	127,64, 0, 0,
+	191,64, 0, 0,
+	191,0, 0, 0,
+	127,0, 0, 0,
+	127,127, 0, 0,
+	191,127, 0, 0,
+	191,64, 0, 0,
+	191,64, 0, 0,
+	127,64, 0, 0,
+	127,127, 0, 0,
+	191,64, 0, 0,
+	127,0, 0, 0,
+	127,64, 0, 0,
+	191,64, 0, 0,
+	127,127, 0, 0,
+	191,127, 0, 0,
+	127,127, 0, 0,
+	191,64, 0, 0,
+	127,64, 0, 0,
+	191,64, 0, 0,
+	191,0, 0, 0,
+	127,0, 0, 0,
+	127,127, 0, 0,
+	191,127, 0, 0,
+	191,64, 0, 0,
+	191,64, 0, 0,
+	127,64, 0, 0,
+	127,127, 0, 0,
+	191,64, 0, 0,
+	127,0, 0, 0,
+	127,64, 0, 0,
+	191,64, 0, 0,
+	127,127, 0, 0,
+	191,127, 0, 0,
+	127,127, 0, 0,
+	191,64, 0, 0,
+	127,64, 0, 0,
+	191,64, 0, 0,
+	191,0, 0, 0,
+	127,0, 0, 0,
+	127,127, 0, 0,
+	191,127, 0, 0,
+	191,64, 0, 0,
+	191,64, 0, 0,
+	127,64, 0, 0,
+	127,127, 0, 0,
+	191,64, 0, 0,
+	127,0, 0, 0,
+	127,64, 0, 0,
+	191,64, 0, 0,
+	127,127, 0, 0,
+	191,127, 0, 0,
+	127,127, 0, 0,
+	191,64, 0, 0,
+	127,64, 0, 0,
+	191,64, 0, 0,
+	191,0, 0, 0,
+	127,0, 0, 0,
+	191,127, 0, 0,
+	255,127, 0, 0,
+	255,64, 0, 0,
+	191,64, 0, 0,
+	191,127, 0, 0,
+	255,127, 0, 0,
+	191,64, 0, 0,
+	127,0, 0, 0,
+	127,64, 0, 0,
+	191,64, 0, 0,
+	255,127, 0, 0,
+	255,64, 0, 0,
+	191,127, 0, 0,
+	255,64, 0, 0,
+	191,64, 0, 0
 };
 
-CVECTOR level_modelgnd_001_color[] = {
+CVECTOR level0_modelgnd_001_color[] = {
 	80, 80, 80, 0,
 	128, 128, 128, 0,
 	128, 128, 128, 0,
@@ -2574,7 +2535,7 @@ CVECTOR level_modelgnd_001_color[] = {
 	128, 128, 128, 0
 };
 
-PRIM level_modelgnd_001_index[] = {
+PRIM level0_modelgnd_001_index[] = {
 	6,2,1,0,4,
 	5,1,0,0,4,
 	6,1,5,0,4,
@@ -2607,20 +2568,7 @@ PRIM level_modelgnd_001_index[] = {
 	21,16,20,0,4
 };
 
-MATRIX level_modelgnd_001_matrix = {0};
-VECTOR level_modelgnd_001_pos    = {0,0,0, 0};
-SVECTOR level_modelgnd_001_rot   = {0,0,0};
-short level_modelgnd_001_isRigidBody = 0;
-short level_modelgnd_001_isStaticBody = 0;
-short level_modelgnd_001_isPrism = 0;
-short level_modelgnd_001_isAnim = 0;
-short level_modelgnd_001_isActor = 0;
-short level_modelgnd_001_isLevel = 1;
-short level_modelgnd_001_isBG = 0;
-short level_modelgnd_001_isSprite = 0;
-long level_modelgnd_001_p = 0;
-long level_modelgnd_001_OTz = 0;
-BODY level_modelgnd_001_body = {
+BODY level0_modelgnd_001_body = {
 	{0, 0, 0, 0},
 	0,0,0, 0,
 	0,0,0, 0,
@@ -2631,39 +2579,39 @@ BODY level_modelgnd_001_body = {
 	4096,
 	};
 
-TMESH level_modelgnd_001 = {
-	level_modelgnd_001_mesh,
-	level_modelgnd_001_normal,
-	level_modelgnd_001_uv,
-	level_modelgnd_001_color, 
+TMESH level0_modelgnd_001 = {
+	level0_modelgnd_001_mesh,
+	level0_modelgnd_001_normal,
+	level0_modelgnd_001_uv,
+	level0_modelgnd_001_color, 
 	30
 };
 
-MESH level_meshgnd_001 = {
-	&level_modelgnd_001,
-	level_modelgnd_001_index,
-	&tim_home,
+MESH level0_meshgnd_001 = {
+	&level0_modelgnd_001,
+	level0_modelgnd_001_index,
+	&level0_tim_home,
 	_binary_TIM_home_tim_start,
-	&level_modelgnd_001_matrix,
-	&level_modelgnd_001_pos,
-	&level_modelgnd_001_rot,
-	&level_modelgnd_001_isRigidBody,
-	&level_modelgnd_001_isStaticBody,
-	&level_modelgnd_001_isPrism,
-	&level_modelgnd_001_isAnim,
-	&level_modelgnd_001_isActor,
-	&level_modelgnd_001_isLevel,
-	&level_modelgnd_001_isBG,
-	&level_modelgnd_001_isSprite,
-	&level_modelgnd_001_p,
-	&level_modelgnd_001_OTz,
-	&level_modelgnd_001_body,
+	{0},
+	{0,0,0, 0},
+	{0,0,0},
+	0,
+	0,
+	0,
+	0,
+	0,
+	1,
+	0,
+	0,
+	0,
+	0,
+	&level0_modelgnd_001_body,
 	0,
 	0,
 	0
 };
 
-SVECTOR level_modelgnd_003_mesh[] = {
+SVECTOR level0_modelgnd_003_mesh[] = {
 	{ -224,0,-586 },
 	{ -321,0,-586 },
 	{ -419,0,-586 },
@@ -2690,7 +2638,7 @@ SVECTOR level_modelgnd_003_mesh[] = {
 	{ -516,0,-98 }
 };
 
-SVECTOR level_modelgnd_003_normal[] = {
+SVECTOR level0_modelgnd_003_normal[] = {
 	0,4096,0, 0,
 	0,4096,0, 0,
 	0,4096,0, 0,
@@ -2717,7 +2665,7 @@ SVECTOR level_modelgnd_003_normal[] = {
 	0,4096,0, 0
 };
 
-SVECTOR level_modelgnd_003_uv[] = {
+SVECTOR level0_modelgnd_003_uv[] = {
 	64,64, 0, 0,
 	64,0, 0, 0,
 	0,0, 0, 0,
@@ -2810,7 +2758,7 @@ SVECTOR level_modelgnd_003_uv[] = {
 	64,64, 0, 0
 };
 
-CVECTOR level_modelgnd_003_color[] = {
+CVECTOR level0_modelgnd_003_color[] = {
 	80, 80, 80, 0,
 	128, 128, 128, 0,
 	128, 128, 128, 0,
@@ -2903,7 +2851,7 @@ CVECTOR level_modelgnd_003_color[] = {
 	128, 128, 128, 0
 };
 
-PRIM level_modelgnd_003_index[] = {
+PRIM level0_modelgnd_003_index[] = {
 	6,2,1,0,4,
 	5,1,0,0,4,
 	6,1,5,0,4,
@@ -2936,20 +2884,7 @@ PRIM level_modelgnd_003_index[] = {
 	21,16,20,0,4
 };
 
-MATRIX level_modelgnd_003_matrix = {0};
-VECTOR level_modelgnd_003_pos    = {0,0,0, 0};
-SVECTOR level_modelgnd_003_rot   = {0,0,0};
-short level_modelgnd_003_isRigidBody = 0;
-short level_modelgnd_003_isStaticBody = 0;
-short level_modelgnd_003_isPrism = 0;
-short level_modelgnd_003_isAnim = 0;
-short level_modelgnd_003_isActor = 0;
-short level_modelgnd_003_isLevel = 1;
-short level_modelgnd_003_isBG = 0;
-short level_modelgnd_003_isSprite = 0;
-long level_modelgnd_003_p = 0;
-long level_modelgnd_003_OTz = 0;
-BODY level_modelgnd_003_body = {
+BODY level0_modelgnd_003_body = {
 	{0, 0, 0, 0},
 	0,0,0, 0,
 	0,0,0, 0,
@@ -2960,39 +2895,39 @@ BODY level_modelgnd_003_body = {
 	4096,
 	};
 
-TMESH level_modelgnd_003 = {
-	level_modelgnd_003_mesh,
-	level_modelgnd_003_normal,
-	level_modelgnd_003_uv,
-	level_modelgnd_003_color, 
+TMESH level0_modelgnd_003 = {
+	level0_modelgnd_003_mesh,
+	level0_modelgnd_003_normal,
+	level0_modelgnd_003_uv,
+	level0_modelgnd_003_color, 
 	30
 };
 
-MESH level_meshgnd_003 = {
-	&level_modelgnd_003,
-	level_modelgnd_003_index,
-	&tim_home,
+MESH level0_meshgnd_003 = {
+	&level0_modelgnd_003,
+	level0_modelgnd_003_index,
+	&level0_tim_home,
 	_binary_TIM_home_tim_start,
-	&level_modelgnd_003_matrix,
-	&level_modelgnd_003_pos,
-	&level_modelgnd_003_rot,
-	&level_modelgnd_003_isRigidBody,
-	&level_modelgnd_003_isStaticBody,
-	&level_modelgnd_003_isPrism,
-	&level_modelgnd_003_isAnim,
-	&level_modelgnd_003_isActor,
-	&level_modelgnd_003_isLevel,
-	&level_modelgnd_003_isBG,
-	&level_modelgnd_003_isSprite,
-	&level_modelgnd_003_p,
-	&level_modelgnd_003_OTz,
-	&level_modelgnd_003_body,
+	{0},
+	{0,0,0, 0},
+	{0,0,0},
+	0,
+	0,
+	0,
+	0,
+	0,
+	1,
+	0,
+	0,
+	0,
+	0,
+	&level0_modelgnd_003_body,
 	0,
 	0,
 	0
 };
 
-SVECTOR level_modelgnd_002_mesh[] = {
+SVECTOR level0_modelgnd_002_mesh[] = {
 	{ 459,0,-586 },
 	{ 361,0,-586 },
 	{ 264,0,-586 },
@@ -3019,7 +2954,7 @@ SVECTOR level_modelgnd_002_mesh[] = {
 	{ 166,0,-98 }
 };
 
-SVECTOR level_modelgnd_002_normal[] = {
+SVECTOR level0_modelgnd_002_normal[] = {
 	0,4096,0, 0,
 	0,4096,0, 0,
 	0,4096,0, 0,
@@ -3046,7 +2981,7 @@ SVECTOR level_modelgnd_002_normal[] = {
 	0,4096,0, 0
 };
 
-SVECTOR level_modelgnd_002_uv[] = {
+SVECTOR level0_modelgnd_002_uv[] = {
 	64,64, 0, 0,
 	64,0, 0, 0,
 	0,0, 0, 0,
@@ -3139,7 +3074,7 @@ SVECTOR level_modelgnd_002_uv[] = {
 	64,64, 0, 0
 };
 
-CVECTOR level_modelgnd_002_color[] = {
+CVECTOR level0_modelgnd_002_color[] = {
 	80, 80, 80, 0,
 	128, 128, 128, 0,
 	128, 128, 128, 0,
@@ -3232,7 +3167,7 @@ CVECTOR level_modelgnd_002_color[] = {
 	128, 128, 128, 0
 };
 
-PRIM level_modelgnd_002_index[] = {
+PRIM level0_modelgnd_002_index[] = {
 	6,2,1,0,4,
 	5,1,0,0,4,
 	6,1,5,0,4,
@@ -3265,20 +3200,7 @@ PRIM level_modelgnd_002_index[] = {
 	21,16,20,0,4
 };
 
-MATRIX level_modelgnd_002_matrix = {0};
-VECTOR level_modelgnd_002_pos    = {0,0,0, 0};
-SVECTOR level_modelgnd_002_rot   = {0,0,0};
-short level_modelgnd_002_isRigidBody = 0;
-short level_modelgnd_002_isStaticBody = 0;
-short level_modelgnd_002_isPrism = 0;
-short level_modelgnd_002_isAnim = 0;
-short level_modelgnd_002_isActor = 0;
-short level_modelgnd_002_isLevel = 1;
-short level_modelgnd_002_isBG = 0;
-short level_modelgnd_002_isSprite = 0;
-long level_modelgnd_002_p = 0;
-long level_modelgnd_002_OTz = 0;
-BODY level_modelgnd_002_body = {
+BODY level0_modelgnd_002_body = {
 	{0, 0, 0, 0},
 	0,0,0, 0,
 	0,0,0, 0,
@@ -3289,39 +3211,39 @@ BODY level_modelgnd_002_body = {
 	4096,
 	};
 
-TMESH level_modelgnd_002 = {
-	level_modelgnd_002_mesh,
-	level_modelgnd_002_normal,
-	level_modelgnd_002_uv,
-	level_modelgnd_002_color, 
+TMESH level0_modelgnd_002 = {
+	level0_modelgnd_002_mesh,
+	level0_modelgnd_002_normal,
+	level0_modelgnd_002_uv,
+	level0_modelgnd_002_color, 
 	30
 };
 
-MESH level_meshgnd_002 = {
-	&level_modelgnd_002,
-	level_modelgnd_002_index,
-	&tim_home,
+MESH level0_meshgnd_002 = {
+	&level0_modelgnd_002,
+	level0_modelgnd_002_index,
+	&level0_tim_home,
 	_binary_TIM_home_tim_start,
-	&level_modelgnd_002_matrix,
-	&level_modelgnd_002_pos,
-	&level_modelgnd_002_rot,
-	&level_modelgnd_002_isRigidBody,
-	&level_modelgnd_002_isStaticBody,
-	&level_modelgnd_002_isPrism,
-	&level_modelgnd_002_isAnim,
-	&level_modelgnd_002_isActor,
-	&level_modelgnd_002_isLevel,
-	&level_modelgnd_002_isBG,
-	&level_modelgnd_002_isSprite,
-	&level_modelgnd_002_p,
-	&level_modelgnd_002_OTz,
-	&level_modelgnd_002_body,
+	{0},
+	{0,0,0, 0},
+	{0,0,0},
+	0,
+	0,
+	0,
+	0,
+	0,
+	1,
+	0,
+	0,
+	0,
+	0,
+	&level0_modelgnd_002_body,
 	0,
 	0,
 	0
 };
 
-SVECTOR level_modelobject_mesh[] = {
+SVECTOR level0_modelobject_mesh[] = {
 	{ 9,17,-20 },
 	{ 9,0,-20 },
 	{ -9,17,-22 },
@@ -3332,7 +3254,7 @@ SVECTOR level_modelobject_mesh[] = {
 	{ -20,-32,18 }
 };
 
-SVECTOR level_modelobject_normal[] = {
+SVECTOR level0_modelobject_normal[] = {
 	-2161,-2336,2579, 0,
 	-2321,1316,3108, 0,
 	1891,-2286,2824, 0,
@@ -3343,7 +3265,7 @@ SVECTOR level_modelobject_normal[] = {
 	2458,2976,-1370, 0
 };
 
-SVECTOR level_modelobject_uv[] = {
+SVECTOR level0_modelobject_uv[] = {
 	103,62, 0, 0,
 	124,33, 0, 0,
 	124,62, 0, 0,
@@ -3382,7 +3304,7 @@ SVECTOR level_modelobject_uv[] = {
 	112,17, 0, 0
 };
 
-CVECTOR level_modelobject_color[] = {
+CVECTOR level0_modelobject_color[] = {
 	80, 80, 80, 0,
 	128, 128, 128, 0,
 	128, 128, 128, 0,
@@ -3421,7 +3343,7 @@ CVECTOR level_modelobject_color[] = {
 	128, 128, 128, 0
 };
 
-PRIM level_modelobject_index[] = {
+PRIM level0_modelobject_index[] = {
 	7,4,6,0,4,
 	7,5,4,0,4,
 	2,6,4,0,4,
@@ -3436,20 +3358,7 @@ PRIM level_modelobject_index[] = {
 	1,3,2,0,4
 };
 
-MATRIX level_modelobject_matrix = {0};
-VECTOR level_modelobject_pos    = {400,-22,-147, 0};
-SVECTOR level_modelobject_rot   = {0,2565,0};
-short level_modelobject_isRigidBody = 0;
-short level_modelobject_isStaticBody = 1;
-short level_modelobject_isPrism = 0;
-short level_modelobject_isAnim = 0;
-short level_modelobject_isActor = 0;
-short level_modelobject_isLevel = 0;
-short level_modelobject_isBG = 0;
-short level_modelobject_isSprite = 0;
-long level_modelobject_p = 0;
-long level_modelobject_OTz = 0;
-BODY level_modelobject_body = {
+BODY level0_modelobject_body = {
 	{0, 0, 0, 0},
 	400,-22,-147, 0,
 	0,2565,0, 0,
@@ -3460,83 +3369,70 @@ BODY level_modelobject_body = {
 	1024,
 	};
 
-TMESH level_modelobject = {
-	level_modelobject_mesh,
-	level_modelobject_normal,
-	level_modelobject_uv,
-	level_modelobject_color, 
+TMESH level0_modelobject = {
+	level0_modelobject_mesh,
+	level0_modelobject_normal,
+	level0_modelobject_uv,
+	level0_modelobject_color, 
 	12
 };
 
-MESH level_meshobject = {
-	&level_modelobject,
-	level_modelobject_index,
-	&tim_home,
+MESH level0_meshobject = {
+	&level0_modelobject,
+	level0_modelobject_index,
+	&level0_tim_home,
 	_binary_TIM_home_tim_start,
-	&level_modelobject_matrix,
-	&level_modelobject_pos,
-	&level_modelobject_rot,
-	&level_modelobject_isRigidBody,
-	&level_modelobject_isStaticBody,
-	&level_modelobject_isPrism,
-	&level_modelobject_isAnim,
-	&level_modelobject_isActor,
-	&level_modelobject_isLevel,
-	&level_modelobject_isBG,
-	&level_modelobject_isSprite,
-	&level_modelobject_p,
-	&level_modelobject_OTz,
-	&level_modelobject_body,
+	{0},
+	{400,-22,-147, 0},
+	{0,2565,0},
+	0,
+	1,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	&level0_modelobject_body,
 	0,
 	0,
 	0
 };
 
-SVECTOR level_modelPlan_mesh[] = {
+SVECTOR level0_modelPlan_mesh[] = {
 	{ -45,36,-3 },
 	{ 48,36,-3 },
 	{ -45,2,2 },
 	{ 48,2,2 }
 };
 
-SVECTOR level_modelPlan_normal[] = {
+SVECTOR level0_modelPlan_normal[] = {
 	0,638,4046, 0,
 	0,638,4046, 0,
 	0,638,4046, 0,
 	0,638,4046, 0
 };
 
-SVECTOR level_modelPlan_uv[] = {
+SVECTOR level0_modelPlan_uv[] = {
 	64,155, 0, 0,
 	129,155, 0, 0,
 	129,130, 0, 0,
 	64,130, 0, 0
 };
 
-CVECTOR level_modelPlan_color[] = {
+CVECTOR level0_modelPlan_color[] = {
 	80, 80, 80, 0,
 	128, 128, 128, 0,
 	128, 128, 128, 0
 };
 
-PRIM level_modelPlan_index[] = {
+PRIM level0_modelPlan_index[] = {
 	0,1,3,2,8
 };
 
-MATRIX level_modelPlan_matrix = {0};
-VECTOR level_modelPlan_pos    = {-40,-40,194, 0};
-SVECTOR level_modelPlan_rot   = {0,0,0};
-short level_modelPlan_isRigidBody = 0;
-short level_modelPlan_isStaticBody = 1;
-short level_modelPlan_isPrism = 0;
-short level_modelPlan_isAnim = 0;
-short level_modelPlan_isActor = 0;
-short level_modelPlan_isLevel = 0;
-short level_modelPlan_isBG = 0;
-short level_modelPlan_isSprite = 1;
-long level_modelPlan_p = 0;
-long level_modelPlan_OTz = 0;
-BODY level_modelPlan_body = {
+BODY level0_modelPlan_body = {
 	{0, 0, 0, 0},
 	-40,-40,194, 0,
 	0,0,0, 0,
@@ -3547,39 +3443,39 @@ BODY level_modelPlan_body = {
 	0,
 	};
 
-TMESH level_modelPlan = {
-	level_modelPlan_mesh,
-	level_modelPlan_normal,
-	level_modelPlan_uv,
-	level_modelPlan_color, 
+TMESH level0_modelPlan = {
+	level0_modelPlan_mesh,
+	level0_modelPlan_normal,
+	level0_modelPlan_uv,
+	level0_modelPlan_color, 
 	1
 };
 
-MESH level_meshPlan = {
-	&level_modelPlan,
-	level_modelPlan_index,
-	&tim_home,
+MESH level0_meshPlan = {
+	&level0_modelPlan,
+	level0_modelPlan_index,
+	&level0_tim_home,
 	_binary_TIM_home_tim_start,
-	&level_modelPlan_matrix,
-	&level_modelPlan_pos,
-	&level_modelPlan_rot,
-	&level_modelPlan_isRigidBody,
-	&level_modelPlan_isStaticBody,
-	&level_modelPlan_isPrism,
-	&level_modelPlan_isAnim,
-	&level_modelPlan_isActor,
-	&level_modelPlan_isLevel,
-	&level_modelPlan_isBG,
-	&level_modelPlan_isSprite,
-	&level_modelPlan_p,
-	&level_modelPlan_OTz,
-	&level_modelPlan_body,
+	{0},
+	{-40,-40,194, 0},
+	{0,0,0},
+	0,
+	1,
+	0,
+	0,
+	0,
+	0,
+	0,
+	1,
+	0,
+	0,
+	&level0_modelPlan_body,
 	0,
 	0,
 	0
 };
 
-SVECTOR level_modelSphere_mesh[] = {
+SVECTOR level0_modelSphere_mesh[] = {
 	{ 0,-8,24 },
 	{ 4,5,25 },
 	{ 9,-18,15 },
@@ -3609,7 +3505,7 @@ SVECTOR level_modelSphere_mesh[] = {
 	{ -6,18,16 }
 };
 
-SVECTOR level_modelSphere_normal[] = {
+SVECTOR level0_modelSphere_normal[] = {
 	-68,1388,-3853, 0,
 	-642,-810,-3963, 0,
 	-1690,2835,-2425, 0,
@@ -3639,7 +3535,7 @@ SVECTOR level_modelSphere_normal[] = {
 	895,-2816,-2837, 0
 };
 
-SVECTOR level_modelSphere_uv[] = {
+SVECTOR level0_modelSphere_uv[] = {
 	136,31, 0, 0,
 	122,32, 0, 0,
 	126,40, 0, 0,
@@ -3792,7 +3688,7 @@ SVECTOR level_modelSphere_uv[] = {
 	132,31, 0, 0
 };
 
-CVECTOR level_modelSphere_color[] = {
+CVECTOR level0_modelSphere_color[] = {
 	80, 80, 80, 0,
 	128, 128, 128, 0,
 	128, 128, 128, 0,
@@ -3945,7 +3841,7 @@ CVECTOR level_modelSphere_color[] = {
 	128, 128, 128, 0
 };
 
-PRIM level_modelSphere_index[] = {
+PRIM level0_modelSphere_index[] = {
 	1,5,26,0,4,
 	0,2,3,0,4,
 	1,4,5,0,4,
@@ -3998,22 +3894,9 @@ PRIM level_modelSphere_index[] = {
 	0,22,2,0,4
 };
 
-MATRIX level_modelSphere_matrix = {0};
-VECTOR level_modelSphere_pos    = {333,-129,-298, 0};
-SVECTOR level_modelSphere_rot   = {0,0,0};
-short level_modelSphere_isRigidBody = 1;
-short level_modelSphere_isStaticBody = 0;
-short level_modelSphere_isPrism = 0;
-short level_modelSphere_isAnim = 0;
-short level_modelSphere_isActor = 1;
-short level_modelSphere_isLevel = 0;
-short level_modelSphere_isBG = 0;
-short level_modelSphere_isSprite = 0;
-long level_modelSphere_p = 0;
-long level_modelSphere_OTz = 0;
-BODY level_modelSphere_body = {
+BODY level0_modelSphere_body = {
 	{0, 0, 0, 0},
-	333,-129,-298, 0,
+	-486,-129,-32, 0,
 	0,0,0, 0,
 	2,
 	ONE/2,
@@ -4022,39 +3905,39 @@ BODY level_modelSphere_body = {
 	2048,
 	};
 
-TMESH level_modelSphere = {
-	level_modelSphere_mesh,
-	level_modelSphere_normal,
-	level_modelSphere_uv,
-	level_modelSphere_color, 
+TMESH level0_modelSphere = {
+	level0_modelSphere_mesh,
+	level0_modelSphere_normal,
+	level0_modelSphere_uv,
+	level0_modelSphere_color, 
 	50
 };
 
-MESH level_meshSphere = {
-	&level_modelSphere,
-	level_modelSphere_index,
-	&tim_home,
+MESH level0_meshSphere = {
+	&level0_modelSphere,
+	level0_modelSphere_index,
+	&level0_tim_home,
 	_binary_TIM_home_tim_start,
-	&level_modelSphere_matrix,
-	&level_modelSphere_pos,
-	&level_modelSphere_rot,
-	&level_modelSphere_isRigidBody,
-	&level_modelSphere_isStaticBody,
-	&level_modelSphere_isPrism,
-	&level_modelSphere_isAnim,
-	&level_modelSphere_isActor,
-	&level_modelSphere_isLevel,
-	&level_modelSphere_isBG,
-	&level_modelSphere_isSprite,
-	&level_modelSphere_p,
-	&level_modelSphere_OTz,
-	&level_modelSphere_body,
+	{0},
+	{-486,-129,-32, 0},
+	{0,0,0},
+	1,
+	0,
+	0,
+	0,
+	1,
+	0,
+	0,
+	0,
+	0,
+	0,
+	&level0_modelSphere_body,
 	0,
 	0,
 	0
 };
 
-SVECTOR level_modelSphere_001_mesh[] = {
+SVECTOR level0_modelSphere_001_mesh[] = {
 	{ 0,-8,24 },
 	{ 4,5,25 },
 	{ 9,-18,15 },
@@ -4084,7 +3967,7 @@ SVECTOR level_modelSphere_001_mesh[] = {
 	{ -6,18,16 }
 };
 
-SVECTOR level_modelSphere_001_normal[] = {
+SVECTOR level0_modelSphere_001_normal[] = {
 	-68,1388,-3853, 0,
 	-642,-810,-3963, 0,
 	-1690,2835,-2425, 0,
@@ -4114,160 +3997,160 @@ SVECTOR level_modelSphere_001_normal[] = {
 	895,-2816,-2837, 0
 };
 
-SVECTOR level_modelSphere_001_uv[] = {
-	182,100, 0, 0,
-	169,98, 0, 0,
-	179,103, 0, 0,
-	147,128, 0, 0,
-	144,123, 0, 0,
-	131,121, 0, 0,
-	182,100, 0, 0,
-	168,98, 0, 0,
-	169,98, 0, 0,
-	131,121, 0, 0,
-	128,121, 0, 0,
-	140,129, 0, 0,
-	144,123, 0, 0,
-	132,113, 0, 0,
-	131,121, 0, 0,
-	173,107, 0, 0,
-	169,98, 0, 0,
-	160,109, 0, 0,
-	144,123, 0, 0,
-	146,110, 0, 0,
-	132,113, 0, 0,
-	131,121, 0, 0,
-	127,107, 0, 0,
-	128,121, 0, 0,
-	156,107, 0, 0,
-	160,109, 0, 0,
-	169,98, 0, 0,
-	146,110, 0, 0,
-	137,104, 0, 0,
-	132,113, 0, 0,
-	137,104, 0, 0,
-	146,110, 0, 0,
-	145,100, 0, 0,
-	156,107, 0, 0,
-	157,120, 0, 0,
-	160,109, 0, 0,
-	137,98, 0, 0,
-	145,100, 0, 0,
-	149,98, 0, 0,
-	146,110, 0, 0,
-	152,115, 0, 0,
-	155,109, 0, 0,
-	146,110, 0, 0,
-	155,109, 0, 0,
-	145,100, 0, 0,
-	160,109, 0, 0,
-	157,120, 0, 0,
-	164,122, 0, 0,
-	145,100, 0, 0,
-	155,109, 0, 0,
-	149,98, 0, 0,
-	173,107, 0, 0,
-	160,109, 0, 0,
-	168,112, 0, 0,
-	166,128, 0, 0,
-	164,122, 0, 0,
-	157,120, 0, 0,
-	166,128, 0, 0,
-	173,121, 0, 0,
-	164,122, 0, 0,
-	149,98, 0, 0,
-	155,109, 0, 0,
-	156,103, 0, 0,
-	165,70, 0, 0,
-	156,80, 0, 0,
-	167,79, 0, 0,
-	173,121, 0, 0,
-	173,107, 0, 0,
-	168,112, 0, 0,
-	167,79, 0, 0,
-	176,77, 0, 0,
-	165,70, 0, 0,
-	185,122, 0, 0,
-	185,110, 0, 0,
-	173,121, 0, 0,
-	176,77, 0, 0,
-	177,88, 0, 0,
-	184,84, 0, 0,
-	185,110, 0, 0,
-	179,103, 0, 0,
-	173,107, 0, 0,
-	170,97, 0, 0,
-	177,98, 0, 0,
-	177,88, 0, 0,
-	179,103, 0, 0,
-	169,98, 0, 0,
-	173,107, 0, 0,
-	156,121, 0, 0,
-	152,115, 0, 0,
-	144,123, 0, 0,
-	147,128, 0, 0,
-	131,121, 0, 0,
-	140,129, 0, 0,
-	152,115, 0, 0,
-	146,110, 0, 0,
-	144,123, 0, 0,
-	168,98, 0, 0,
-	156,107, 0, 0,
-	169,98, 0, 0,
-	131,121, 0, 0,
-	132,113, 0, 0,
-	127,107, 0, 0,
-	127,107, 0, 0,
-	132,113, 0, 0,
-	137,104, 0, 0,
-	127,107, 0, 0,
-	137,104, 0, 0,
-	137,98, 0, 0,
-	137,98, 0, 0,
-	137,104, 0, 0,
-	145,100, 0, 0,
-	160,109, 0, 0,
-	164,122, 0, 0,
-	168,112, 0, 0,
-	166,128, 0, 0,
-	175,129, 0, 0,
-	173,121, 0, 0,
-	164,122, 0, 0,
-	173,121, 0, 0,
-	168,112, 0, 0,
-	165,70, 0, 0,
-	176,77, 0, 0,
-	179,70, 0, 0,
-	173,121, 0, 0,
-	185,110, 0, 0,
-	173,107, 0, 0,
-	167,79, 0, 0,
-	156,80, 0, 0,
-	166,89, 0, 0,
-	167,79, 0, 0,
-	166,89, 0, 0,
-	177,88, 0, 0,
-	176,77, 0, 0,
-	167,79, 0, 0,
-	177,88, 0, 0,
-	156,80, 0, 0,
-	156,87, 0, 0,
-	166,89, 0, 0,
-	177,88, 0, 0,
-	166,89, 0, 0,
-	170,97, 0, 0,
-	177,88, 0, 0,
-	177,98, 0, 0,
-	184,84, 0, 0,
-	185,89, 0, 0,
-	184,84, 0, 0,
-	177,98, 0, 0,
-	170,97, 0, 0,
-	166,89, 0, 0,
-	160,96, 0, 0
+SVECTOR level0_modelSphere_001_uv[] = {
+	249,32, 0, 0,
+	235,31, 0, 0,
+	246,35, 0, 0,
+	213,61, 0, 0,
+	211,55, 0, 0,
+	198,54, 0, 0,
+	249,32, 0, 0,
+	234,30, 0, 0,
+	235,31, 0, 0,
+	198,54, 0, 0,
+	195,53, 0, 0,
+	207,61, 0, 0,
+	211,55, 0, 0,
+	199,46, 0, 0,
+	198,54, 0, 0,
+	240,39, 0, 0,
+	235,31, 0, 0,
+	226,41, 0, 0,
+	211,55, 0, 0,
+	213,42, 0, 0,
+	199,46, 0, 0,
+	198,54, 0, 0,
+	193,39, 0, 0,
+	195,53, 0, 0,
+	223,40, 0, 0,
+	226,41, 0, 0,
+	235,31, 0, 0,
+	213,42, 0, 0,
+	204,37, 0, 0,
+	199,46, 0, 0,
+	204,37, 0, 0,
+	213,42, 0, 0,
+	211,33, 0, 0,
+	223,40, 0, 0,
+	224,53, 0, 0,
+	226,41, 0, 0,
+	203,30, 0, 0,
+	211,33, 0, 0,
+	216,31, 0, 0,
+	213,42, 0, 0,
+	218,48, 0, 0,
+	221,41, 0, 0,
+	213,42, 0, 0,
+	221,41, 0, 0,
+	211,33, 0, 0,
+	226,41, 0, 0,
+	224,53, 0, 0,
+	231,54, 0, 0,
+	211,33, 0, 0,
+	221,41, 0, 0,
+	216,31, 0, 0,
+	240,39, 0, 0,
+	226,41, 0, 0,
+	234,44, 0, 0,
+	233,61, 0, 0,
+	231,54, 0, 0,
+	224,53, 0, 0,
+	233,61, 0, 0,
+	240,54, 0, 0,
+	231,54, 0, 0,
+	216,31, 0, 0,
+	221,41, 0, 0,
+	223,35, 0, 0,
+	232,3, 0, 0,
+	223,12, 0, 0,
+	234,11, 0, 0,
+	240,54, 0, 0,
+	240,39, 0, 0,
+	234,44, 0, 0,
+	234,11, 0, 0,
+	242,9, 0, 0,
+	232,3, 0, 0,
+	251,54, 0, 0,
+	251,43, 0, 0,
+	240,54, 0, 0,
+	242,9, 0, 0,
+	244,21, 0, 0,
+	251,17, 0, 0,
+	251,43, 0, 0,
+	246,35, 0, 0,
+	240,39, 0, 0,
+	236,30, 0, 0,
+	243,30, 0, 0,
+	244,21, 0, 0,
+	246,35, 0, 0,
+	235,31, 0, 0,
+	240,39, 0, 0,
+	223,54, 0, 0,
+	218,48, 0, 0,
+	211,55, 0, 0,
+	213,61, 0, 0,
+	198,54, 0, 0,
+	207,61, 0, 0,
+	218,48, 0, 0,
+	213,42, 0, 0,
+	211,55, 0, 0,
+	234,30, 0, 0,
+	223,40, 0, 0,
+	235,31, 0, 0,
+	198,54, 0, 0,
+	199,46, 0, 0,
+	193,39, 0, 0,
+	193,39, 0, 0,
+	199,46, 0, 0,
+	204,37, 0, 0,
+	193,39, 0, 0,
+	204,37, 0, 0,
+	203,30, 0, 0,
+	203,30, 0, 0,
+	204,37, 0, 0,
+	211,33, 0, 0,
+	226,41, 0, 0,
+	231,54, 0, 0,
+	234,44, 0, 0,
+	233,61, 0, 0,
+	242,61, 0, 0,
+	240,54, 0, 0,
+	231,54, 0, 0,
+	240,54, 0, 0,
+	234,44, 0, 0,
+	232,3, 0, 0,
+	242,9, 0, 0,
+	246,3, 0, 0,
+	240,54, 0, 0,
+	251,43, 0, 0,
+	240,39, 0, 0,
+	234,11, 0, 0,
+	223,12, 0, 0,
+	232,21, 0, 0,
+	234,11, 0, 0,
+	232,21, 0, 0,
+	244,21, 0, 0,
+	242,9, 0, 0,
+	234,11, 0, 0,
+	244,21, 0, 0,
+	223,12, 0, 0,
+	223,20, 0, 0,
+	232,21, 0, 0,
+	244,21, 0, 0,
+	232,21, 0, 0,
+	236,30, 0, 0,
+	244,21, 0, 0,
+	243,30, 0, 0,
+	251,17, 0, 0,
+	252,21, 0, 0,
+	251,17, 0, 0,
+	243,30, 0, 0,
+	236,30, 0, 0,
+	232,21, 0, 0,
+	226,28, 0, 0
 };
 
-CVECTOR level_modelSphere_001_color[] = {
+CVECTOR level0_modelSphere_001_color[] = {
 	80, 80, 80, 0,
 	128, 128, 128, 0,
 	128, 128, 128, 0,
@@ -4420,7 +4303,7 @@ CVECTOR level_modelSphere_001_color[] = {
 	128, 128, 128, 0
 };
 
-PRIM level_modelSphere_001_index[] = {
+PRIM level0_modelSphere_001_index[] = {
 	1,5,26,0,4,
 	0,2,3,0,4,
 	1,4,5,0,4,
@@ -4473,20 +4356,7 @@ PRIM level_modelSphere_001_index[] = {
 	0,22,2,0,4
 };
 
-MATRIX level_modelSphere_001_matrix = {0};
-VECTOR level_modelSphere_001_pos    = {44,-73,92, 0};
-SVECTOR level_modelSphere_001_rot   = {0,0,0};
-short level_modelSphere_001_isRigidBody = 1;
-short level_modelSphere_001_isStaticBody = 0;
-short level_modelSphere_001_isPrism = 0;
-short level_modelSphere_001_isAnim = 0;
-short level_modelSphere_001_isActor = 0;
-short level_modelSphere_001_isLevel = 0;
-short level_modelSphere_001_isBG = 0;
-short level_modelSphere_001_isSprite = 0;
-long level_modelSphere_001_p = 0;
-long level_modelSphere_001_OTz = 0;
-BODY level_modelSphere_001_body = {
+BODY level0_modelSphere_001_body = {
 	{0, 0, 0, 0},
 	44,-73,92, 0,
 	0,0,0, 0,
@@ -4497,39 +4367,39 @@ BODY level_modelSphere_001_body = {
 	1024,
 	};
 
-TMESH level_modelSphere_001 = {
-	level_modelSphere_001_mesh,
-	level_modelSphere_001_normal,
-	level_modelSphere_001_uv,
-	level_modelSphere_001_color, 
+TMESH level0_modelSphere_001 = {
+	level0_modelSphere_001_mesh,
+	level0_modelSphere_001_normal,
+	level0_modelSphere_001_uv,
+	level0_modelSphere_001_color, 
 	50
 };
 
-MESH level_meshSphere_001 = {
-	&level_modelSphere_001,
-	level_modelSphere_001_index,
-	&tim_home,
+MESH level0_meshSphere_001 = {
+	&level0_modelSphere_001,
+	level0_modelSphere_001_index,
+	&level0_tim_home,
 	_binary_TIM_home_tim_start,
-	&level_modelSphere_001_matrix,
-	&level_modelSphere_001_pos,
-	&level_modelSphere_001_rot,
-	&level_modelSphere_001_isRigidBody,
-	&level_modelSphere_001_isStaticBody,
-	&level_modelSphere_001_isPrism,
-	&level_modelSphere_001_isAnim,
-	&level_modelSphere_001_isActor,
-	&level_modelSphere_001_isLevel,
-	&level_modelSphere_001_isBG,
-	&level_modelSphere_001_isSprite,
-	&level_modelSphere_001_p,
-	&level_modelSphere_001_OTz,
-	&level_modelSphere_001_body,
+	{0},
+	{44,-73,92, 0},
+	{0,0,0},
+	1,
 	0,
-	&level_nodegnd,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	&level0_modelSphere_001_body,
+	0,
+	&level0_nodegnd,
 	0
 };
 
-SVECTOR level_modelwall_mesh[] = {
+SVECTOR level0_modelwall_mesh[] = {
 	{ -580,-97,-98 },
 	{ -580,0,-98 },
 	{ -580,-195,-98 },
@@ -4544,7 +4414,7 @@ SVECTOR level_modelwall_mesh[] = {
 	{ -580,-195,194 }
 };
 
-SVECTOR level_modelwall_normal[] = {
+SVECTOR level0_modelwall_normal[] = {
 	-4096,0,0, 0,
 	-4096,0,0, 0,
 	-4096,0,0, 0,
@@ -4559,46 +4429,46 @@ SVECTOR level_modelwall_normal[] = {
 	-4096,0,0, 0
 };
 
-SVECTOR level_modelwall_uv[] = {
-	191,0, 0, 0,
-	255,64, 0, 0,
-	255,0, 0, 0,
-	191,0, 0, 0,
+SVECTOR level0_modelwall_uv[] = {
+	64,64, 0, 0,
+	0,0, 0, 0,
+	0,64, 0, 0,
+	64,64, 0, 0,
+	64,0, 0, 0,
+	0,0, 0, 0,
+	64,64, 0, 0,
+	64,0, 0, 0,
+	0,0, 0, 0,
+	64,64, 0, 0,
+	0,0, 0, 0,
+	0,64, 0, 0,
 	191,64, 0, 0,
-	255,64, 0, 0,
 	191,0, 0, 0,
+	127,0, 0, 0,
 	191,64, 0, 0,
-	255,64, 0, 0,
 	191,0, 0, 0,
-	255,64, 0, 0,
-	255,0, 0, 0,
-	0,128, 0, 0,
-	0,191, 0, 0,
-	64,191, 0, 0,
-	0,128, 0, 0,
-	0,191, 0, 0,
-	64,191, 0, 0,
-	191,0, 0, 0,
-	255,64, 0, 0,
-	255,0, 0, 0,
-	0,128, 0, 0,
-	64,191, 0, 0,
-	64,128, 0, 0,
-	191,0, 0, 0,
+	127,0, 0, 0,
+	64,64, 0, 0,
+	0,0, 0, 0,
+	0,64, 0, 0,
 	191,64, 0, 0,
-	255,64, 0, 0,
-	0,128, 0, 0,
-	64,191, 0, 0,
-	64,128, 0, 0,
-	0,128, 0, 0,
-	64,191, 0, 0,
-	64,128, 0, 0,
-	0,128, 0, 0,
-	0,191, 0, 0,
-	64,191, 0, 0
+	127,0, 0, 0,
+	127,64, 0, 0,
+	64,64, 0, 0,
+	64,0, 0, 0,
+	0,0, 0, 0,
+	191,64, 0, 0,
+	127,0, 0, 0,
+	127,64, 0, 0,
+	191,64, 0, 0,
+	127,0, 0, 0,
+	127,64, 0, 0,
+	191,64, 0, 0,
+	191,0, 0, 0,
+	127,0, 0, 0
 };
 
-CVECTOR level_modelwall_color[] = {
+CVECTOR level0_modelwall_color[] = {
 	80, 80, 80, 0,
 	128, 128, 128, 0,
 	128, 128, 128, 0,
@@ -4637,7 +4507,7 @@ CVECTOR level_modelwall_color[] = {
 	128, 128, 128, 0
 };
 
-PRIM level_modelwall_index[] = {
+PRIM level0_modelwall_index[] = {
 	6,5,3,0,4,
 	3,5,2,0,4,
 	6,8,5,0,4,
@@ -4652,20 +4522,7 @@ PRIM level_modelwall_index[] = {
 	10,9,6,0,4
 };
 
-MATRIX level_modelwall_matrix = {0};
-VECTOR level_modelwall_pos    = {1,-1,0, 0};
-SVECTOR level_modelwall_rot   = {0,0,0};
-short level_modelwall_isRigidBody = 0;
-short level_modelwall_isStaticBody = 0;
-short level_modelwall_isPrism = 0;
-short level_modelwall_isAnim = 0;
-short level_modelwall_isActor = 0;
-short level_modelwall_isLevel = 0;
-short level_modelwall_isBG = 0;
-short level_modelwall_isSprite = 0;
-long level_modelwall_p = 0;
-long level_modelwall_OTz = 0;
-BODY level_modelwall_body = {
+BODY level0_modelwall_body = {
 	{0, 0, 0, 0},
 	1,-1,0, 0,
 	0,0,0, 0,
@@ -4676,39 +4533,39 @@ BODY level_modelwall_body = {
 	0,
 	};
 
-TMESH level_modelwall = {
-	level_modelwall_mesh,
-	level_modelwall_normal,
-	level_modelwall_uv,
-	level_modelwall_color, 
+TMESH level0_modelwall = {
+	level0_modelwall_mesh,
+	level0_modelwall_normal,
+	level0_modelwall_uv,
+	level0_modelwall_color, 
 	12
 };
 
-MESH level_meshwall = {
-	&level_modelwall,
-	level_modelwall_index,
-	&tim_home,
+MESH level0_meshwall = {
+	&level0_modelwall,
+	level0_modelwall_index,
+	&level0_tim_home,
 	_binary_TIM_home_tim_start,
-	&level_modelwall_matrix,
-	&level_modelwall_pos,
-	&level_modelwall_rot,
-	&level_modelwall_isRigidBody,
-	&level_modelwall_isStaticBody,
-	&level_modelwall_isPrism,
-	&level_modelwall_isAnim,
-	&level_modelwall_isActor,
-	&level_modelwall_isLevel,
-	&level_modelwall_isBG,
-	&level_modelwall_isSprite,
-	&level_modelwall_p,
-	&level_modelwall_OTz,
-	&level_modelwall_body,
+	{0},
+	{1,-1,0, 0},
+	{0,0,0},
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	&level0_modelwall_body,
 	0,
 	0,
 	0
 };
 
-SVECTOR level_modelwall_001_mesh[] = {
+SVECTOR level0_modelwall_001_mesh[] = {
 	{ -92,-97,194 },
 	{ -92,0,194 },
 	{ -92,-195,194 },
@@ -4729,7 +4586,7 @@ SVECTOR level_modelwall_001_mesh[] = {
 	{ -580,-195,194 }
 };
 
-SVECTOR level_modelwall_001_normal[] = {
+SVECTOR level0_modelwall_001_normal[] = {
 	0,0,4096, 0,
 	0,0,4096, 0,
 	0,0,4096, 0,
@@ -4750,70 +4607,70 @@ SVECTOR level_modelwall_001_normal[] = {
 	0,0,4096, 0
 };
 
-SVECTOR level_modelwall_001_uv[] = {
-	191,0, 0, 0,
-	255,0, 0, 0,
-	255,64, 0, 0,
-	191,0, 0, 0,
-	255,64, 0, 0,
+SVECTOR level0_modelwall_001_uv[] = {
+	64,64, 0, 0,
+	0,64, 0, 0,
+	0,0, 0, 0,
+	64,64, 0, 0,
+	0,0, 0, 0,
+	64,0, 0, 0,
 	191,64, 0, 0,
-	0,128, 0, 0,
-	64,128, 0, 0,
-	64,191, 0, 0,
-	0,128, 0, 0,
-	64,191, 0, 0,
-	0,191, 0, 0,
-	191,0, 0, 0,
-	255,0, 0, 0,
-	255,64, 0, 0,
-	191,0, 0, 0,
-	255,64, 0, 0,
+	127,64, 0, 0,
+	127,0, 0, 0,
 	191,64, 0, 0,
-	0,128, 0, 0,
-	64,128, 0, 0,
-	64,191, 0, 0,
-	0,128, 0, 0,
-	64,191, 0, 0,
-	0,191, 0, 0,
+	127,0, 0, 0,
 	191,0, 0, 0,
-	255,0, 0, 0,
-	255,64, 0, 0,
-	0,128, 0, 0,
-	64,128, 0, 0,
-	64,191, 0, 0,
-	191,0, 0, 0,
-	255,64, 0, 0,
+	64,64, 0, 0,
+	0,64, 0, 0,
+	0,0, 0, 0,
+	64,64, 0, 0,
+	0,0, 0, 0,
+	64,0, 0, 0,
 	191,64, 0, 0,
-	0,128, 0, 0,
-	64,191, 0, 0,
-	0,191, 0, 0,
-	191,0, 0, 0,
-	255,0, 0, 0,
-	255,64, 0, 0,
-	0,128, 0, 0,
-	64,128, 0, 0,
-	64,191, 0, 0,
-	191,0, 0, 0,
-	255,64, 0, 0,
+	127,64, 0, 0,
+	127,0, 0, 0,
 	191,64, 0, 0,
-	0,128, 0, 0,
-	64,191, 0, 0,
-	0,191, 0, 0,
+	127,0, 0, 0,
 	191,0, 0, 0,
-	255,0, 0, 0,
-	255,64, 0, 0,
-	0,128, 0, 0,
-	64,128, 0, 0,
-	64,191, 0, 0,
-	191,0, 0, 0,
-	255,64, 0, 0,
+	64,64, 0, 0,
+	0,64, 0, 0,
+	0,0, 0, 0,
 	191,64, 0, 0,
-	0,128, 0, 0,
-	64,191, 0, 0,
-	0,191, 0, 0
+	127,64, 0, 0,
+	127,0, 0, 0,
+	64,64, 0, 0,
+	0,0, 0, 0,
+	64,0, 0, 0,
+	191,64, 0, 0,
+	127,0, 0, 0,
+	191,0, 0, 0,
+	64,64, 0, 0,
+	0,64, 0, 0,
+	0,0, 0, 0,
+	191,64, 0, 0,
+	127,64, 0, 0,
+	127,0, 0, 0,
+	64,64, 0, 0,
+	0,0, 0, 0,
+	64,0, 0, 0,
+	191,64, 0, 0,
+	127,0, 0, 0,
+	191,0, 0, 0,
+	64,64, 0, 0,
+	0,64, 0, 0,
+	0,0, 0, 0,
+	191,64, 0, 0,
+	127,64, 0, 0,
+	127,0, 0, 0,
+	64,64, 0, 0,
+	0,0, 0, 0,
+	64,0, 0, 0,
+	191,64, 0, 0,
+	127,0, 0, 0,
+	191,0, 0, 0
 };
 
-CVECTOR level_modelwall_001_color[] = {
+CVECTOR level0_modelwall_001_color[] = {
 	80, 80, 80, 0,
 	128, 128, 128, 0,
 	128, 128, 128, 0,
@@ -4876,7 +4733,7 @@ CVECTOR level_modelwall_001_color[] = {
 	128, 128, 128, 0
 };
 
-PRIM level_modelwall_001_index[] = {
+PRIM level0_modelwall_001_index[] = {
 	3,0,2,0,4,
 	3,2,5,0,4,
 	4,1,0,0,4,
@@ -4899,20 +4756,7 @@ PRIM level_modelwall_001_index[] = {
 	16,12,15,0,4
 };
 
-MATRIX level_modelwall_001_matrix = {0};
-VECTOR level_modelwall_001_pos    = {0,-1,0, 0};
-SVECTOR level_modelwall_001_rot   = {0,0,0};
-short level_modelwall_001_isRigidBody = 0;
-short level_modelwall_001_isStaticBody = 0;
-short level_modelwall_001_isPrism = 0;
-short level_modelwall_001_isAnim = 0;
-short level_modelwall_001_isActor = 0;
-short level_modelwall_001_isLevel = 0;
-short level_modelwall_001_isBG = 0;
-short level_modelwall_001_isSprite = 0;
-long level_modelwall_001_p = 0;
-long level_modelwall_001_OTz = 0;
-BODY level_modelwall_001_body = {
+BODY level0_modelwall_001_body = {
 	{0, 0, 0, 0},
 	0,-1,0, 0,
 	0,0,0, 0,
@@ -4923,39 +4767,39 @@ BODY level_modelwall_001_body = {
 	0,
 	};
 
-TMESH level_modelwall_001 = {
-	level_modelwall_001_mesh,
-	level_modelwall_001_normal,
-	level_modelwall_001_uv,
-	level_modelwall_001_color, 
+TMESH level0_modelwall_001 = {
+	level0_modelwall_001_mesh,
+	level0_modelwall_001_normal,
+	level0_modelwall_001_uv,
+	level0_modelwall_001_color, 
 	20
 };
 
-MESH level_meshwall_001 = {
-	&level_modelwall_001,
-	level_modelwall_001_index,
-	&tim_home,
+MESH level0_meshwall_001 = {
+	&level0_modelwall_001,
+	level0_modelwall_001_index,
+	&level0_tim_home,
 	_binary_TIM_home_tim_start,
-	&level_modelwall_001_matrix,
-	&level_modelwall_001_pos,
-	&level_modelwall_001_rot,
-	&level_modelwall_001_isRigidBody,
-	&level_modelwall_001_isStaticBody,
-	&level_modelwall_001_isPrism,
-	&level_modelwall_001_isAnim,
-	&level_modelwall_001_isActor,
-	&level_modelwall_001_isLevel,
-	&level_modelwall_001_isBG,
-	&level_modelwall_001_isSprite,
-	&level_modelwall_001_p,
-	&level_modelwall_001_OTz,
-	&level_modelwall_001_body,
+	{0},
+	{0,-1,0, 0},
+	{0,0,0},
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	&level0_modelwall_001_body,
 	0,
 	0,
 	0
 };
 
-SVECTOR level_modelwall_002_mesh[] = {
+SVECTOR level0_modelwall_002_mesh[] = {
 	{ -92,-97,194 },
 	{ -92,0,194 },
 	{ -92,-195,194 },
@@ -4976,7 +4820,7 @@ SVECTOR level_modelwall_002_mesh[] = {
 	{ -92,-195,682 }
 };
 
-SVECTOR level_modelwall_002_normal[] = {
+SVECTOR level0_modelwall_002_normal[] = {
 	-4096,0,0, 0,
 	-4096,0,0, 0,
 	-4096,0,0, 0,
@@ -4997,70 +4841,70 @@ SVECTOR level_modelwall_002_normal[] = {
 	-4096,0,0, 0
 };
 
-SVECTOR level_modelwall_002_uv[] = {
-	64,191, 0, 0,
-	0,128, 0, 0,
-	0,191, 0, 0,
-	64,191, 0, 0,
-	64,128, 0, 0,
-	0,128, 0, 0,
-	255,64, 0, 0,
-	191,0, 0, 0,
+SVECTOR level0_modelwall_002_uv[] = {
 	191,64, 0, 0,
-	255,64, 0, 0,
-	255,0, 0, 0,
-	191,0, 0, 0,
-	64,191, 0, 0,
-	0,128, 0, 0,
-	0,191, 0, 0,
+	127,0, 0, 0,
+	127,64, 0, 0,
 	191,64, 0, 0,
-	255,0, 0, 0,
 	191,0, 0, 0,
-	64,191, 0, 0,
-	64,128, 0, 0,
-	0,128, 0, 0,
+	127,0, 0, 0,
+	64,64, 0, 0,
+	0,0, 0, 0,
+	0,64, 0, 0,
+	64,64, 0, 0,
+	64,0, 0, 0,
+	0,0, 0, 0,
 	191,64, 0, 0,
-	255,64, 0, 0,
-	255,0, 0, 0,
-	64,191, 0, 0,
-	0,128, 0, 0,
-	0,191, 0, 0,
-	255,64, 0, 0,
-	191,0, 0, 0,
+	127,0, 0, 0,
+	127,64, 0, 0,
+	0,64, 0, 0,
+	64,0, 0, 0,
+	0,0, 0, 0,
 	191,64, 0, 0,
-	64,191, 0, 0,
-	64,128, 0, 0,
-	0,128, 0, 0,
-	255,64, 0, 0,
-	255,0, 0, 0,
 	191,0, 0, 0,
-	64,191, 0, 0,
-	0,128, 0, 0,
-	0,191, 0, 0,
-	255,64, 0, 0,
-	191,0, 0, 0,
+	127,0, 0, 0,
+	0,64, 0, 0,
+	64,64, 0, 0,
+	64,0, 0, 0,
 	191,64, 0, 0,
-	64,191, 0, 0,
-	64,128, 0, 0,
-	0,128, 0, 0,
-	255,64, 0, 0,
-	255,0, 0, 0,
-	191,0, 0, 0,
-	64,191, 0, 0,
-	0,128, 0, 0,
-	0,191, 0, 0,
-	255,64, 0, 0,
-	191,0, 0, 0,
+	127,0, 0, 0,
+	127,64, 0, 0,
+	64,64, 0, 0,
+	0,0, 0, 0,
+	0,64, 0, 0,
 	191,64, 0, 0,
-	64,191, 0, 0,
-	64,128, 0, 0,
-	0,128, 0, 0,
-	255,64, 0, 0,
-	255,0, 0, 0,
-	191,0, 0, 0
+	191,0, 0, 0,
+	127,0, 0, 0,
+	64,64, 0, 0,
+	64,0, 0, 0,
+	0,0, 0, 0,
+	191,64, 0, 0,
+	127,0, 0, 0,
+	127,64, 0, 0,
+	64,64, 0, 0,
+	0,0, 0, 0,
+	0,64, 0, 0,
+	191,64, 0, 0,
+	191,0, 0, 0,
+	127,0, 0, 0,
+	64,64, 0, 0,
+	64,0, 0, 0,
+	0,0, 0, 0,
+	191,64, 0, 0,
+	127,0, 0, 0,
+	127,64, 0, 0,
+	64,64, 0, 0,
+	0,0, 0, 0,
+	0,64, 0, 0,
+	191,64, 0, 0,
+	191,0, 0, 0,
+	127,0, 0, 0,
+	64,64, 0, 0,
+	64,0, 0, 0,
+	0,0, 0, 0
 };
 
-CVECTOR level_modelwall_002_color[] = {
+CVECTOR level0_modelwall_002_color[] = {
 	80, 80, 80, 0,
 	128, 128, 128, 0,
 	128, 128, 128, 0,
@@ -5123,7 +4967,7 @@ CVECTOR level_modelwall_002_color[] = {
 	128, 128, 128, 0
 };
 
-PRIM level_modelwall_002_index[] = {
+PRIM level0_modelwall_002_index[] = {
 	3,2,0,0,4,
 	3,5,2,0,4,
 	4,0,1,0,4,
@@ -5146,20 +4990,7 @@ PRIM level_modelwall_002_index[] = {
 	16,15,12,0,4
 };
 
-MATRIX level_modelwall_002_matrix = {0};
-VECTOR level_modelwall_002_pos    = {0,0,0, 0};
-SVECTOR level_modelwall_002_rot   = {0,0,0};
-short level_modelwall_002_isRigidBody = 0;
-short level_modelwall_002_isStaticBody = 0;
-short level_modelwall_002_isPrism = 0;
-short level_modelwall_002_isAnim = 0;
-short level_modelwall_002_isActor = 0;
-short level_modelwall_002_isLevel = 0;
-short level_modelwall_002_isBG = 0;
-short level_modelwall_002_isSprite = 0;
-long level_modelwall_002_p = 0;
-long level_modelwall_002_OTz = 0;
-BODY level_modelwall_002_body = {
+BODY level0_modelwall_002_body = {
 	{0, 0, 0, 0},
 	0,0,0, 0,
 	0,0,0, 0,
@@ -5170,39 +5001,39 @@ BODY level_modelwall_002_body = {
 	0,
 	};
 
-TMESH level_modelwall_002 = {
-	level_modelwall_002_mesh,
-	level_modelwall_002_normal,
-	level_modelwall_002_uv,
-	level_modelwall_002_color, 
+TMESH level0_modelwall_002 = {
+	level0_modelwall_002_mesh,
+	level0_modelwall_002_normal,
+	level0_modelwall_002_uv,
+	level0_modelwall_002_color, 
 	20
 };
 
-MESH level_meshwall_002 = {
-	&level_modelwall_002,
-	level_modelwall_002_index,
-	&tim_home,
+MESH level0_meshwall_002 = {
+	&level0_modelwall_002,
+	level0_modelwall_002_index,
+	&level0_tim_home,
 	_binary_TIM_home_tim_start,
-	&level_modelwall_002_matrix,
-	&level_modelwall_002_pos,
-	&level_modelwall_002_rot,
-	&level_modelwall_002_isRigidBody,
-	&level_modelwall_002_isStaticBody,
-	&level_modelwall_002_isPrism,
-	&level_modelwall_002_isAnim,
-	&level_modelwall_002_isActor,
-	&level_modelwall_002_isLevel,
-	&level_modelwall_002_isBG,
-	&level_modelwall_002_isSprite,
-	&level_modelwall_002_p,
-	&level_modelwall_002_OTz,
-	&level_modelwall_002_body,
+	{0},
+	{0,0,0, 0},
+	{0,0,0},
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	&level0_modelwall_002_body,
 	0,
 	0,
 	0
 };
 
-SVECTOR level_modelwall_003_mesh[] = {
+SVECTOR level0_modelwall_003_mesh[] = {
 	{ 200,-97,682 },
 	{ 103,-97,682 },
 	{ 200,0,682 },
@@ -5217,7 +5048,7 @@ SVECTOR level_modelwall_003_mesh[] = {
 	{ -92,-195,682 }
 };
 
-SVECTOR level_modelwall_003_normal[] = {
+SVECTOR level0_modelwall_003_normal[] = {
 	0,0,4096, 0,
 	0,0,4096, 0,
 	0,0,4096, 0,
@@ -5232,7 +5063,7 @@ SVECTOR level_modelwall_003_normal[] = {
 	0,0,4096, 0
 };
 
-SVECTOR level_modelwall_003_uv[] = {
+SVECTOR level0_modelwall_003_uv[] = {
 	64,191, 0, 0,
 	0,128, 0, 0,
 	64,128, 0, 0,
@@ -5271,7 +5102,7 @@ SVECTOR level_modelwall_003_uv[] = {
 	191,0, 0, 0
 };
 
-CVECTOR level_modelwall_003_color[] = {
+CVECTOR level0_modelwall_003_color[] = {
 	80, 80, 80, 0,
 	128, 128, 128, 0,
 	128, 128, 128, 0,
@@ -5310,7 +5141,7 @@ CVECTOR level_modelwall_003_color[] = {
 	128, 128, 128, 0
 };
 
-PRIM level_modelwall_003_index[] = {
+PRIM level0_modelwall_003_index[] = {
 	6,5,8,0,4,
 	6,1,5,0,4,
 	1,3,5,0,4,
@@ -5325,20 +5156,7 @@ PRIM level_modelwall_003_index[] = {
 	4,2,0,0,4
 };
 
-MATRIX level_modelwall_003_matrix = {0};
-VECTOR level_modelwall_003_pos    = {0,0,-1, 0};
-SVECTOR level_modelwall_003_rot   = {0,0,0};
-short level_modelwall_003_isRigidBody = 0;
-short level_modelwall_003_isStaticBody = 0;
-short level_modelwall_003_isPrism = 0;
-short level_modelwall_003_isAnim = 0;
-short level_modelwall_003_isActor = 0;
-short level_modelwall_003_isLevel = 0;
-short level_modelwall_003_isBG = 0;
-short level_modelwall_003_isSprite = 0;
-long level_modelwall_003_p = 0;
-long level_modelwall_003_OTz = 0;
-BODY level_modelwall_003_body = {
+BODY level0_modelwall_003_body = {
 	{0, 0, 0, 0},
 	0,0,-1, 0,
 	0,0,0, 0,
@@ -5349,59 +5167,59 @@ BODY level_modelwall_003_body = {
 	0,
 	};
 
-TMESH level_modelwall_003 = {
-	level_modelwall_003_mesh,
-	level_modelwall_003_normal,
-	level_modelwall_003_uv,
-	level_modelwall_003_color, 
+TMESH level0_modelwall_003 = {
+	level0_modelwall_003_mesh,
+	level0_modelwall_003_normal,
+	level0_modelwall_003_uv,
+	level0_modelwall_003_color, 
 	12
 };
 
-MESH level_meshwall_003 = {
-	&level_modelwall_003,
-	level_modelwall_003_index,
-	&tim_home,
+MESH level0_meshwall_003 = {
+	&level0_modelwall_003,
+	level0_modelwall_003_index,
+	&level0_tim_home,
 	_binary_TIM_home_tim_start,
-	&level_modelwall_003_matrix,
-	&level_modelwall_003_pos,
-	&level_modelwall_003_rot,
-	&level_modelwall_003_isRigidBody,
-	&level_modelwall_003_isStaticBody,
-	&level_modelwall_003_isPrism,
-	&level_modelwall_003_isAnim,
-	&level_modelwall_003_isActor,
-	&level_modelwall_003_isLevel,
-	&level_modelwall_003_isBG,
-	&level_modelwall_003_isSprite,
-	&level_modelwall_003_p,
-	&level_modelwall_003_OTz,
-	&level_modelwall_003_body,
+	{0},
+	{0,0,-1, 0},
+	{0,0,0},
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	&level0_modelwall_003_body,
 	0,
 	0,
 	0
 };
 
-MESH * level_meshes[14] = {
-	&level_meshCube,
-	&level_meshCylindre,
-	&level_meshgnd,
-	&level_meshgnd_001,
-	&level_meshgnd_003,
-	&level_meshgnd_002,
-	&level_meshobject,
-	&level_meshPlan,
-	&level_meshSphere,
-	&level_meshSphere_001,
-	&level_meshwall,
-	&level_meshwall_001,
-	&level_meshwall_002,
-	&level_meshwall_003
+MESH * level0_meshes[14] = {
+	&level0_meshCube,
+	&level0_meshCylindre,
+	&level0_meshgnd,
+	&level0_meshgnd_001,
+	&level0_meshgnd_003,
+	&level0_meshgnd_002,
+	&level0_meshobject,
+	&level0_meshPlan,
+	&level0_meshSphere,
+	&level0_meshSphere_001,
+	&level0_meshwall,
+	&level0_meshwall_001,
+	&level0_meshwall_002,
+	&level0_meshwall_003
 }; 
 
-int level_meshes_length = 14;
+int level0_meshes_length = 14;
 
-CAMANGLE level_camAngle_camPath_001 = {
-	&level_camPos_camPath_001,
+CAMANGLE level0_camAngle_camPath_001 = {
+	&level0_camPos_camPath_001,
 	0,
 	 0,
 	 { 0 },
@@ -5410,137 +5228,153 @@ CAMANGLE level_camAngle_camPath_001 = {
 	 0
 };
 
-CAMANGLE * level_camAngles[0] = {
+CAMANGLE * level0_camAngles[0] = {
 };
 
-SIBLINGS level_nodegnd_003_siblings = {
-	1,
+SIBLINGS level0_nodegnd_siblings = {
+	3,
 	{
-		&level_nodegnd
+		&level0_nodegnd_002,
+		&level0_nodegnd_003,
+		&level0_nodegnd_001
 	}
 };
 
-CHILDREN level_nodegnd_003_objects = {
+CHILDREN level0_nodegnd_objects = {
+	4,
+	{
+		&level0_meshwall,
+		&level0_meshSphere_001,
+		&level0_meshCube,
+		&level0_meshwall_001
+	}
+};
+
+CHILDREN level0_nodegnd_rigidbodies = {
+	2,
+	{
+		&level0_meshSphere,
+		&level0_meshSphere_001
+	}
+};
+
+NODE level0_nodegnd = {
+	&level0_meshgnd,
+	&level0_nodegnd_siblings,
+	&level0_nodegnd_objects,
+	&level0_nodegnd_rigidbodies
+};
+
+SIBLINGS level0_nodegnd_001_siblings = {
+	1,
+	{
+		&level0_nodegnd
+	}
+};
+
+CHILDREN level0_nodegnd_001_objects = {
+	4,
+	{
+		&level0_meshCylindre,
+		&level0_meshwall_003,
+		&level0_meshPlan,
+		&level0_meshwall_002
+	}
+};
+
+CHILDREN level0_nodegnd_001_rigidbodies = {
+	2,
+	{
+		&level0_meshSphere,
+		&level0_meshSphere_001
+	}
+};
+
+NODE level0_nodegnd_001 = {
+	&level0_meshgnd_001,
+	&level0_nodegnd_001_siblings,
+	&level0_nodegnd_001_objects,
+	&level0_nodegnd_001_rigidbodies
+};
+
+SIBLINGS level0_nodegnd_002_siblings = {
+	1,
+	{
+		&level0_nodegnd
+	}
+};
+
+CHILDREN level0_nodegnd_002_objects = {
+	1,
+	{
+		&level0_meshobject
+	}
+};
+
+CHILDREN level0_nodegnd_002_rigidbodies = {
+	2,
+	{
+		&level0_meshSphere,
+		&level0_meshSphere_001
+	}
+};
+
+NODE level0_nodegnd_002 = {
+	&level0_meshgnd_002,
+	&level0_nodegnd_002_siblings,
+	&level0_nodegnd_002_objects,
+	&level0_nodegnd_002_rigidbodies
+};
+
+SIBLINGS level0_nodegnd_003_siblings = {
+	1,
+	{
+		&level0_nodegnd
+	}
+};
+
+CHILDREN level0_nodegnd_003_objects = {
 	0,
 	{
 		0
 	}
 };
 
-CHILDREN level_nodegnd_003_rigidbodies = {
+CHILDREN level0_nodegnd_003_rigidbodies = {
 	2,
 	{
-		&level_meshSphere,
-		&level_meshSphere_001
+		&level0_meshSphere,
+		&level0_meshSphere_001
 	}
 };
 
-NODE level_nodegnd_003 = {
-	&level_meshgnd_003,
-	&level_nodegnd_003_siblings,
-	&level_nodegnd_003_objects,
-	&level_nodegnd_003_rigidbodies
+NODE level0_nodegnd_003 = {
+	&level0_meshgnd_003,
+	&level0_nodegnd_003_siblings,
+	&level0_nodegnd_003_objects,
+	&level0_nodegnd_003_rigidbodies
 };
 
-SIBLINGS level_nodegnd_001_siblings = {
-	1,
-	{
-		&level_nodegnd
-	}
+MESH * level0_actorPtr = &level0_meshSphere;
+MESH * level0_levelPtr = &level0_meshgnd;
+MESH * level0_propPtr  = &level0_meshSphere_001;
+
+CAMANGLE * level0_camPtr =  &level0_camAngle_camPath_001;
+
+NODE * level0_curNode =  &level0_nodegnd;
+
+LEVEL level0 = {
+	&level0_cmat,
+	&level0_lgtmat,
+	&level0_meshes,
+	&level0_meshes_length,
+	&level0_meshSphere,
+	&level0_meshgnd,
+	&level0_meshSphere_001,
+	&level0_camAngle_camPath_001,
+	&level0_camPath,
+	&level0_camAngles,
+	&level0_nodegnd,
+	&level0_meshPlan
 };
 
-CHILDREN level_nodegnd_001_objects = {
-	3,
-	{
-		&level_meshwall_002,
-		&level_meshwall_003,
-		&level_meshCylindre
-	}
-};
-
-CHILDREN level_nodegnd_001_rigidbodies = {
-	2,
-	{
-		&level_meshSphere,
-		&level_meshSphere_001
-	}
-};
-
-NODE level_nodegnd_001 = {
-	&level_meshgnd_001,
-	&level_nodegnd_001_siblings,
-	&level_nodegnd_001_objects,
-	&level_nodegnd_001_rigidbodies
-};
-
-SIBLINGS level_nodegnd_002_siblings = {
-	1,
-	{
-		&level_nodegnd
-	}
-};
-
-CHILDREN level_nodegnd_002_objects = {
-	1,
-	{
-		&level_meshobject
-	}
-};
-
-CHILDREN level_nodegnd_002_rigidbodies = {
-	2,
-	{
-		&level_meshSphere,
-		&level_meshSphere_001
-	}
-};
-
-NODE level_nodegnd_002 = {
-	&level_meshgnd_002,
-	&level_nodegnd_002_siblings,
-	&level_nodegnd_002_objects,
-	&level_nodegnd_002_rigidbodies
-};
-
-SIBLINGS level_nodegnd_siblings = {
-	3,
-	{
-		&level_nodegnd_003,
-		&level_nodegnd_002,
-		&level_nodegnd_001
-	}
-};
-
-CHILDREN level_nodegnd_objects = {
-	5,
-	{
-		&level_meshPlan,
-		&level_meshwall_001,
-		&level_meshwall,
-		&level_meshSphere_001,
-		&level_meshCube
-	}
-};
-
-CHILDREN level_nodegnd_rigidbodies = {
-	2,
-	{
-		&level_meshSphere,
-		&level_meshSphere_001
-	}
-};
-
-NODE level_nodegnd = {
-	&level_meshgnd,
-	&level_nodegnd_siblings,
-	&level_nodegnd_objects,
-	&level_nodegnd_rigidbodies
-};
-
-MESH * level_actorPtr = &level_meshSphere;
-MESH * level_levelPtr = &level_meshgnd_002;
-MESH * level_propPtr  = &level_meshSphere_001;
-
-CAMANGLE * level_camPtr =  &level_camAngle_camPath_001;
-
-NODE * level_curNode =  &level_nodegnd_002;

@@ -47,23 +47,23 @@ typedef struct MESH {
 	PRIM    *    index;
 	TIM_IMAGE *  tim;  
 	unsigned long * tim_data;
-	MATRIX  *    mat;
-	VECTOR  *    pos;
-	SVECTOR *    rot;
-	short   *    isRigidBody;
-	short   *    isStaticBody;
-	short   *    isPrism;
-	short   *    isAnim;
-	short   *    isActor;
-	short   *    isLevel;
-	short   *    isBG;
-	short   *    isSprite;
-	long    *    p;
-	long    *    OTz;
-	BODY    *    body;
-	VANIM   *    anim;
+	MATRIX      mat;
+	VECTOR      pos;
+	SVECTOR     rot;
+	short       isRigidBody;
+	short       isStaticBody;
+	short       isPrism;
+	short       isAnim;
+	short       isActor;
+	short       isLevel;
+	short       isBG;
+	short       isSprite;
+	long        p;
+	long        OTz;
+	BODY     *  body;
+	VANIM    *  anim;
 	struct NODE   *    node;
-	VECTOR       pos2D;
+	VECTOR      pos2D;
 	} MESH;
 
 typedef struct QUAD {
@@ -114,3 +114,17 @@ typedef struct NODE {
 	CHILDREN * rigidbodies;
 	} NODE;
 
+typedef struct LEVEL {
+	MATRIX * cmat;
+	MATRIX * lgtmat;
+	MESH   ** meshes;
+	int * meshes_length;
+	MESH * actorPtr;
+	MESH * levelPtr;
+	MESH * propPtr;
+	CAMANGLE * camPtr;
+	CAMPATH * camPath;
+	CAMANGLE ** camAngles;
+	NODE * curNode;
+	MESH * meshPlan; // This one is temporary
+	} LEVEL;

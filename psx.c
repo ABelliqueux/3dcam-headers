@@ -10,6 +10,8 @@ void init(DISPENV disp[2], DRAWENV draw[2], short db, MATRIX * cmat, CVECTOR * B
 
     PadInit(0);
 	
+    //~ CdInit();
+    
 	// Initialize and setup the GTE
 	
     InitGeom();
@@ -100,6 +102,15 @@ void display(DISPENV * disp, DRAWENV * draw, u_long * otdisc, char * primbuff, c
 
     *nextprim = primbuff;
     
+};
+
+void LoadLevel(const char*const LevelName, u_long * LoadAddress){
+    
+    int cdread = 0, cdsync = 1;
+    	
+	cdread = CdReadFile( (char *)(LevelName), LoadAddress, 0);
+	
+    cdsync = CdReadSync(0, 0);
 };
 
 void LoadTexture(u_long * tim, TIM_IMAGE * tparam){     // This part is from Lameguy64's tutorial series : lameguy64.net/svn/pstutorials/chapter1/3-textures.html login/pw: annoyingmous
