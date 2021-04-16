@@ -30,7 +30,7 @@
 #include "space.h"
 
 
-//~ #define USECD
+#define USECD
 
 // START OVERLAY
 
@@ -38,19 +38,19 @@ extern u_long load_all_overlays_here;
 extern u_long __lvl0_end;
 extern u_long __lvl1_end;
 
-#define LLEVEL 1
+//~ #define LLEVEL 0
 
 //#define USE_POINTER
 
-#if LLEVEL == 0
+//~ #if LLEVEL == 0
 
-    static const char*const overlayFile = "\\level0.bin;1";
+    //~ static const char*const overlayFile = "\\level0.bin;1";
 
-#else
+//~ #else
 
-    static const char*const overlayFile = "\\level1.bin;1";
+    //~ static const char*const overlayFile = "\\level1.bin;1";
 
-#endif
+//~ #endif
 
 //~ #ifdef USE_POINTER
 
@@ -70,9 +70,10 @@ extern u_long __lvl1_end;
 
 #include "levels/level1.h"
 
-//~ static char* overlayFile;
-    
-//~ char level = 0;
+short level = 1;
+short levelHasChanged = 0;
+
+static char* overlayFile;
 
 // Display and draw environments, double buffered
 
@@ -139,12 +140,9 @@ VECTOR fVecActor = {0,0,0,0};
 
 u_long triCount = 0;
 
+// These are set to the corresponding address in the LEVEL struct of current loaded level
 
-// TODO : Add switch case to get the correct pointers
-
-// Get needed pointers from level file
-
-MATRIX * cmat, *lgtmat;
+MATRIX * cmat, * lgtmat;
 
 MESH * actorPtr, * levelPtr, * propPtr, ** meshes;
 
@@ -162,15 +160,104 @@ MESH * meshPlan;
 
 VECTOR * modelPlan_pos;
 
+// Zero level : Initialize everything to 0
+
+MATRIX Zcmat = {0}, Zlgtmat = {0};
+
+MESH ZactorPtr = {0}, ZlevelPtr = {0} , ZpropPtr = {0}, Zmeshes[] = {0};
+
+int Zmeshes_length = 0;
+
+NODE ZcurNode = {0};
+
+CAMPATH ZcamPath = {0};
+
+CAMANGLE ZcamPtr = {0}, ZcamAngles[] = {0};
+
+// Get rid of those
+
+MESH ZmeshPlan = {0};
+
+VECTOR ZmodelPlan_pos = {0};
+
+LEVEL zero = {
+    &Zcmat,
+	&Zlgtmat,
+	&Zmeshes,
+	&Zmeshes_length,
+	&ZactorPtr,
+	&ZlevelPtr,
+	&ZpropPtr,
+	&ZcamPtr,
+	&ZcamPath,
+	&ZcamAngles,
+	0,
+	&ZmeshPlan
+};
+
 // Pad 
 
 void callback();
 
 int main() {
+
+    if ( level == 0 ){
+        
+        overlayFile = "\\level0.bin;1";
+        
+    } else if ( level == 1) {
+
+        overlayFile = "\\level1.bin;1";
+        
+        }
+
+    // Use Struct to hold level's pointers
+
+    //~ LEVEL curLevel = {
+        //~ cmat,
+        //~ lgtmat,
+        //~ meshes,
+        //~ meshes_length,
+        //~ actorPtr,
+        //~ levelPtr,
+        //~ propPtr,
+        //~ camPtr,
+        //~ camPath,
+        //~ camAngles,
+        //~ curNode,
+        //~ meshPlan
+    //~ };
+    
+    // Zeroing the level pointers
+    
+    cmat = zero.cmat;
+
+    lgtmat  = zero.lgtmat;
+
+    meshes  = (MESH **)zero.meshes;
+
+    meshes_length = zero.meshes_length;
+
+    actorPtr = zero.actorPtr;
+
+    levelPtr = zero.levelPtr;
+
+    propPtr  = zero.propPtr;
+    
+    camPtr   = zero.camPtr;
+    
+    camPath  = zero.camPath;
+    
+    camAngles = (CAMANGLE **)zero.camAngles;
+    
+    curNode   = zero.curNode; // Blank
+    
+    // Move these to drawPoly()
+
+    meshPlan  = zero.meshPlan;
+    
     
     // Load overlay
-    
-    
 
     #ifdef USECD
     
@@ -179,10 +266,13 @@ int main() {
         LoadLevel(overlayFile, &load_all_overlays_here);
     
     #endif
-
-    if ( LLEVEL == 0 ) {
     
-        cmat    = level0.cmat;
+    // TODO : Add switch case to get the correct pointers
+    // Get needed pointers from level file
+
+    if ( level == 0 ) {
+    
+        cmat = level0.cmat;
     
         lgtmat  = level0.lgtmat;
     
@@ -202,41 +292,15 @@ int main() {
         
         camAngles = (CAMANGLE **)level0.camAngles;
         
-        curNode   = level0.curNode;
+        curNode   = level0.curNode; // Blank
         
         // Move these to drawPoly()
     
         meshPlan  = level0.meshPlan;
         
-        //~ cmat    = &level_cmat;
-    
-        //~ lgtmat  = &level_lgtmat;
-    
-        //~ meshes  = level_meshes;
-    
-        //~ meshes_length = &level_meshes_length;
-    
-        //~ actorPtr = level_actorPtr;
-
-        //~ levelPtr = level_levelPtr;
-
-        //~ propPtr  = level_propPtr;
-        
-        //~ camPtr   = level_camPtr;
-        
-        //~ camPath  = &level_camPath;
-        
-        //~ camAngles = level_camAngles;
-        
-        //~ curNode   = level_curNode;
-        
-        //~ // Move these to drawPoly()
-    
-        //~ meshPlan  = &level_meshPlan;
-        
-        //~ modelPlan_pos = &level_meshPlan.pos;
-        
-    } else if ( LLEVEL == 1) {
+        //~ LvlPtrSet( &curLevel, &level0);
+                
+    } else if ( level == 1) {
     
         cmat    = level1.cmat;
     
@@ -266,8 +330,8 @@ int main() {
         
         //~ modelPlan_pos = level1_meshPlan->pos;
         
-    }
-    
+    } 
+        
     // Overlay 
     
     VECTOR sp = {CENTERX,CENTERY,0};
@@ -366,7 +430,152 @@ int main() {
     
     while ( VSync(1) ) {
         
-        //~ FntPrint("%d %d %x %x\n", cdread, cdsync, &load_all_overlays_here, &__ovly0_end);
+        if (levelHasChanged){
+    
+            if ( level == 0 ) {
+                
+                //~ cmat = zero.cmat;
+
+                //~ lgtmat  = zero.lgtmat;
+
+                //~ meshes  = (MESH **)zero.meshes;
+
+                //~ meshes_length = zero.meshes_length;
+
+                //~ actorPtr = zero.actorPtr;
+
+                //~ levelPtr = zero.levelPtr;
+
+                //~ propPtr  = zero.propPtr;
+                
+                //~ camPtr   = zero.camPtr;
+                
+                //~ camPath  = zero.camPath;
+                
+                //~ camAngles = (CAMANGLE **)zero.camAngles;
+                
+                //~ curNode   = zero.curNode; // Blank
+                
+                // Move these to drawPoly()
+
+                //~ meshPlan  = zero.meshPlan;
+                
+                ScrRst();
+                
+                overlayFile = "\\level0.bin;1";
+
+                LoadLevel(overlayFile, &load_all_overlays_here);
+            
+                cmat = level0.cmat;
+            
+                lgtmat  = level0.lgtmat;
+            
+                meshes  = level0.meshes;
+            
+                meshes_length = level0.meshes_length;
+            
+                actorPtr = level0.actorPtr;
+
+                levelPtr = level0.levelPtr;
+
+                propPtr  = level0.propPtr;
+                
+                camPtr   = level0.camPtr;
+                
+                camPath  = level0.camPath;
+                
+                camAngles = level0.camAngles;
+                
+                curNode   = level0.curNode; // Blank
+                
+                // Move these to drawPoly()
+            
+                meshPlan  = level0.meshPlan;
+                
+                //~ LvlPtrSet( &curLevel, &level0);
+                
+                for (int k = 0; k < *meshes_length ; k++){
+    
+                    LoadTexture(meshes[k]->tim_data, meshes[k]->tim);
+    
+                }
+                        
+            } else if ( level == 1) {
+                
+                //~ cmat = zero.cmat;
+
+                //~ lgtmat  = zero.lgtmat;
+
+                //~ meshes  = (MESH **)zero.meshes;
+
+                //~ meshes_length = zero.meshes_length;
+
+                //~ actorPtr = zero.actorPtr;
+
+                //~ levelPtr = zero.levelPtr;
+
+                //~ propPtr  = zero.propPtr;
+                
+                //~ camPtr   = zero.camPtr;
+                
+                //~ camPath  = zero.camPath;
+                
+                //~ camAngles = (CAMANGLE **)zero.camAngles;
+                
+                //~ curNode   = zero.curNode; // Blank
+                
+                //~ // Move these to drawPoly()
+
+                //~ meshPlan  = zero.meshPlan;
+        
+                //~ ScrRst();
+                
+                overlayFile = "\\level1.bin;1";
+
+                LoadLevel(overlayFile, &load_all_overlays_here);
+            
+                cmat    = level1.cmat;
+            
+                lgtmat  = level1.lgtmat;
+            
+                meshes  = level1.meshes;
+            
+                meshes_length = level1.meshes_length;
+            
+                actorPtr = level1.actorPtr;
+
+                levelPtr = level1.levelPtr;
+
+                propPtr  = level1.propPtr;
+                
+                camPtr   = level1.camPtr;
+                
+                camPath  = level1.camPath;
+                
+                camAngles = level1.camAngles;
+                
+                curNode   = level1.curNode;
+                
+                // Move these to drawPoly()
+            
+                meshPlan  = level1.meshPlan;
+                
+                //~ modelPlan_pos = level1_meshPlan->pos;
+                
+                for (int k = 0; k < *meshes_length ; k++){
+    
+                    LoadTexture(meshes[k]->tim_data, meshes[k]->tim);
+    
+                }
+                
+            }
+            
+            levelHasChanged = 0;
+        
+        }
+        
+        
+        FntPrint("%x\n", actorPtr->tim);
         
         // Clear the main OT
 		
@@ -778,47 +987,50 @@ int main() {
         }
     
     // Spatial partitioning
-        
-        for ( int msh = 0; msh < curNode->siblings->index; msh ++ ) {
-        
-            // Actor
-        
-            if ( !getIntCollision( *actorPtr->body , *curNode->siblings->list[msh]->plane->body).vx &&
-            
-                 !getIntCollision( *actorPtr->body , *curNode->siblings->list[msh]->plane->body).vz )
-            {
-            
-                if ( curNode != curNode->siblings->list[msh] ) {
                 
-                    curNode = curNode->siblings->list[msh];
+        if (curNode){
+        
+            for ( int msh = 0; msh < curNode->siblings->index; msh ++ ) {
+            
+                // Actor
+            
+                if ( !getIntCollision( *actorPtr->body , *curNode->siblings->list[msh]->plane->body).vx &&
+                
+                     !getIntCollision( *actorPtr->body , *curNode->siblings->list[msh]->plane->body).vz )
+                {
+                
+                    if ( curNode != curNode->siblings->list[msh] ) {
+                    
+                        curNode = curNode->siblings->list[msh];
 
-                    levelPtr = curNode->plane;
+                        levelPtr = curNode->plane;
+                    }
+                
                 }
             
-            }
-        
-            // DONTNEED ?
-            // Moveable prop
-            
-            //~ if ( !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vx &&
-            
-                 //~ !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vz ) {
+                // DONTNEED ?
+                // Moveable prop
+                
+                //~ if ( !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vx &&
+                
+                     //~ !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vz ) {
 
-                //~ if ( propPtr->node != curNode->siblings->list[ msh ]){
+                    //~ if ( propPtr->node != curNode->siblings->list[ msh ]){
+                        
+                        //~ propPtr->node = curNode->siblings->list[ msh ];
+                    //~ }
                     
-                    //~ propPtr->node = curNode->siblings->list[ msh ];
                 //~ }
                 
-            //~ }
-            
-            if ( !getIntCollision( *propPtr->body , *curNode->plane->body).vx &&
-            
-                 !getIntCollision( *propPtr->body , *curNode->plane->body).vz ) {
-            
-                propPtr->node = curNode;
-            
+                if ( !getIntCollision( *propPtr->body , *curNode->plane->body).vx &&
+                
+                     !getIntCollision( *propPtr->body , *curNode->plane->body).vz ) {
+                
+                    propPtr->node = curNode;
+                
+                }
+                
             }
-            
         }
         
     // Physics
@@ -930,76 +1142,79 @@ int main() {
         
     // Polygon drawing
         
-        static long Flag;
-        
-        if ( (camMode == 2) && (camPtr->tim_data ) ) {
-      
-            drawBG(camPtr, &nextpri, otdisc[db], &db);
+        if (curNode){
+            
+            static long Flag;
+            
+            if ( (camMode == 2) && (camPtr->tim_data ) ) {
+          
+                drawBG(camPtr, &nextpri, otdisc[db], &db);
 
-            // Loop on camAngles
-        
-            for ( int mesh = 0 ; mesh < camAngles[ curCamAngle ]->index; mesh ++ ) {
-                
-                transformMesh(&camera, camAngles[curCamAngle]->objects[mesh]);
-                
-                drawPoly(camAngles[curCamAngle]->objects[mesh], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
-                
-                //                                                          int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw)
+                // Loop on camAngles
+            
+                for ( int mesh = 0 ; mesh < camAngles[ curCamAngle ]->index; mesh ++ ) {
+                    
+                    transformMesh(&camera, camAngles[curCamAngle]->objects[mesh]);
+                    
+                    drawPoly(camAngles[curCamAngle]->objects[mesh], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
+                    
+                    //                                                          int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw)
+                }
+                    
             }
+            
+            else {
                 
-        }
-        
-        else {
-            
-        // Draw current node's plane
+                // Draw current node's plane
 
-        drawPoly( curNode->plane, &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
-        
-        // Draw surrounding planes 
-        
-		for ( int sibling = 0; sibling < curNode->siblings->index; sibling++ ) {
-        
-                drawPoly(curNode->siblings->list[ sibling ]->plane, &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
-        
-        }
-        
-        // Draw adjacent planes's children
-        
-        for ( int sibling = 0; sibling < curNode->siblings->index; sibling++ ) {
-            
-            for ( int object = 0; object < curNode->siblings->list[ sibling ]->objects->index; object++ ) {
-            
-                long t = 0;
+                drawPoly( curNode->plane, &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
                 
-                transformMesh(&camera, curNode->siblings->list[ sibling ]->objects->list[ object ]);
+                // Draw surrounding planes 
                 
-                drawPoly( curNode->siblings->list[ sibling ]->objects->list[ object ], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
-            
-            }
-        }
-        
-        // Draw current plane children
-        
-		for ( int object = 0; object < curNode->objects->index; object++ ) {
-        
-            transformMesh(&camera, curNode->objects->list[ object ]);
+                for ( int sibling = 0; sibling < curNode->siblings->index; sibling++ ) {
+                
+                        drawPoly(curNode->siblings->list[ sibling ]->plane, &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
+                
+                }
+                
+                // Draw adjacent planes's children
+                
+                for ( int sibling = 0; sibling < curNode->siblings->index; sibling++ ) {
+                    
+                    for ( int object = 0; object < curNode->siblings->list[ sibling ]->objects->index; object++ ) {
+                    
+                        long t = 0;
+                        
+                        transformMesh(&camera, curNode->siblings->list[ sibling ]->objects->list[ object ]);
+                        
+                        drawPoly( curNode->siblings->list[ sibling ]->objects->list[ object ], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
+                    
+                    }
+                }
+                
+                // Draw current plane children
+                
+                for ( int object = 0; object < curNode->objects->index; object++ ) {
+                
+                    transformMesh(&camera, curNode->objects->list[ object ]);
 
-            drawPoly( curNode->objects->list[ object ], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
-        
-        }
-        
-        // Draw rigidbodies
-        
-        for ( int object = 0; object < curNode->rigidbodies->index; object++ ) {
-        
-            transformMesh(&camera, curNode->rigidbodies->list[ object ]);
+                    drawPoly( curNode->objects->list[ object ], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
+                
+                }
+                
+                // Draw rigidbodies
+                
+                for ( int object = 0; object < curNode->rigidbodies->index; object++ ) {
+                
+                    transformMesh(&camera, curNode->rigidbodies->list[ object ]);
 
-            drawPoly( curNode->rigidbodies->list[ object ], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
+                    drawPoly( curNode->rigidbodies->list[ object ], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
+                
+                }
         
+            }    
         }
-    
-    }    
-    
+        
         // Find and apply light rotation matrix
 
         RotMatrix(&lgtang, &rotlgt);	
@@ -1018,7 +1233,7 @@ int main() {
 
         //~ FntPrint("CurNode : %x\nIndex: %d", curNode, curNode->siblings->index);
         
-        FntPrint("Time    : %d dt :%d level: %d\n", VSync(-1) / 60, dt);
+        FntPrint("Time    : %d dt :%d\n", VSync(-1) / 60, dt);
         //~ FntPrint("%d\n", curCamAngle );
         //~ FntPrint("%x\n", primbuff[db]);
        
@@ -1238,6 +1453,23 @@ void callback() {
 
         lastPad = pad;
     }
+    
+    if ( pad & PADselect && !timer ) {
+        
+        if (!levelHasChanged){
+        
+            level = !level;
+            
+            levelHasChanged = 1;
+        }
+        timer = 30;
+        
+        lastPad = pad;
+        
+        
+    }
+    
+    FntPrint("level :%d", level);
     
     if ( cursor ) {
         

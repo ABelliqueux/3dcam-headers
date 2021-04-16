@@ -285,7 +285,7 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
 
                     NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vy ], &mesh->tmesh->c[ mesh->index[t].order.vy ], mesh->p, &outCol2);                           
                 
-                    // If transparent effect is in use, inhibate shadows
+                    // If transparent effect is in use, inhibit shadows
                 
                     if (mesh->isPrism){ 
                         
