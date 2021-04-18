@@ -4,14 +4,18 @@ void init(DISPENV disp[2], DRAWENV draw[2], short db, MATRIX * cmat, CVECTOR * B
     
     ResetCallback();
     
-    // Reset the GPU before doing anything and the controller
-	
+    // Init pad
+
+    //~ PadInit(0);
+    
+    //~ InitPAD(controllers[0].pad, 34, controllers[1].pad, 34);
+    
+    //~ StartPAD();
+
+    // Reset the GPU
+    
     ResetGraph(0);
 
-    PadInit(0);
-	
-    //~ CdInit();
-    
 	// Initialize and setup the GTE
 	
     InitGeom();
@@ -101,9 +105,9 @@ void display(DISPENV * disp, DRAWENV * draw, u_long * otdisc, char * primbuff, c
 
     // https://stackoverflow.com/questions/3526503/how-to-set-pointer-reference-through-a-function
 
-    //~ //DrawSync(0);
+    DrawSync(0);
     
-    VSync(2);  // Using VSync 2 insures constant framerate. 0 makes the fr polycount dependant.
+    VSync(0);  // Using VSync 2 insures constant framerate. 0 makes the fr polycount dependant.
 
     ResetGraph(1);
 

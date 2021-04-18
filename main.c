@@ -23,14 +23,14 @@
 #define _WCHAR_T
 
 #include "psx.h"
+#include "pad.h"
 #include "math.h"
 #include "camera.h"
 #include "physics.h"
 #include "graphics.h"
 #include "space.h"
 
-
-#define USECD
+//~ #define USECD
 
 // START OVERLAY
 
@@ -70,7 +70,8 @@ extern u_long __lvl1_end;
 
 #include "levels/level1.h"
 
-short level = 1;
+short level = 0;
+
 short levelHasChanged = 0;
 
 static char* overlayFile;
@@ -116,17 +117,23 @@ CAMERA camera = {0};
 
 long time = 0;
 
-//~ const int gravity = 10;
-    
 int camMode = 2;
 
 //Pad
+
+Controller_Buffer controllers[2];   // Buffers for reading controllers
+
+Controller_Data theControllers[8];  // Processed controller data
 
 int pressed = 0;
 
 u_short timer = 0;
 
 // Cam stuff 
+
+int angle     = 0;
+
+int angleCam  = 0;
 
 int lerping    = 0;
 
@@ -353,6 +360,10 @@ int main() {
     
 	init(disp, draw, db, cmat, &BGc, &BKc);
     
+    InitPAD(controllers[0].pad, 34, controllers[1].pad, 34);
+    
+    StartPAD();
+    
     generateTable();
 
     VSyncCallback(callback);
@@ -393,7 +404,7 @@ int main() {
     
     VECTOR objAngleToCam = {0, 0, 0, 0};
     
-    int angle     = 0;                      //PSX units = 4096 == 360° = 2Pi
+    //~ int angle     = 0;                      //PSX units = 4096 == 360° = 2Pi
     
     int dist      = 0;                      //PSX units 
 
@@ -584,7 +595,7 @@ int main() {
         // Clear Secondary OT
         
         ClearOTagR(ot[db], OTLEN);
-        
+
         // timeB = time;
         
         time ++;
@@ -683,7 +694,7 @@ int main() {
         
             //~ applyVector(&InvCamPos, -1,-1,-1, *=);
             
-            angle = -actorPtr->rot.vy / 2;
+            angle = -(actorPtr->rot.vy / 2) + angleCam;
             
             //~ angle = actorPtr->rot->vy;
 
@@ -1234,6 +1245,7 @@ int main() {
         //~ FntPrint("CurNode : %x\nIndex: %d", curNode, curNode->siblings->index);
         
         FntPrint("Time    : %d dt :%d\n", VSync(-1) / 60, dt);
+        
         //~ FntPrint("%d\n", curCamAngle );
         //~ FntPrint("%x\n", primbuff[db]);
        
@@ -1257,7 +1269,22 @@ int main() {
 
 void callback() {
     
-    u_short pad = PadRead(0);
+    
+    // Pad 1
+
+    read_controller( &theControllers[0], &controllers[0].pad[0], 0 );  // Read controllers
+    
+    // Pad 2
+    
+    read_controller( &theControllers[1], &controllers[1].pad[0], 1 );
+    
+    //~ u_short pad = PadRead(0);
+    
+    //~ u_short pad = 0;
+    
+    u_char PADL = ~theControllers[0].button1;
+    
+    u_char PADR = ~theControllers[0].button2;
     
     static u_short lastPad;
     
@@ -1292,7 +1319,7 @@ void callback() {
     
     }    
 
-    if ( pad & PADR1 && !timer ) {
+    if ( PADR & PadShldR1 && !timer ) {
         
         if (!camPtr->tim_data){
             
@@ -1332,30 +1359,30 @@ void callback() {
             } 
         }
 
-        lastPad = pad;
+        lastPad = PADR;
 
         timer = 10;
     }
         
-    if ( !(pad & PADR1) && lastPad & PADR1 ) {
+    //~ if ( !(PADR & PadShldR1) && lastPad & PadShldR1 ) {
         
-        //~ pressed = 0;
+        //pressed = 0;
     
-    }
+    //~ }
     
-    if ( pad & PADL2 ) {
+    if ( PADR & PadShldL2 ) {
     
         lgtang.vy += 32;
     
     }
     
-    if ( pad & PADL1 ) {
+    if ( PADR & PadShldL1 ) {
     
         lgtang.vz += 32;
     
     }
     
-    if ( pad & PADRup && !timer ){
+    if ( PADR & PadUp && !timer ){
     
         if (actorPtr->isPrism){
     
@@ -1369,25 +1396,29 @@ void callback() {
      
         timer = 10;
      
-        lastPad = pad;
+        lastPad = PADR;
     }
     
-    if ( pad & PADRdown && !timer ){
-        //~ if (actorPtr->body->gForce.vy >= 0 && actorPtr->body->position.vy >= actorPtr->body->min.vy  ){
-                //~ forceApplied -= 150;
-        //~ }
+    if ( PADR & PadDown && !timer ){
+    
+        if (actorPtr->body->gForce.vy >= 0 && actorPtr->body->position.vy >= actorPtr->body->min.vy  ){
+    
+                forceApplied -= 150;
+    
+        }
+    
         cursor = div - 15;
         
         timer = 30;
         
-        lastPad = pad;
+        lastPad = PADR;
     }
     
-    if ( !(pad & PADRdown) && lastPad & PADRdown ) {
+    if ( !(PADR & PadDown) && lastPad & PadDown ) {
         //~ lastPad = pad;
     }
     
-    if ( pad & PADRleft && !timer ) {
+    if ( PADR & PadLeft && !timer ) {
         
         if (actorPtr->anim->interpolate){
         
@@ -1401,60 +1432,110 @@ void callback() {
         
         timer = 10;
         
-        lastPad = pad;
+        lastPad = PADR;
     }
         
-    if ( pad & PADLup ) {
+    // Analog stick L up
+        
+    if ( theControllers[0].analog3 >= 0 && theControllers[0].analog3 < 108 ) {
+        
+        actorPtr->body->gForce.vz = getVectorTo(fVecActor, actorPtr->pos).vz *  (128 - theControllers[0].analog3 ) >> 15 ;
+        
+        actorPtr->body->gForce.vx = -getVectorTo(fVecActor, actorPtr->pos).vx * (128 - theControllers[0].analog3 ) >> 15 ;
+        
+        lastPad = PADL;
+    }
+
+    // Analog stick L down
+        
+    if ( theControllers[0].analog3 > 148 && theControllers[0].analog3 <= 255 ) {
+        
+        actorPtr->body->gForce.vz = -getVectorTo(fVecActor, actorPtr->pos).vz *  ( theControllers[0].analog3 - 128 ) >> 15 ;
+        
+        actorPtr->body->gForce.vx = getVectorTo(fVecActor, actorPtr->pos).vx * ( theControllers[0].analog3 - 128 ) >> 15 ;
+        
+        lastPad = PADL;
+    }
+    
+    // Analog stick L dead zone
+    
+    if ( theControllers[0].analog3 > 108 && theControllers[0].analog3 < 148 ) {
+        
+        actorPtr->body->gForce.vz = 0;
+
+        actorPtr->body->gForce.vx = 0;
+        
+    }
+    
+    // Analog stick L left
+    
+    if ( theControllers[0].analog2 >= 0 && theControllers[0].analog2 < 108 ) {
+        
+        actorPtr->rot.vy -= ( 40 * ( 128 - theControllers[0].analog2 ) ) >> 7 ;
+    
+    }
+    
+    // Analog stick L right
+    
+    if ( theControllers[0].analog2 > 148 && theControllers[0].analog2 <= 255 ) {
+        
+        actorPtr->rot.vy += ( 40 * ( theControllers[0].analog2 - 128 ) ) >> 7 ;
+    
+    }
+    
+    if ( PADL & PadUp ) {
         
         actorPtr->body->gForce.vz = getVectorTo(fVecActor, actorPtr->pos).vz >> 8 ;
         
         actorPtr->body->gForce.vx = -getVectorTo(fVecActor, actorPtr->pos).vx >> 8 ;
         
-        lastPad = pad;
+        lastPad = PADL;
     }
     
-    if ( !(pad & PADLup) && lastPad & PADLup) {
+    if ( !(PADL & PadUp) && lastPad & PadUp) {
 
         actorPtr->body->gForce.vz = 0;
 
         actorPtr->body->gForce.vx = 0;
+        
+        lastPad = PADL;
     }
     
-    if ( pad & PADLdown ) {
+    if ( PADL & PadDown ) {
 
         actorPtr->body->gForce.vz = -getVectorTo(fVecActor, actorPtr->pos).vz >> 8 ;
 
         actorPtr->body->gForce.vx = getVectorTo(fVecActor, actorPtr->pos).vx >> 8 ;
 
-        lastPad = pad;
+        lastPad = PADL;
     }
     
-    if ( !(pad & PADLdown) && lastPad & PADLdown) {
+    if ( !( PADL & PadDown ) && lastPad & PadDown) {
 
         actorPtr->body->gForce.vz = 0;
 
         actorPtr->body->gForce.vx = 0;
 
-        lastPad = pad;
+        lastPad = PADL;
 
     }
     
-    if ( pad & PADLleft ) {
+    if ( PADL & PadLeft ) {
 
         actorPtr->rot.vy -= 32;
 
-        lastPad = pad;
+        lastPad = PADL;
 
     }
     
-    if ( pad & PADLright ) {
+    if ( PADL & PadRight ) {
 
         actorPtr->rot.vy += 32;
 
-        lastPad = pad;
+        lastPad = PADL;
     }
     
-    if ( pad & PADselect && !timer ) {
+    if ( PADL & PadSelect && !timer ) {
         
         if (!levelHasChanged){
         
@@ -1464,12 +1545,41 @@ void callback() {
         }
         timer = 30;
         
-        lastPad = pad;
+        lastPad = PADL;
         
         
     }
     
-    FntPrint("level :%d", level);
+    if(camMode == 0){
+        
+        if ( theControllers[0].analog0 >= 0 && theControllers[0].analog0 < 108) {
+        
+            //~ angleCam -= 16;
+            angleCam -= ( 16 * ( 128 - theControllers[0].analog0 ) ) >> 7 ;
+        
+        }
+
+        if ( theControllers[0].analog0 > 148 && theControllers[0].analog0 <= 255) {
+        
+            //~ angleCam += 16;
+            angleCam += ( 16 * ( theControllers[0].analog0 - 128 ) ) >> 7 ;
+        
+        }
+    
+    } 
+    
+    //~ FntPrint("level :%d", level);
+    
+    FntPrint("PADL :%d \n", angleCam );
+    
+    FntPrint( "Pad 1 : %02x\nButtons:%02x %02x, Stick:%02d %02d %02d %02d\n",
+            theControllers[0].type,             // Controller type : 00 == none,  41 == standard, 73 == analog/dualshock, 12 == mouse, 23 == steering wheel, 63 == gun, 53 == analog joystick
+            theControllers[0].button1,          // 
+            theControllers[0].button2,
+            theControllers[0].analog0,  // R3 hor  : left: 0 7F right: 7F FF   dz 78 83
+            theControllers[0].analog1,  // R3 vert :  up : 0 7F down : 7F FF : dz 83 86
+            theControllers[0].analog2,  // L3 hor : left : 0 7F right: 7F FF : dz 69 81 68 - 8E 
+            theControllers[0].analog3 ); // L3 vert : up : 0 7F down : 7F FF : dz 74 8D
     
     if ( cursor ) {
         

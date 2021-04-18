@@ -1,10 +1,13 @@
 #pragma once
 
 #include <sys/types.h>
+#include <stdio.h>
 #include <libgte.h>
-#include <libgpu.h>
 #include <libetc.h>
+#include <libgpu.h>
+#include <libapi.h>
 #include <libcd.h>
+
 
 #include "defines.h"
 #include "custom_types.h"

@@ -2,6 +2,7 @@ TARGET = main
 TYPE = ps-exe
 
 SRCS = main.c \
+pad.c \
 math.c \
 camera.c \
 physics.c \
