@@ -24,7 +24,7 @@ void display(DISPENV * disp, DRAWENV * draw, u_long * otdisc, char * primbuff, c
 
 void LvlPtrSet( LEVEL * curLevel, LEVEL * level );
 
-void LoadLevel(const char*const LevelName, u_long * LoadAddress);
+int LoadLevel(const char*const LevelName, u_long * LoadAddress);
 
 void SwitchLevel(const char*const LevelName,  u_long * LoadAddress, LEVEL * curLevel, LEVEL * loadLevel);
 

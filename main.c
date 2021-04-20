@@ -30,7 +30,7 @@
 #include "graphics.h"
 #include "space.h"
 
-//~ #define USECD
+#define USECD
 
 // START OVERLAY
 
@@ -355,7 +355,7 @@ int main() {
         
         }
         
-        FntPrint("cmat : %x %x\n", &curLvl.curNode, &curLvl.cmat);
+        FntPrint("Lvl : %s\n", overlayFile);
 
         //~ FntPrint("%x\n", curLvl.actorPtr->tim);
         

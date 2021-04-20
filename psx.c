@@ -14,7 +14,7 @@ void init(DISPENV disp[2], DRAWENV draw[2], short db, MATRIX * cmat, CVECTOR * B
 
     // Reset the GPU
     
-    ResetGraph(0);
+    ResetGraph( 0 );
 
 	// Initialize and setup the GTE
 	
@@ -36,7 +36,7 @@ void init(DISPENV disp[2], DRAWENV draw[2], short db, MATRIX * cmat, CVECTOR * B
     SetDefDrawEnv(&draw[1], 0, 0, SCREENXRES, SCREENYRES);
     
     
-    // If PAL 
+    // If PAL , add 8 pix vertical offset ((256 - 240) /2)
     
     if ( VMODE ) {
         
@@ -67,19 +67,31 @@ void init(DISPENV disp[2], DRAWENV draw[2], short db, MATRIX * cmat, CVECTOR * B
 		
 	// Init font system
 
-	FntLoad(FNT_POS_X, FNT_POS_Y);
+	FntLoad(FNT_VRAM_X, FNT_VRAM_Y);
 
-	FntOpen(16, 90, 240, 180, 0, 512);
+	FntOpen( FNT_SCR_X,
+             
+             FNT_SCR_Y, 
+             
+             FNT_SCR_W,
+             
+             FNT_SCR_H,
+             
+             FNT_SCR_BG,
+             
+             FNT_SCR_MAX_CHAR
+            
+            );
 
     // Lighting setup
     
-    SetColorMatrix(cmat);
+    SetColorMatrix( cmat );
     
-    SetBackColor(BKc->vx,BKc->vy,BKc->vz);
+    SetBackColor( BKc->vx, BKc->vy, BKc->vz );
     
-    SetFarColor(BGc->r, BGc->g, BGc->b);
+    SetFarColor( BGc->r, BGc->g, BGc->b );
     
-    SetFogNearFar(1200, 1600, SCREENXRES);
+    SetFogNearFar( FOG_NEAR, FOG_FAR, SCREENXRES );
     
 };
 
@@ -87,17 +99,17 @@ void ScrRst(void){
 
     RECT scr;
 
-    VSync(0); // Wait for current drawing to finish
+    VSync( 0 ); // Wait for current drawing to finish
     
-    SetDispMask(0); // Set mask to not displayed
+    SetDispMask( 0 ); // Set mask to not displayed
 
-    ResetGraph(1); // Cancel current drawing
+    ResetGraph( 1 ); // Cancel current drawing
     
-    setRECT(&scr, 0, 0, 320, 480);
+    setRECT(&scr, 0, 0, SCREENXRES, SCREENYRES);
 
-    ClearImage(&scr, 0, 0, 0);
+    ClearImage(&scr, CLEAR_COLOR_R, CLEAR_COLOR_G, CLEAR_COLOR_B );
     
-    DrawSync(0);
+    DrawSync( 0 );
 
 };
 
@@ -107,7 +119,7 @@ void display(DISPENV * disp, DRAWENV * draw, u_long * otdisc, char * primbuff, c
 
     DrawSync(0);
     
-    VSync(0);  // Using VSync 2 insures constant framerate. 0 makes the fr polycount dependant.
+    VSync(VSYNC);  // Using VSync 2 insures constant framerate. 0 makes the fr polycount dependant.
 
     ResetGraph(1);
 
@@ -162,13 +174,17 @@ void LvlPtrSet(LEVEL * curLevel, LEVEL * level){
     
 };
 
-void LoadLevel(const char*const LevelName, u_long * LoadAddress){
+int LoadLevel(const char*const LevelName, u_long * LoadAddress){
     
     int cdread = 0, cdsync = 1;
     	
 	cdread = CdReadFile( (char *)(LevelName), LoadAddress, 0);
 	
     cdsync = CdReadSync(0, 0);
+    
+    // return loaded size
+    
+    return cdread;
 };
 
 void SwitchLevel(const char*const LevelName,  u_long * LoadAddress, LEVEL * curLevel, LEVEL * loadLevel ){

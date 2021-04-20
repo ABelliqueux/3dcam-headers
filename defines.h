@@ -1,4 +1,6 @@
-#define VMODE       0
+#define VMODE       0 // 0 == NTSC, 1 == PAL
+
+#define VSYNC       0
 
 #define SCREENXRES 320
 
@@ -10,22 +12,51 @@
 
 #define FOV CENTERX
 
-#define FNT_POS_X 960
+#define CLEAR_COLOR_R 0
 
-#define FNT_POS_Y 256
+#define CLEAR_COLOR_G 0
+
+#define CLEAR_COLOR_B 0
+
+// Debug Font
+
+#define FNT_VRAM_X 960
+
+#define FNT_VRAM_Y 256
+
+#define FNT_SCR_X 16
+
+#define FNT_SCR_Y 192
+
+#define FNT_SCR_W 240
+
+#define FNT_SCR_H 32
+
+#define FNT_SCR_BG 0
+
+#define FNT_SCR_MAX_CHAR 256
+
+// Ordering table
 
 #define OT2LEN 8
                  
 #define OTLEN	    256	
 
+#define PRIMBUFFLEN	4096 * sizeof(POLY_GT4)	    // Maximum number of POLY_GT3 primitives
+
+// Fog
+
+#define FOG_NEAR 1200
+
+#define FOG_FAR  1600
+
+// Physics
+
 #define GRAVITY 10
 
 #define SCALE 4
 
-#define PRIMBUFFLEN	4096 * sizeof(POLY_GT4)	    // Maximum number of POLY_GT3 primitives
-
-
-// Pad defines
+// Pad codes defines
 
 // Applied on PADL
 
