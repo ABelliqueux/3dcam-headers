@@ -29,6 +29,10 @@ typedef struct{
 
 void getCameraXZ(int * x, int * z, int actorX, int actorZ, int angle, int distance);
 
+void getCameraXZY(int * x, int * z, int * y, int actorX, int actorZ, int actorY, int angle, int angleX, int distance);
+
+void getCameraZY( int * z, int * y, int actorZ, int actorY, int angleX, int distance);
+
 void applyCamera(CAMERA * cam);
 
 void setCameraPos(CAMERA * camera, VECTOR pos, SVECTOR rot);

@@ -32,8 +32,6 @@ void generateTable(void){
     }
 };
 
-// A few notes on the following code :
-
 int ncos(unsigned int t) {
 
     t %= DC_2PI;
@@ -215,10 +213,10 @@ int lerp(int start, int end, int factor){
     
     // lerp interpolated cam movement
     // InBetween = Value 1 + ( ( Value2 - Value1 ) * lerpValue ) ;
-    // lerpValue should be a float between 0 and 1.
+    // lerpValue should be a int between 17 and 256.
     
     
-    return ( start ) + (( end - start ) * factor ) >> 12;
+    return ( ( start ) + ( ( end - start ) * factor ) ) >> 12;
 
 };
 
@@ -255,6 +253,8 @@ SVECTOR SVlerp(SVECTOR start, SVECTOR end, int factor){
 };
 
 VECTOR getVectorTo( VECTOR actor, VECTOR target ) {
+    
+    // Returns a normalized vector that points from actor to target
     
     VECTOR direction = { subVector(target, actor) };
     
