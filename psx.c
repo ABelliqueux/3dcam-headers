@@ -157,6 +157,9 @@ void LvlPtrSet(LEVEL * curLevel, LEVEL * level){
     
     //~ FntPrint("%x %x", curLevel->meshes, level->meshes);
     
+    
+    
+    
 };
 
 void LoadLevel(const char*const LevelName, u_long * LoadAddress){
@@ -166,6 +169,22 @@ void LoadLevel(const char*const LevelName, u_long * LoadAddress){
 	cdread = CdReadFile( (char *)(LevelName), LoadAddress, 0);
 	
     cdsync = CdReadSync(0, 0);
+};
+
+void SwitchLevel(const char*const LevelName,  u_long * LoadAddress, LEVEL * curLevel, LEVEL * loadLevel ){
+    
+    ScrRst();
+    
+    LoadLevel( LevelName, LoadAddress );
+    
+    LvlPtrSet( curLevel, loadLevel);
+
+    for (int k = 0; k < *curLevel->meshes_length ; k++){
+
+        LoadTexture(curLevel->meshes[k]->tim_data, curLevel->meshes[k]->tim);
+
+    }
+
 };
 
 void LoadTexture(u_long * tim, TIM_IMAGE * tparam){     // This part is from Lameguy64's tutorial series : lameguy64.net/svn/pstutorials/chapter1/3-textures.html login/pw: annoyingmous

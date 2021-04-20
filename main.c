@@ -30,7 +30,7 @@
 #include "graphics.h"
 #include "space.h"
 
-#define USECD
+//~ #define USECD
 
 // START OVERLAY
 
@@ -70,7 +70,7 @@ extern u_long __lvl1_end;
 
 #include "levels/level1.h"
 
-short level = 0;
+short level = 1;
 
 short levelHasChanged = 0;
 
@@ -149,59 +149,37 @@ VECTOR fVecActor = {0,0,0,0};
 
 u_long triCount = 0;
 
-// These are set to the corresponding address in the LEVEL struct of current loaded level
+// Default level : Initialize everything to 0
 
-MATRIX * cmat, * lgtmat;
+MATRIX cmat     = {0}, lgtmat   = {0};
 
-MESH * actorPtr, * levelPtr, * propPtr, ** meshes;
+MESH   actorPtr = {0}, levelPtr = {0} , propPtr = {0}, meshes[] = {0};
 
-int * meshes_length;
+int    meshes_length = 0;
 
-NODE * curNode;
+NODE   curNode  = {0};
 
-CAMPATH * camPath;
+CAMPATH camPath = {0};
 
-CAMANGLE * camPtr, ** camAngles;
+CAMANGLE camPtr = {0}, camAngles[] = {0};
 
-// Get rid of those
+MESH   meshPlan = {0};
 
-MESH * meshPlan;
+VECTOR modelPlan_pos = {0};
 
-VECTOR * modelPlan_pos;
-
-// Zero level : Initialize everything to 0
-
-MATRIX Zcmat = {0}, Zlgtmat = {0};
-
-MESH ZactorPtr = {0}, ZlevelPtr = {0} , ZpropPtr = {0}, Zmeshes[] = {0};
-
-int Zmeshes_length = 0;
-
-NODE ZcurNode = {0};
-
-CAMPATH ZcamPath = {0};
-
-CAMANGLE ZcamPtr = {0}, ZcamAngles[] = {0};
-
-// Get rid of those
-
-MESH ZmeshPlan = {0};
-
-VECTOR ZmodelPlan_pos = {0};
-
-LEVEL zero = {
-    &Zcmat,
-	&Zlgtmat,
-	&Zmeshes,
-	&Zmeshes_length,
-	&ZactorPtr,
-	&ZlevelPtr,
-	&ZpropPtr,
-	&ZcamPtr,
-	&ZcamPath,
-	&ZcamAngles,
-	0,
-	&ZmeshPlan
+LEVEL curLvl = {
+    &cmat,
+	&lgtmat,
+	(MESH **)&meshes,
+	&meshes_length,
+	&actorPtr,
+	&levelPtr,
+	&propPtr,
+	&camPtr,
+	&camPath,
+	(CAMANGLE **)&camAngles,
+	&curNode,
+	&meshPlan
 };
 
 // Pad 
@@ -220,35 +198,6 @@ int main() {
         
         }
     
-    // Zeroing the level pointers
-    
-    cmat = zero.cmat;
-
-    lgtmat  = zero.lgtmat;
-
-    meshes  = (MESH **)zero.meshes;
-
-    meshes_length = zero.meshes_length;
-
-    actorPtr = zero.actorPtr;
-
-    levelPtr = zero.levelPtr;
-
-    propPtr  = zero.propPtr;
-    
-    camPtr   = zero.camPtr;
-    
-    camPath  = zero.camPath;
-    
-    camAngles = (CAMANGLE **)zero.camAngles;
-    
-    curNode   = zero.curNode; // Blank
-    
-    // Move these to drawPoly()
-
-    meshPlan  = zero.meshPlan;
-    
-    
     // Load overlay
 
     #ifdef USECD
@@ -264,64 +213,12 @@ int main() {
 
     if ( level == 0 ) {
     
-        cmat = level0.cmat;
-    
-        lgtmat  = level0.lgtmat;
-    
-        meshes  = (MESH **)level0.meshes;
-    
-        meshes_length = level0.meshes_length;
-    
-        actorPtr = level0.actorPtr;
-
-        levelPtr = level0.levelPtr;
-
-        propPtr  = level0.propPtr;
-        
-        camPtr   = level0.camPtr;
-        
-        camPath  = level0.camPath;
-        
-        camAngles = (CAMANGLE **)level0.camAngles;
-        
-        curNode   = level0.curNode; // Blank
-        
-        // Move these to drawPoly()
-    
-        meshPlan  = level0.meshPlan;
-        
-        //~ LvlPtrSet( &curLevel, &level0);
+        LvlPtrSet( &curLvl, &level0);
                 
     } else if ( level == 1) {
-    
-        cmat    = level1.cmat;
-    
-        lgtmat  = level1.lgtmat;
-    
-        meshes  = (MESH **)level1.meshes;
-    
-        meshes_length = level1.meshes_length;
-    
-        actorPtr = level1.actorPtr;
 
-        levelPtr = level1.levelPtr;
+        LvlPtrSet( &curLvl, &level1);
 
-        propPtr  = level1.propPtr;
-        
-        camPtr   = level1.camPtr;
-        
-        camPath  = level1.camPath;
-        
-        camAngles = (CAMANGLE **)level1.camAngles;
-        
-        curNode   = level1.curNode;
-        
-        // Move these to drawPoly()
-    
-        meshPlan  = level1.meshPlan;
-        
-        //~ modelPlan_pos = level1_meshPlan->pos;
-        
     } 
         
     // Overlay 
@@ -343,7 +240,7 @@ int main() {
 	//~ div3.piv = SCREENYRES;
     //~ div3.ndiv = 1;
     
-	init(disp, draw, db, cmat, &BGc, &BKc);
+	init(disp, draw, db, curLvl.cmat, &BGc, &BKc);
     
     InitPAD(controllers[0].pad, 34, controllers[1].pad, 34);
     
@@ -355,17 +252,17 @@ int main() {
 
     // Load textures
     
-    for (int k = 0; k < *meshes_length ; k++){
+    for (int k = 0; k < *curLvl.meshes_length ; k++){
     
-        LoadTexture(meshes[k]->tim_data, meshes[k]->tim);
+        LoadTexture(curLvl.meshes[k]->tim_data, curLvl.meshes[k]->tim);
     
     }
     
     // Load current BG
     
-    if (camPtr->tim_data){
+    if (curLvl.camPtr->tim_data){
 
-        LoadTexture(camPtr->tim_data, camPtr->BGtim);
+        LoadTexture(curLvl.camPtr->tim_data, curLvl.camPtr->BGtim);
 
     }
     
@@ -399,24 +296,25 @@ int main() {
     
     // Polycount
     
-    for (int k = 0; k < *meshes_length; k++){
+    for (int k = 0; k < *curLvl.meshes_length; k++){
     
-            triCount += meshes[k]->tmesh->len;
+            triCount += curLvl.meshes[k]->tmesh->len;
     
     }
     
     // Set camera starting pos
     
-    setCameraPos(&camera, camPtr->campos->pos, camPtr->campos->rot);
+    setCameraPos(&camera, curLvl.camPtr->campos->pos, curLvl.camPtr->campos->rot);
     
     // Find curCamAngle if using pre-calculated BGs
 
     
     if (camMode == 2) {                              
           
-        if (camPtr->tim_data){
+        if (curLvl.camPtr->tim_data){
     
             curCamAngle = 1;
+    
     
         }
     }
@@ -426,99 +324,40 @@ int main() {
     //~ while (1) {
     
     while ( VSync(1) ) {
-        
+                
         if (levelHasChanged){
     
-            if ( level == 0 ) {
-                
-                ScrRst();
-                
-                overlayFile = "\\level0.bin;1";
-
-                LoadLevel(overlayFile, &load_all_overlays_here);
-            
-                cmat = level0.cmat;
-            
-                lgtmat  = level0.lgtmat;
-            
-                meshes  = level0.meshes;
-            
-                meshes_length = level0.meshes_length;
-            
-                actorPtr = level0.actorPtr;
-
-                levelPtr = level0.levelPtr;
-
-                propPtr  = level0.propPtr;
-                
-                camPtr   = level0.camPtr;
-                
-                camPath  = level0.camPath;
-                
-                camAngles = level0.camAngles;
-                
-                curNode   = level0.curNode; // Blank
-                
-                // Move these to drawPoly()
-            
-                meshPlan  = level0.meshPlan;
-                
-                //~ LvlPtrSet( &curLevel, &level0);
-                
-                for (int k = 0; k < *meshes_length ; k++){
+            switch (level){
     
-                    LoadTexture(meshes[k]->tim_data, meshes[k]->tim);
-    
-                }
-                        
-            } else if ( level == 1) {
-               
-                overlayFile = "\\level1.bin;1";
+                case 0:
+                    
+                    overlayFile = "\\level0.bin;1";
+                    
+                    break;
 
-                LoadLevel(overlayFile, &load_all_overlays_here);
-            
-                cmat    = level1.cmat;
-            
-                lgtmat  = level1.lgtmat;
-            
-                meshes  = level1.meshes;
-            
-                meshes_length = level1.meshes_length;
-            
-                actorPtr = level1.actorPtr;
+                case 1:
 
-                levelPtr = level1.levelPtr;
+                    overlayFile = "\\level1.bin;1";
 
-                propPtr  = level1.propPtr;
-                
-                camPtr   = level1.camPtr;
-                
-                camPath  = level1.camPath;
-                
-                camAngles = level1.camAngles;
-                
-                curNode   = level1.curNode;
-                
-                // Move these to drawPoly()
+                    break;
             
-                meshPlan  = level1.meshPlan;
+                default:
                 
-                //~ modelPlan_pos = level1_meshPlan->pos;
-                
-                for (int k = 0; k < *meshes_length ; k++){
-    
-                    LoadTexture(meshes[k]->tim_data, meshes[k]->tim);
-    
-                }
-                
+                    overlayFile = "\\level0.bin;1";
+                    
+                    break;
+            
             }
             
+            SwitchLevel( overlayFile, &load_all_overlays_here, &curLvl, &level0);
+             
             levelHasChanged = 0;
         
         }
         
-        
-        FntPrint("%x\n", actorPtr->tim);
+        FntPrint("cmat : %x %x\n", &curLvl.curNode, &curLvl.cmat);
+
+        //~ FntPrint("%x\n", curLvl.actorPtr->tim);
         
         // Clear the main OT
 		
@@ -561,33 +400,33 @@ int main() {
         
         //~ objAngleToCam.vx = patan( psqrt(posToCam.vx * posToCam.vx + posToCam.vy * posToCam.vy), posToCam.vy );
 
-        //~ meshPlan.rot->vx = -( (objAngleToCam.vx >> 4) - 3076 ) ;
+        //~ curLvl.meshPlan.rot->vx = -( (objAngleToCam.vx >> 4) - 3076 ) ;
         
-        //~ meshPlan.rot->vx = (( (objAngleToCam.vx >> 4) - 3076 ) * ( (objAngleToCam.vz >> 4) - 3076 ) >> 12) * (nsin(posToCam.vz) >> 10 < 0 ? -1 : 1);
+        //~ curLvl.meshPlan.rot->vx = (( (objAngleToCam.vx >> 4) - 3076 ) * ( (objAngleToCam.vz >> 4) - 3076 ) >> 12) * (nsin(posToCam.vz) >> 10 < 0 ? -1 : 1);
         
-        //~ meshPlan.rot->vx = ( (objAngleToCam.vx >> 4) - 3076 ) * ( (objAngleToCam.vz >> 4) - 3076 ) >> 12 ;
+        //~ curLvl.meshPlan.rot->vx = ( (objAngleToCam.vx >> 4) - 3076 ) * ( (objAngleToCam.vz >> 4) - 3076 ) >> 12 ;
         
-        meshPlan->rot.vy = -( (objAngleToCam.vy >> 4) + 1024 ) ;
+        curLvl.meshPlan->rot.vy = -( (objAngleToCam.vy >> 4) + 1024 ) ;
 
-        //~ posToCam = getVectorTo(*meshPlan.pos, camera.pos);
+        //~ posToCam = getVectorTo(*curLvl.meshPlan.pos, camera.pos);
         
-        //~ posToCam = getVectorTo(camera.pos, *meshPlan.pos);
+        //~ posToCam = getVectorTo(camera.pos, *curLvl.meshPlan.pos);
 
-        posToCam.vx = -camera.pos.vx - meshPlan->pos.vx ;
+        posToCam.vx = -camera.pos.vx - curLvl.meshPlan->pos.vx ;
         
-        posToCam.vz = -camera.pos.vz - meshPlan->pos.vz ;
+        posToCam.vz = -camera.pos.vz - curLvl.meshPlan->pos.vz ;
         
-        posToCam.vy = -camera.pos.vy - meshPlan->pos.vy ;
+        posToCam.vy = -camera.pos.vy - curLvl.meshPlan->pos.vy ;
         
         //~ psqrt(posToCam.vx * posToCam.vx + posToCam.vy * posToCam.vy);
         
         // Actor Forward vector for 3d relative orientation
 
-        fVecActor = actorPtr->pos;
+        fVecActor = curLvl.actorPtr->pos;
         
-        fVecActor.vx = actorPtr->pos.vx + (nsin(actorPtr->rot.vy/2));
+        fVecActor.vx = curLvl.actorPtr->pos.vx + (nsin(curLvl.actorPtr->rot.vy/2));
         
-        fVecActor.vz = actorPtr->pos.vz - (ncos(actorPtr->rot.vy/2));
+        fVecActor.vz = curLvl.actorPtr->pos.vz - (ncos(curLvl.actorPtr->rot.vy/2));
 
     // Camera modes
 
@@ -627,31 +466,31 @@ int main() {
         
             //~ applyVector(&InvCamPos, -1,-1,-1, *=);
             
-            angle.vy = -(actorPtr->rot.vy / 2) + angleCam.vy;
+            angle.vy = -(curLvl.actorPtr->rot.vy / 2) + angleCam.vy;
             
             //~ angle.vx += 10;
             
             //~ FntPrint("cos %d", (ncos(angle.vy) * ncos(angle.vx)) >> 12);
-            //~ angle = actorPtr->rot->vy;
+            //~ angle = curLvl.actorPtr->rot->vy;
 
             // Camera horizontal position
 
-            getCameraZY(&camera.z, &camera.y, actorPtr->pos.vz, actorPtr->pos.vy, angle.vx, dist);
+            getCameraZY(&camera.z, &camera.y, curLvl.actorPtr->pos.vz, curLvl.actorPtr->pos.vy, angle.vx, dist);
 
-            getCameraXZ(&camera.x, &camera.z, actorPtr->pos.vx, actorPtr->pos.vz, angle.vy, dist);
+            getCameraXZ(&camera.x, &camera.z, curLvl.actorPtr->pos.vx, curLvl.actorPtr->pos.vz, angle.vy, dist);
             
-            //~ getCameraXZY(&camera.x, &camera.z, &camera.y, actorPtr->pos.vx, actorPtr->pos.vz, actorPtr->pos.vy, angle.vy, angle.vx, dist);
+            //~ getCameraXZY(&camera.x, &camera.z, &camera.y, curLvl.actorPtr->pos.vx, curLvl.actorPtr->pos.vz, curLvl.actorPtr->pos.vy, angle.vy, angle.vx, dist);
             
 
         //~ void getCameraXZY(int * x, int * z, int * y, int actorX, int actorZ, int actorY, int angle, int angleX, int distance) {
 
             // Camera vertical position
             
-            //~ getCameraXZ(&camera.x, &camera.y, actorPtr->pos.vx, actorPtr->pos.vy, angle, dist);
+            //~ getCameraXZ(&camera.x, &camera.y, curLvl.actorPtr->pos.vx, curLvl.actorPtr->pos.vy, angle, dist);
 
             // FIXME! camera lerping to pos
-            //~ angle += lerp(camera.rot.vy, -actorPtr->rot->vy, 128);
-            //~ angle = lerpD(camera.rot.vy << 12, actorPtr->rot->vy << 12, 1024 << 12) >> 12;
+            //~ angle += lerp(camera.rot.vy, -curLvl.actorPtr->rot->vy, 128);
+            //~ angle = lerpD(camera.rot.vy << 12, curLvl.actorPtr->rot->vy << 12, 1024 << 12) >> 12;
             
             
             
@@ -671,13 +510,13 @@ int main() {
            
             camera.pos.vz = -(camera.z/ONE);
             
-            //~ fVecActor = *actorPtr->pos;
+            //~ fVecActor = *curLvl.actorPtr->pos;
             
-            //~ fVecActor.vx = actorPtr->pos->vx + (nsin(actorPtr->rot->vy));
-            //~ fVecActor.vz = actorPtr->pos->vz - (ncos(actorPtr->rot->vy));
+            //~ fVecActor.vx = curLvl.actorPtr->pos->vx + (nsin(curLvl.actorPtr->rot->vy));
+            //~ fVecActor.vz = curLvl.actorPtr->pos->vz - (ncos(curLvl.actorPtr->rot->vy));
             
             
-            getCameraXZ(&camera.x, &camera.z, actorPtr->pos.vx, actorPtr->pos.vz, angle.vy, dist);
+            getCameraXZ(&camera.x, &camera.z, curLvl.actorPtr->pos.vx, curLvl.actorPtr->pos.vz, angle.vy, dist);
            
             angle.vy += 10;
         }
@@ -702,23 +541,23 @@ int main() {
           
             // If BG images exist
             
-            if (camPtr->tim_data){
+            if (curLvl.camPtr->tim_data){
             
-                 checkLineW( &camAngles[ curCamAngle ]->fw.v3, &camAngles[ curCamAngle ]->fw.v2, actorPtr);
+                 checkLineW( &curLvl.camAngles[ curCamAngle ]->fw.v3, &curLvl.camAngles[ curCamAngle ]->fw.v2, curLvl.actorPtr);
             
-                if ( camAngles[ curCamAngle ]->fw.v0.vx ) {
+                if ( curLvl.camAngles[ curCamAngle ]->fw.v0.vx ) {
                     
                     //~ FntPrint("BL x : %d, y : %d\n", camAngles[ curCamAngle ]->fw.v3.vx, camAngles[ curCamAngle ]->fw.v3.vy); 
                     //~ FntPrint("BR x : %d, y : %d\n", camAngles[ curCamAngle ]->fw.v2.vx, camAngles[ curCamAngle ]->fw.v2.vy); 
                     
-                    //~ FntPrint("Pos : %d\n", checkLineW( &camAngles[ curCamAngle ]->fw.v3, &camAngles[ curCamAngle ]->fw.v2, actorPtr) );
+                    //~ FntPrint("Pos : %d\n", checkLineW( &camAngles[ curCamAngle ]->fw.v3, &camAngles[ curCamAngle ]->fw.v2, curLvl.actorPtr) );
                     
-                    //~ FntPrint("Pos : %d\n", checkLineW( &camAngles[ curCamAngle ]->bw.v2, &camAngles[ curCamAngle ]->bw.v3, actorPtr) );
+                    //~ FntPrint("Pos : %d\n", checkLineW( &camAngles[ curCamAngle ]->bw.v2, &camAngles[ curCamAngle ]->bw.v3, curLvl.actorPtr) );
                     // If actor in camAngle->fw area of screen
                     
-                    if ( checkLineW( &camAngles[ curCamAngle ]->fw.v3, &camAngles[ curCamAngle ]->fw.v2, actorPtr) == -1  && 
+                    if ( checkLineW( &curLvl.camAngles[ curCamAngle ]->fw.v3, &curLvl.camAngles[ curCamAngle ]->fw.v2, curLvl.actorPtr) == -1  && 
                          
-                         ( checkLineW( &camAngles[ curCamAngle ]->bw.v2, &camAngles[ curCamAngle ]->bw.v3, actorPtr) >= 0 
+                         ( checkLineW( &curLvl.camAngles[ curCamAngle ]->bw.v2, &curLvl.camAngles[ curCamAngle ]->bw.v3, curLvl.actorPtr) >= 0 
                     
                            ) 
                     
@@ -728,9 +567,9 @@ int main() {
 
                             curCamAngle++;
 
-                            camPtr = camAngles[ curCamAngle ];
+                            curLvl.camPtr = curLvl.camAngles[ curCamAngle ];
 
-                            LoadTexture(camPtr->tim_data, camPtr->BGtim);
+                            LoadTexture(curLvl.camPtr->tim_data, curLvl.camPtr->BGtim);
 
                         }
                     
@@ -738,19 +577,19 @@ int main() {
                     
                 }
                 
-                if ( camAngles[ curCamAngle ]->bw.v0.vx ) {
+                if ( curLvl.camAngles[ curCamAngle ]->bw.v0.vx ) {
                     
                     //~ FntPrint("BL x : %d, y : %d\n", camAngles[ curCamAngle ]->bw.v3.vx, camAngles[ curCamAngle ]->bw.v3.vy); 
                     
                     //~ FntPrint("BR x : %d, y : %d\n", camAngles[ curCamAngle ]->bw.v2.vx, camAngles[ curCamAngle ]->bw.v2.vy); 
                     
-                    //~ // FntPrint("Pos : %d\n", checkLineW( &camAngles[ curCamAngle ]->bw.v2, &camAngles[ curCamAngle ]->bw.v3, actorPtr) );
+                    //~ // FntPrint("Pos : %d\n", checkLineW( &camAngles[ curCamAngle ]->bw.v2, &camAngles[ curCamAngle ]->bw.v3, curLvl.actorPtr) );
                 
                     // If actor in camAngle->bw area of screen
                     
-                    if ( checkLineW( &camAngles[ curCamAngle ]->fw.v3, &camAngles[ curCamAngle ]->fw.v2, actorPtr) >= 0  && 
+                    if ( checkLineW( &curLvl.camAngles[ curCamAngle ]->fw.v3, &curLvl.camAngles[ curCamAngle ]->fw.v2, curLvl.actorPtr) >= 0  && 
                          
-                         checkLineW( &camAngles[ curCamAngle ]->bw.v2, &camAngles[ curCamAngle ]->bw.v3, actorPtr) == -1 
+                         checkLineW( &curLvl.camAngles[ curCamAngle ]->bw.v2, &curLvl.camAngles[ curCamAngle ]->bw.v3, curLvl.actorPtr) == -1 
                     
                        ) {
             
@@ -758,9 +597,9 @@ int main() {
 
                             curCamAngle--;
 
-                            camPtr = camAngles[ curCamAngle ];
+                            curLvl.camPtr = curLvl.camAngles[ curCamAngle ];
 
-                            LoadTexture(camPtr->tim_data, camPtr->BGtim);
+                            LoadTexture(curLvl.camPtr->tim_data, curLvl.camPtr->BGtim);
 
                         }
                     
@@ -770,7 +609,7 @@ int main() {
             
             }
             
-            setCameraPos(&camera, camPtr->campos->pos, camPtr->campos->rot);
+            setCameraPos(&camera, curLvl.camPtr->campos->pos, curLvl.camPtr->campos->rot);
 
         }
         
@@ -780,7 +619,7 @@ int main() {
             
             // If key pos exist for camera
            
-            if (camPath->len) {
+            if (curLvl.camPath->len) {
                 
                 // Lerping sequence has not begun
            
@@ -788,17 +627,17 @@ int main() {
                     
                     // Set cam start position ( first key pos )
            
-                    camera.pos.vx = camPath->points[camPath->cursor].vx;
+                    camera.pos.vx = curLvl.camPath->points[curLvl.camPath->cursor].vx;
            
-                    camera.pos.vy = camPath->points[camPath->cursor].vy;
+                    camera.pos.vy = curLvl.camPath->points[curLvl.camPath->cursor].vy;
            
-                    camera.pos.vz = camPath->points[camPath->cursor].vz;
+                    camera.pos.vz = curLvl.camPath->points[curLvl.camPath->cursor].vz;
                     
                     // Lerping sequence is starting
                     lerping = 1;
                     
                     // Set cam pos index to 0
-                    camPath->pos = 0;
+                    curLvl.camPath->pos = 0;
                     
                     }
                     
@@ -809,36 +648,36 @@ int main() {
            
                 int precision = 12;
                 
-                camera.pos.vx = lerpD(camPath->points[camPath->cursor].vx << precision, camPath->points[camPath->cursor+1].vx << precision, camPath->pos << precision) >> precision;
+                camera.pos.vx = lerpD(curLvl.camPath->points[curLvl.camPath->cursor].vx << precision, curLvl.camPath->points[curLvl.camPath->cursor+1].vx << precision, curLvl.camPath->pos << precision) >> precision;
            
-                camera.pos.vy = lerpD(camPath->points[camPath->cursor].vy << precision, camPath->points[camPath->cursor+1].vy << precision, camPath->pos << precision) >> precision;
+                camera.pos.vy = lerpD(curLvl.camPath->points[curLvl.camPath->cursor].vy << precision, curLvl.camPath->points[curLvl.camPath->cursor+1].vy << precision, curLvl.camPath->pos << precision) >> precision;
            
-                camera.pos.vz = lerpD(camPath->points[camPath->cursor].vz << precision, camPath->points[camPath->cursor+1].vz << precision, camPath->pos << precision) >> precision;
+                camera.pos.vz = lerpD(curLvl.camPath->points[curLvl.camPath->cursor].vz << precision, curLvl.camPath->points[curLvl.camPath->cursor+1].vz << precision, curLvl.camPath->pos << precision) >> precision;
                 
-                //~ FntPrint("Cam %d, %d\n", (int32_t)camPath->points[camPath->cursor].vx, camPath->points[camPath->cursor+1].vx);
+                //~ FntPrint("Cam %d, %d\n", (int32_t)curLvl.camPath->points[curLvl.camPath->cursor].vx, curLvl.camPath->points[curLvl.camPath->cursor+1].vx);
                 //~ FntPrint("Cam %d, %d, %d\n", camera.pos.vx, camera.pos.vy, camera.pos.vz);
                 //~ FntPrint("Theta y: %d x: %d\n", theta.vy, theta.vx);
-                //~ FntPrint("Pos: %d Cur: %d\nTheta y: %d x: %d\n", camPath->pos, camPath->cursor, theta.vy, theta.vx);
+                //~ FntPrint("Pos: %d Cur: %d\nTheta y: %d x: %d\n", curLvl.camPath->pos, curLvl.camPath->cursor, theta.vy, theta.vx);
 
                 // Linearly increment the lerp factor
            
-                camPath->pos += 20;
+                curLvl.camPath->pos += 20;
                 
                 // If camera has reached next key pos, reset pos index, move cursor to next key pos
-                if (camPath->pos > (1 << precision) ){
+                if (curLvl.camPath->pos > (1 << precision) ){
            
-                    camPath->pos = 0;
+                    curLvl.camPath->pos = 0;
            
-                    camPath->cursor ++;
+                    curLvl.camPath->cursor ++;
            
                 }                    
                 
                 // Last key pos is reached, reset cursor to first key pos, lerping sequence is over
-                if ( camPath->cursor == camPath->len - 1 ){
+                if ( curLvl.camPath->cursor == curLvl.camPath->len - 1 ){
            
                     lerping = 0;
            
-                    camPath->cursor = 0;
+                    curLvl.camPath->cursor = 0;
                 }
                 
             } else { 
@@ -857,7 +696,7 @@ int main() {
             
             short cameraSpeed = 40;
             
-            if (camPath->len) {
+            if (curLvl.camPath->len) {
          
             // Lerping sequence has not begun
          
@@ -865,11 +704,11 @@ int main() {
                     
                     // Set cam start position ( first key pos )
          
-                    camera.pos.vx = camPath->points[camPath->cursor].vx;
+                    camera.pos.vx = curLvl.camPath->points[curLvl.camPath->cursor].vx;
          
-                    camera.pos.vy = camPath->points[camPath->cursor].vy;
+                    camera.pos.vy = curLvl.camPath->points[curLvl.camPath->cursor].vy;
          
-                    camera.pos.vz = camPath->points[camPath->cursor].vz;
+                    camera.pos.vz = curLvl.camPath->points[curLvl.camPath->cursor].vz;
                     
                     // Lerping sequence is starting
                     
@@ -877,7 +716,7 @@ int main() {
                     
                     // Set cam pos index to 0
                     
-                    camPath->pos = 0;
+                    curLvl.camPath->pos = 0;
                     
                     }
                 
@@ -889,55 +728,55 @@ int main() {
                 
                 short precision = 12;
                                     
-                camera.pos.vx = lerpD(camPath->points[camPath->cursor].vx << precision, camPath->points[camPath->cursor + 1].vx << precision, camPath->pos << precision) >> precision;
+                camera.pos.vx = lerpD(curLvl.camPath->points[curLvl.camPath->cursor].vx << precision, curLvl.camPath->points[curLvl.camPath->cursor + 1].vx << precision, curLvl.camPath->pos << precision) >> precision;
          
-                camera.pos.vy = lerpD(camPath->points[camPath->cursor].vy << precision, camPath->points[camPath->cursor + 1].vy << precision, camPath->pos << precision) >> precision;
+                camera.pos.vy = lerpD(curLvl.camPath->points[curLvl.camPath->cursor].vy << precision, curLvl.camPath->points[curLvl.camPath->cursor + 1].vy << precision, curLvl.camPath->pos << precision) >> precision;
          
-                camera.pos.vz = lerpD(camPath->points[camPath->cursor].vz << precision, camPath->points[camPath->cursor + 1].vz << precision, camPath->pos << precision) >> precision;
+                camera.pos.vz = lerpD(curLvl.camPath->points[curLvl.camPath->cursor].vz << precision, curLvl.camPath->points[curLvl.camPath->cursor + 1].vz << precision, curLvl.camPath->pos << precision) >> precision;
                 
                 //~ FntPrint("%d %d %d %d\n", camAngleToAct.vy, camera.pos.vx, camera.rot.vy, dist);
 
-                // Ony move cam if position is between first camPath->vx and last camPath->vx
+                // Ony move cam if position is between first curLvl.camPath->vx and last curLvl.camPath->vx
 
-                if ( camAngleToAct.vy < -50 && camera.pos.vx > camPath->points[camPath->len - 1].vx ) {  
+                if ( camAngleToAct.vy < -50 && camera.pos.vx > curLvl.camPath->points[curLvl.camPath->len - 1].vx ) {  
           
-                    // Clamp camPath position to cameraSpeed
+                    // Clamp curLvl.camPath position to cameraSpeed
                     
-                    camPath->pos += dist < cameraSpeed ? 0 : cameraSpeed ;
+                    curLvl.camPath->pos += dist < cameraSpeed ? 0 : cameraSpeed ;
           
                 }
           
-                if ( camAngleToAct.vy > 50 && camera.pos.vx > camPath->points[camPath->cursor].vx ) {  
+                if ( camAngleToAct.vy > 50 && camera.pos.vx > curLvl.camPath->points[curLvl.camPath->cursor].vx ) {  
           
-                    camPath->pos -= dist < cameraSpeed ? 0 : cameraSpeed;
+                    curLvl.camPath->pos -= dist < cameraSpeed ? 0 : cameraSpeed;
           
                 }
                 
                 // If camera has reached next key pos, reset pos index, move cursor to next key pos
                 
-                if (camPath->pos > (1 << precision) ){
+                if (curLvl.camPath->pos > (1 << precision) ){
           
-                    camPath->pos = 0;
+                    curLvl.camPath->pos = 0;
           
-                    camPath->cursor ++;
+                    curLvl.camPath->cursor ++;
           
                 } 
                 
-                if (camPath->pos < -100 ){
+                if (curLvl.camPath->pos < -100 ){
           
-                    camPath->pos = 1 << precision;
+                    curLvl.camPath->pos = 1 << precision;
           
-                    camPath->cursor --;
+                    curLvl.camPath->cursor --;
                 
                 }                   
                 
                 // Last key pos is reached, reset cursor to first key pos, lerping sequence is over
                 
-                if ( camPath->cursor == camPath->len - 1 || camPath->cursor < 0 ){
+                if ( curLvl.camPath->cursor == curLvl.camPath->len - 1 || curLvl.camPath->cursor < 0 ){
           
                     lerping = 0;
           
-                    camPath->cursor = 0;
+                    curLvl.camPath->cursor = 0;
                 }
                 
             } else { 
@@ -952,22 +791,22 @@ int main() {
     
     // Spatial partitioning
                 
-        if (curNode){
+        if (curLvl.curNode){
         
-            for ( int msh = 0; msh < curNode->siblings->index; msh ++ ) {
+            for ( int msh = 0; msh < curLvl.curNode->siblings->index; msh ++ ) {
             
                 // Actor
             
-                if ( !getIntCollision( *actorPtr->body , *curNode->siblings->list[msh]->plane->body).vx &&
+                if ( !getIntCollision( *curLvl.actorPtr->body , *curLvl.curNode->siblings->list[msh]->plane->body).vx &&
                 
-                     !getIntCollision( *actorPtr->body , *curNode->siblings->list[msh]->plane->body).vz )
+                     !getIntCollision( *curLvl.actorPtr->body , *curLvl.curNode->siblings->list[msh]->plane->body).vz )
                 {
                 
-                    if ( curNode != curNode->siblings->list[msh] ) {
+                    if ( curLvl.curNode != curLvl.curNode->siblings->list[msh] ) {
                     
-                        curNode = curNode->siblings->list[msh];
+                        curLvl.curNode = curLvl.curNode->siblings->list[msh];
 
-                        levelPtr = curNode->plane;
+                        curLvl.levelPtr = curLvl.curNode->plane;
                     }
                 
                 }
@@ -975,22 +814,22 @@ int main() {
                 // DONTNEED ?
                 // Moveable prop
                 
-                //~ if ( !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vx &&
+                //~ if ( !getIntCollision( *propPtr->body , *curLvl.curNode->siblings->list[msh]->plane->body).vx &&
                 
-                     //~ !getIntCollision( *propPtr->body , *curNode->siblings->list[msh]->plane->body).vz ) {
+                     //~ !getIntCollision( *propPtr->body , *curLvl.curNode->siblings->list[msh]->plane->body).vz ) {
 
-                    //~ if ( propPtr->node != curNode->siblings->list[ msh ]){
+                    //~ if ( propPtr->node != curLvl.curNode->siblings->list[ msh ]){
                         
-                        //~ propPtr->node = curNode->siblings->list[ msh ];
+                        //~ propPtr->node = curLvl.curNode->siblings->list[ msh ];
                     //~ }
                     
                 //~ }
                 
-                if ( !getIntCollision( *propPtr->body , *curNode->plane->body).vx &&
+                if ( !getIntCollision( *curLvl.propPtr->body , *curLvl.curNode->plane->body).vx &&
                 
-                     !getIntCollision( *propPtr->body , *curNode->plane->body).vz ) {
+                     !getIntCollision( *curLvl.propPtr->body , *curLvl.curNode->plane->body).vz ) {
                 
-                    propPtr->node = curNode;
+                    curLvl.propPtr->node = curLvl.curNode;
                 
                 }
                 
@@ -1003,26 +842,26 @@ int main() {
             
             // if(time%1 == 0){
                 
-                 for ( int k = 0; k < *meshes_length; k ++ ) {
-                //~ for ( int k = 0; k < curNode->objects->index ; k ++){
+                 for ( int k = 0; k < *curLvl.meshes_length; k ++ ) {
+                //~ for ( int k = 0; k < curLvl.curNode->objects->index ; k ++){
                                         
-                     if ( ( meshes[k]->isRigidBody == 1 ) ) {
-                    //~ if ( ( *curNode->rigidbodies->list[k]->isRigidBody == 1 ) ) {
+                     if ( ( curLvl.meshes[k]->isRigidBody == 1 ) ) {
+                    //~ if ( ( *curLvl.curNode->rigidbodies->list[k]->isRigidBody == 1 ) ) {
 
-                        //~ applyAcceleration(curNode->rigidbodies->list[k]->body);
+                        //~ applyAcceleration(curLvl.curNode->rigidbodies->list[k]->body);
                         
-                        applyAcceleration( meshes[k]->body );
+                        applyAcceleration( curLvl.meshes[k]->body );
                     
                         // Get col with level                         ( modelgnd_body )        
                         
-                        col_lvl = getIntCollision( *meshes[k]->body , *levelPtr->body );
+                        col_lvl = getIntCollision( *curLvl.meshes[k]->body , *curLvl.levelPtr->body );
                         
                         
-                        col_sphere = getIntCollision( *propPtr->body, *propPtr->node->plane->body );
+                        col_sphere = getIntCollision( *curLvl.propPtr->body, *curLvl.propPtr->node->plane->body );
                         
                         // col_sphere = getIntCollision( *propPtr->body, *levelPtr->body );
                         
-                        col_sphere_act = getExtCollision( *actorPtr->body, *propPtr->body );
+                        col_sphere_act = getExtCollision( *curLvl.actorPtr->body, *curLvl.propPtr->body );
                         
                         // If no col with ground, fall off
                 
@@ -1030,7 +869,7 @@ int main() {
                         
                             if ( !col_lvl.vx && !col_lvl.vz ) { 
                                 
-                                actorPtr->body->position.vy = actorPtr->body->min.vy;
+                                curLvl.actorPtr->body->position.vy = curLvl.actorPtr->body->min.vy;
                             
                             }
                         
@@ -1040,7 +879,7 @@ int main() {
                         
                             if ( !col_sphere.vx && !col_sphere.vz ) {
                                 
-                                propPtr->body->position.vy = propPtr->body->min.vy;
+                                curLvl.propPtr->body->position.vy = curLvl.propPtr->body->min.vy;
                             
                             }
                         
@@ -1048,48 +887,48 @@ int main() {
                         
                         if (col_sphere_act.vx && col_sphere_act.vz ) {
 
-                            propPtr->body->velocity.vx += actorPtr->body->velocity.vx;
+                            curLvl.propPtr->body->velocity.vx += curLvl.actorPtr->body->velocity.vx;
                             
-                            propPtr->body->velocity.vz += actorPtr->body->velocity.vz;
+                            curLvl.propPtr->body->velocity.vz += curLvl.actorPtr->body->velocity.vz;
                             
-                            if ( propPtr->body->velocity.vx ) {
+                            if ( curLvl.propPtr->body->velocity.vx ) {
                                 
-                                VECTOR L = angularMom( *propPtr->body );
+                                VECTOR L = angularMom( *curLvl.propPtr->body );
                                 
-                                propPtr->rot.vz -= L.vx;
+                                curLvl.propPtr->rot.vz -= L.vx;
                             }
                             
-                            if ( propPtr->body->velocity.vz ) {
+                            if ( curLvl.propPtr->body->velocity.vz ) {
                                 
-                                VECTOR L = angularMom( *propPtr->body );
+                                VECTOR L = angularMom( *curLvl.propPtr->body );
                                 
-                                propPtr->rot.vx -= L.vz;
+                                curLvl.propPtr->rot.vx -= L.vz;
                             }
                         }
                         
-                        meshes[k]->pos.vx = meshes[k]->body->position.vx;
+                        curLvl.meshes[k]->pos.vx = curLvl.meshes[k]->body->position.vx;
                         
-                        meshes[k]->pos.vy = meshes[k]->body->position.vy ;
+                        curLvl.meshes[k]->pos.vy = curLvl.meshes[k]->body->position.vy ;
                         
-                        meshes[k]->pos.vz = meshes[k]->body->position.vz;
+                        curLvl.meshes[k]->pos.vz = curLvl.meshes[k]->body->position.vz;
                         
                         
                     }
                     
-                    meshes[k]->body->velocity.vy = 0;
+                    curLvl.meshes[k]->body->velocity.vy = 0;
                     
-                    meshes[k]->body->velocity.vx = 0;
+                    curLvl.meshes[k]->body->velocity.vx = 0;
                     
-                    meshes[k]->body->velocity.vz = 0;
+                    curLvl.meshes[k]->body->velocity.vz = 0;
                     
                 }
 
             // }
         }
         
-        if ( (camMode == 2) && (camPtr->tim_data ) ) {
+        if ( (camMode == 2) && (curLvl.camPtr->tim_data ) ) {
       
-            worldToScreen( &actorPtr->pos, &actorPtr->pos2D );
+            worldToScreen( &curLvl.actorPtr->pos, &curLvl.actorPtr->pos2D );
         
         }
 
@@ -1098,29 +937,29 @@ int main() {
         
         // position of cam relative to actor
         
-        posToActor.vx = actorPtr->pos.vx + camera.pos.vx;
+        posToActor.vx = curLvl.actorPtr->pos.vx + camera.pos.vx;
         
-        posToActor.vz = actorPtr->pos.vz + camera.pos.vz;
+        posToActor.vz = curLvl.actorPtr->pos.vz + camera.pos.vz;
         
-        posToActor.vy = actorPtr->pos.vy + camera.pos.vy;
+        posToActor.vy = curLvl.actorPtr->pos.vy + camera.pos.vy;
         
     // Polygon drawing
         
-        if (curNode){
+        if (curLvl.curNode){
             
             static long Flag;
             
-            if ( (camMode == 2) && (camPtr->tim_data ) ) {
+            if ( (camMode == 2) && (curLvl.camPtr->tim_data ) ) {
           
-                drawBG(camPtr, &nextpri, otdisc[db], &db);
+                drawBG(curLvl.camPtr, &nextpri, otdisc[db], &db);
 
                 // Loop on camAngles
             
-                for ( int mesh = 0 ; mesh < camAngles[ curCamAngle ]->index; mesh ++ ) {
+                for ( int mesh = 0 ; mesh < curLvl.camAngles[ curCamAngle ]->index; mesh ++ ) {
                     
-                    transformMesh(&camera, camAngles[curCamAngle]->objects[mesh]);
+                    transformMesh(&camera, curLvl.camAngles[curCamAngle]->objects[mesh]);
                     
-                    drawPoly(camAngles[curCamAngle]->objects[mesh], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
+                    drawPoly(curLvl.camAngles[curCamAngle]->objects[mesh], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
                     
                     //                                                          int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw)
                 }
@@ -1131,48 +970,48 @@ int main() {
                 
                 // Draw current node's plane
 
-                drawPoly( curNode->plane, &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
+                drawPoly( curLvl.curNode->plane, &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
                 
                 // Draw surrounding planes 
                 
-                for ( int sibling = 0; sibling < curNode->siblings->index; sibling++ ) {
+                for ( int sibling = 0; sibling < curLvl.curNode->siblings->index; sibling++ ) {
                 
-                        drawPoly(curNode->siblings->list[ sibling ]->plane, &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
+                    drawPoly(curLvl.curNode->siblings->list[ sibling ]->plane, &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
                 
                 }
                 
                 // Draw adjacent planes's children
                 
-                for ( int sibling = 0; sibling < curNode->siblings->index; sibling++ ) {
+                for ( int sibling = 0; sibling < curLvl.curNode->siblings->index; sibling++ ) {
                     
-                    for ( int object = 0; object < curNode->siblings->list[ sibling ]->objects->index; object++ ) {
+                    for ( int object = 0; object < curLvl.curNode->siblings->list[ sibling ]->objects->index; object++ ) {
                     
                         long t = 0;
                         
-                        transformMesh(&camera, curNode->siblings->list[ sibling ]->objects->list[ object ]);
+                        transformMesh(&camera, curLvl.curNode->siblings->list[ sibling ]->objects->list[ object ]);
                         
-                        drawPoly( curNode->siblings->list[ sibling ]->objects->list[ object ], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
+                        drawPoly( curLvl.curNode->siblings->list[ sibling ]->objects->list[ object ], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
                     
                     }
                 }
                 
                 // Draw current plane children
                 
-                for ( int object = 0; object < curNode->objects->index; object++ ) {
+                for ( int object = 0; object < curLvl.curNode->objects->index; object++ ) {
                 
-                    transformMesh(&camera, curNode->objects->list[ object ]);
+                    transformMesh(&camera, curLvl.curNode->objects->list[ object ]);
 
-                    drawPoly( curNode->objects->list[ object ], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
+                    drawPoly( curLvl.curNode->objects->list[ object ], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
                 
                 }
                 
                 // Draw rigidbodies
                 
-                for ( int object = 0; object < curNode->rigidbodies->index; object++ ) {
+                for ( int object = 0; object < curLvl.curNode->rigidbodies->index; object++ ) {
                 
-                    transformMesh(&camera, curNode->rigidbodies->list[ object ]);
+                    transformMesh(&camera, curLvl.curNode->rigidbodies->list[ object ]);
 
-                    drawPoly( curNode->rigidbodies->list[ object ], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
+                    drawPoly( curLvl.curNode->rigidbodies->list[ object ], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
                 
                 }
         
@@ -1183,7 +1022,7 @@ int main() {
 
         RotMatrix(&lgtang, &rotlgt);	
 
-        MulMatrix0(lgtmat, &rotlgt, &light);
+        MulMatrix0(curLvl.lgtmat, &rotlgt, &light);
 
         SetLightMatrix(&light);
 
@@ -1195,17 +1034,17 @@ int main() {
         
         AddPrims(otdisc[db], ot[db] + OTLEN - 1, ot[db]);
 
-        //~ FntPrint("CurNode : %x\nIndex: %d", curNode, curNode->siblings->index);
+        //~ FntPrint("curLvl.curNode : %x\nIndex: %d", curLvl.curNode, curLvl.curNode->siblings->index);
         
         FntPrint("Time    : %d dt :%d\n", VSync(-1) / 60, dt);
         
         //~ FntPrint("%d\n", curCamAngle );
         //~ FntPrint("%x\n", primbuff[db]);
        
-        //~ FntPrint("Actor    : %d %d\n", actorPtr->pos->vx, actorPtr->pos->vy);
+        //~ FntPrint("Actor    : %d %d\n", curLvl.actorPtr->pos->vx, curLvl.actorPtr->pos->vy);
         
-        //~ FntPrint("%d %d\n", actorPtr->pos->vx, actorPtr->pos->vz);
-        //~ FntPrint("%d %d\n", actorPtr->pos2D.vx + CENTERX, actorPtr->pos2D.vy + CENTERY);
+        //~ FntPrint("%d %d\n", curLvl.actorPtr->pos->vx, curLvl.actorPtr->pos->vz);
+        //~ FntPrint("%d %d\n", curLvl.actorPtr->pos2D.vx + CENTERX, curLvl.actorPtr->pos2D.vy + CENTERY);
 
         //~ FntPrint(" %d %d %d\n", wp.vx, wp.vy, wp.vz);
         
@@ -1281,7 +1120,7 @@ void callback() {
 
     if ( PADR & PadShldR1 && !timer ) {
         
-        if (!camPtr->tim_data){
+        if (!curLvl.camPtr->tim_data){
             
             if(camMode < 6){ 
                 
@@ -1291,9 +1130,9 @@ void callback() {
                 
             } else {
             
-                setCameraPos(&camera, camPtr->campos->pos, camPtr->campos->rot);
+                setCameraPos(&camera, curLvl.camPtr->campos->pos, curLvl.camPtr->campos->rot);
             
-                camPath->cursor = 0;
+                curLvl.camPath->cursor = 0;
             
                 camMode = 0;
             
@@ -1312,9 +1151,9 @@ void callback() {
 
                 curCamAngle++;
 
-                camPtr = camAngles[ curCamAngle ];
+                curLvl.camPtr = curLvl.camAngles[ curCamAngle ];
 
-                LoadTexture(camPtr->tim_data, camPtr->BGtim);
+                LoadTexture(curLvl.camPtr->tim_data, curLvl.camPtr->BGtim);
 
             } 
         }
@@ -1344,13 +1183,13 @@ void callback() {
     
     if ( PADR & PadUp && !timer ){
     
-        if (actorPtr->isPrism){
+        if (curLvl.actorPtr->isPrism){
     
-            actorPtr->isPrism = 0;
+            curLvl.actorPtr->isPrism = 0;
     
         } else {
      
-            actorPtr->isPrism = 1;
+            curLvl.actorPtr->isPrism = 1;
      
         }
      
@@ -1361,7 +1200,7 @@ void callback() {
     
     if ( PADR & PadDown && !timer ){
     
-        if (actorPtr->body->gForce.vy >= 0 && actorPtr->body->position.vy >= actorPtr->body->min.vy  ){
+        if (curLvl.actorPtr->body->gForce.vy >= 0 && curLvl.actorPtr->body->position.vy >= curLvl.actorPtr->body->min.vy  ){
     
                 forceApplied -= 150;
     
@@ -1380,13 +1219,13 @@ void callback() {
     
     if ( PADR & PadLeft && !timer ) {
         
-        if (actorPtr->anim->interpolate){
+        if (curLvl.actorPtr->anim->interpolate){
         
-            actorPtr->anim->interpolate = 0;
+            curLvl.actorPtr->anim->interpolate = 0;
         
         } else {
         
-            actorPtr->anim->interpolate = 1;
+            curLvl.actorPtr->anim->interpolate = 1;
         
         }
         
@@ -1401,9 +1240,9 @@ void callback() {
             
         if ( theControllers[0].analog3 >= 0 && theControllers[0].analog3 < 108 ) {
             
-            actorPtr->body->gForce.vz = getVectorTo(fVecActor, actorPtr->pos).vz *  (128 - theControllers[0].analog3 ) >> 15 ;
+            curLvl.actorPtr->body->gForce.vz = getVectorTo(fVecActor, curLvl.actorPtr->pos).vz *  (128 - theControllers[0].analog3 ) >> 15 ;
             
-            actorPtr->body->gForce.vx = -getVectorTo(fVecActor, actorPtr->pos).vx * (128 - theControllers[0].analog3 ) >> 15 ;
+            curLvl.actorPtr->body->gForce.vx = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vx * (128 - theControllers[0].analog3 ) >> 15 ;
             
             lastPad = PADL;
         }
@@ -1412,9 +1251,9 @@ void callback() {
             
         if ( theControllers[0].analog3 > 148 && theControllers[0].analog3 <= 255 ) {
             
-            actorPtr->body->gForce.vz = -getVectorTo(fVecActor, actorPtr->pos).vz *  ( theControllers[0].analog3 - 128 ) >> 15 ;
+            curLvl.actorPtr->body->gForce.vz = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vz *  ( theControllers[0].analog3 - 128 ) >> 15 ;
             
-            actorPtr->body->gForce.vx = getVectorTo(fVecActor, actorPtr->pos).vx * ( theControllers[0].analog3 - 128 ) >> 15 ;
+            curLvl.actorPtr->body->gForce.vx = getVectorTo(fVecActor, curLvl.actorPtr->pos).vx * ( theControllers[0].analog3 - 128 ) >> 15 ;
             
             lastPad = PADL;
         }
@@ -1423,9 +1262,9 @@ void callback() {
         
         if ( theControllers[0].analog3 > 108 && theControllers[0].analog3 < 148 ) {
             
-            actorPtr->body->gForce.vz = 0;
+            curLvl.actorPtr->body->gForce.vz = 0;
 
-            actorPtr->body->gForce.vx = 0;
+            curLvl.actorPtr->body->gForce.vx = 0;
             
         }
         
@@ -1433,7 +1272,7 @@ void callback() {
         
         if ( theControllers[0].analog2 >= 0 && theControllers[0].analog2 < 108 ) {
             
-            actorPtr->rot.vy -= ( 40 * ( 128 - theControllers[0].analog2 ) ) >> 7 ;
+            curLvl.actorPtr->rot.vy -= ( 40 * ( 128 - theControllers[0].analog2 ) ) >> 7 ;
         
         }
         
@@ -1441,7 +1280,7 @@ void callback() {
         
         if ( theControllers[0].analog2 > 148 && theControllers[0].analog2 <= 255 ) {
             
-            actorPtr->rot.vy += ( 40 * ( theControllers[0].analog2 - 128 ) ) >> 7 ;
+            curLvl.actorPtr->rot.vy += ( 40 * ( theControllers[0].analog2 - 128 ) ) >> 7 ;
         
         }
         
@@ -1449,36 +1288,36 @@ void callback() {
     
     if ( PADL & PadUp ) {
         
-        actorPtr->body->gForce.vz = getVectorTo(fVecActor, actorPtr->pos).vz >> 8 ;
+        curLvl.actorPtr->body->gForce.vz = getVectorTo(fVecActor, curLvl.actorPtr->pos).vz >> 8 ;
         
-        actorPtr->body->gForce.vx = -getVectorTo(fVecActor, actorPtr->pos).vx >> 8 ;
+        curLvl.actorPtr->body->gForce.vx = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vx >> 8 ;
         
         lastPad = PADL;
     }
     
     if ( !(PADL & PadUp) && lastPad & PadUp) {
 
-        actorPtr->body->gForce.vz = 0;
+        curLvl.actorPtr->body->gForce.vz = 0;
 
-        actorPtr->body->gForce.vx = 0;
+        curLvl.actorPtr->body->gForce.vx = 0;
         
         lastPad = PADL;
     }
     
     if ( PADL & PadDown ) {
 
-        actorPtr->body->gForce.vz = -getVectorTo(fVecActor, actorPtr->pos).vz >> 8 ;
+        curLvl.actorPtr->body->gForce.vz = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vz >> 8 ;
 
-        actorPtr->body->gForce.vx = getVectorTo(fVecActor, actorPtr->pos).vx >> 8 ;
+        curLvl.actorPtr->body->gForce.vx = getVectorTo(fVecActor, curLvl.actorPtr->pos).vx >> 8 ;
 
         lastPad = PADL;
     }
     
     if ( !( PADL & PadDown ) && lastPad & PadDown) {
 
-        actorPtr->body->gForce.vz = 0;
+        curLvl.actorPtr->body->gForce.vz = 0;
 
-        actorPtr->body->gForce.vx = 0;
+        curLvl.actorPtr->body->gForce.vx = 0;
 
         lastPad = PADL;
 
@@ -1486,7 +1325,7 @@ void callback() {
     
     if ( PADL & PadLeft ) {
 
-        actorPtr->rot.vy -= 32;
+        curLvl.actorPtr->rot.vy -= 32;
 
         lastPad = PADL;
 
@@ -1494,7 +1333,7 @@ void callback() {
     
     if ( PADL & PadRight ) {
 
-        actorPtr->rot.vy += 32;
+        curLvl.actorPtr->rot.vy += 32;
 
         lastPad = PADL;
     }
@@ -1570,19 +1409,19 @@ void callback() {
     
     //~ FntPrint("level :%d", level);
     
-    FntPrint("angleCam :%d %d\n", angleCam.vy, lerp( angleCam.vy, 0, 64) );
+    //~ FntPrint("angleCam :%d %d\n", angleCam.vy, lerp( angleCam.vy, 0, 64) );
     
-    FntPrint( "Pad 1 : %02x\nButtons:%02x %02x, Stick:%02d %02d %02d %02d\n",
-            theControllers[0].type,             // Controller type : 0x00 == none,  0x41 == standard, 0x73 == analog/dualshock, 0x12 == mouse, 0x23 == steering wheel, 0x63 == gun, 0x53 == analog joystick
-            theControllers[0].button1,          // 
-            theControllers[0].button2,
-            theControllers[0].analog0,  // R3 hor  : left: 0 7F right: 7F FF   dz 78 83
-            theControllers[0].analog1,  // R3 vert :  up : 0 7F down : 7F FF : dz 83 86
-            theControllers[0].analog2,  // L3 hor : left : 0 7F right: 7F FF : dz 69 81 68 - 8E 
-            theControllers[0].analog3 ); // L3 vert : up : 0 7F down : 7F FF : dz 74 8D
+    //~ FntPrint( "Pad 1 : %02x\nButtons:%02x %02x, Stick:%02d %02d %02d %02d\n",
+            //~ theControllers[0].type,             // Controller type : 0x00 == none,  0x41 == standard, 0x73 == analog/dualshock, 0x12 == mouse, 0x23 == steering wheel, 0x63 == gun, 0x53 == analog joystick
+            //~ theControllers[0].button1,          // 
+            //~ theControllers[0].button2,
+            //~ theControllers[0].analog0,  // R3 hor  : left: 0 7F right: 7F FF   dz 78 83
+            //~ theControllers[0].analog1,  // R3 vert :  up : 0 7F down : 7F FF : dz 83 86
+            //~ theControllers[0].analog2,  // L3 hor : left : 0 7F right: 7F FF : dz 69 81 68 - 8E 
+            //~ theControllers[0].analog3 ); // L3 vert : up : 0 7F down : 7F FF : dz 74 8D
     
     if ( cursor ) {
         
-        actorPtr->body->position.vy = lerpValues[cursor];}
+        curLvl.actorPtr->body->position.vy = lerpValues[cursor];}
     
 };

@@ -26,4 +26,6 @@ void LvlPtrSet( LEVEL * curLevel, LEVEL * level );
 
 void LoadLevel(const char*const LevelName, u_long * LoadAddress);
 
+void SwitchLevel(const char*const LevelName,  u_long * LoadAddress, LEVEL * curLevel, LEVEL * loadLevel);
+
 void LoadTexture(u_long * tim, TIM_IMAGE * tparam);
