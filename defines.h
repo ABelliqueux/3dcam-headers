@@ -40,13 +40,13 @@
 
 #define OT2LEN 8
                  
-#define OTLEN	    256	
+#define OTLEN	    768	
 
 #define PRIMBUFFLEN	4096 * sizeof(POLY_GT4)	    // Maximum number of POLY_GT3 primitives
 
 // Fog
 
-#define FOG_NEAR 1200
+#define FOG_NEAR 1300
 
 #define FOG_FAR  1600
 

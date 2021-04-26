@@ -30,13 +30,17 @@
 #include "graphics.h"
 #include "space.h"
 
-#define USECD
+//~ #define USECD
 
 // START OVERLAY
 
 extern u_long load_all_overlays_here;
+
 extern u_long __lvl0_end;
+
 extern u_long __lvl1_end;
+
+u_long overlaySize = 0;
 
 //~ #define LLEVEL 0
 
@@ -192,9 +196,13 @@ int main() {
         
         overlayFile = "\\level0.bin;1";
         
+        overlaySize = __lvl0_end;
+        
     } else if ( level == 1) {
 
         overlayFile = "\\level1.bin;1";
+        
+        overlaySize = __lvl1_end;
         
         }
     
@@ -204,7 +212,7 @@ int main() {
     
         CdInit();
     
-        LoadLevel(overlayFile, &load_all_overlays_here);
+        LoadLevelCD(overlayFile, &load_all_overlays_here);
     
     #endif
     
@@ -333,12 +341,16 @@ int main() {
                     
                     overlayFile = "\\level0.bin;1";
                     
+                    overlaySize = __lvl0_end;
+                    
                     break;
 
                 case 1:
 
                     overlayFile = "\\level1.bin;1";
-
+                    
+                    overlaySize = __lvl1_end;
+    
                     break;
             
                 default:
@@ -349,7 +361,13 @@ int main() {
             
             }
             
+            #ifdef USECD
+            
             SwitchLevel( overlayFile, &load_all_overlays_here, &curLvl, &level0);
+            
+            #endif
+            
+            printf("%p:%s", &load_all_overlays_here, overlayFile);
              
             levelHasChanged = 0;
         
@@ -1180,7 +1198,7 @@ void callback() {
         lgtang.vz += 32;
     
     }
-    
+        
     if ( PADR & PadUp && !timer ){
     
         if (curLvl.actorPtr->isPrism){

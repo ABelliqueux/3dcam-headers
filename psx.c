@@ -174,7 +174,7 @@ void LvlPtrSet(LEVEL * curLevel, LEVEL * level){
     
 };
 
-int LoadLevel(const char*const LevelName, u_long * LoadAddress){
+int LoadLevelCD(const char*const LevelName, u_long * LoadAddress){
     
     int cdread = 0, cdsync = 1;
     	
@@ -191,7 +191,7 @@ void SwitchLevel(const char*const LevelName,  u_long * LoadAddress, LEVEL * curL
     
     ScrRst();
     
-    LoadLevel( LevelName, LoadAddress );
+    LoadLevelCD( LevelName, LoadAddress );
     
     LvlPtrSet( curLevel, loadLevel);
 
