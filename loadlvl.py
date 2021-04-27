@@ -31,7 +31,7 @@ import calendar
 import math
 import signal
 
-DEBUG = 1
+DEBUG = 0
 
 # Working directory
 
@@ -69,12 +69,6 @@ ser = serial.Serial('/dev/ttyUSB0')
 # Unirom can do 115200 and 510000 ( https://github.com/JonathanDotCel/NOTPSXSerial/blob/bce29e87cb858769fe60eb34d8eb123f9f36c8db/NOTPSXSERIAL.CS#L842 )
 
 ser.baudrate = '115200'
-
-# The data needs to be split in 2K chunks 
-
-chunkSize = 2048
-
-numChunk = 0
 
 # checkSum is the checkSum for the full data
 
@@ -127,10 +121,18 @@ def WaitForResponse( expectedAnswer ):
     
     while True:
         
+        if DEBUG > 1:
+            
+            print("Waiting for data in serial input buffer.")
+        
         # If data in serial's incoming buffer
         
         if ser.in_waiting:
         
+            if DEBUG > 1:
+            
+                print("Brace yourself, data is coming...")
+            
             # Read 1 byte
         
             byteValue = ser.read(1)
@@ -158,6 +160,10 @@ def WaitForResponse( expectedAnswer ):
             
             if responseBuffer == "ERR!":
                 
+                if DEBUG > 1:
+            
+                    print("Checksum error !")
+                
                 success = False
                 
                 break
@@ -169,9 +175,11 @@ def WaitForResponse( expectedAnswer ):
                 success = True
                 
                 break
-    if DEBUG:
+    if DEBUG  > 1:
     
         print( "Got : " + responseBuffer )
+    
+    responseBuffer = ""
     
     return success
     
@@ -199,7 +207,9 @@ def WriteBytes( inData ):
         
         print("Preparing to write bytes...")
         
-    global chunkSize, numChunk
+    # The data needs to be split in 2K chunks 
+    
+    chunkSize = 2048
     
     # BEGIN WHILE DATA
     
@@ -225,7 +235,7 @@ def WriteBytes( inData ):
                 
                 if DEBUG:
                     
-                    print( str ( numChunk + 1 - currentChunk ) + " chunks to send" )
+                    print( str ( numChunk + 1 - currentChunk ) + " chunks of " + str ( chunkSize) + "bytes to send " )
                 
                 # Avoid going out of range
                 
@@ -270,7 +280,7 @@ def WriteBytes( inData ):
                 
                 # Wait for unirom to request the checksum
                 
-                if DEBUG:
+                if DEBUG > 1:
                 
                     print( "Chunk " + str( currentChunk ) + " waiting for unirom to request checksum (CHEK)..." )
                 
@@ -290,7 +300,7 @@ def WriteBytes( inData ):
                 
                 # ~ time.sleep( sleepTime )
             
-                if DEBUG:
+                if DEBUG > 1:
                     
                     print( "Waiting for unirom to request more data (MORE)..." )
             
@@ -338,7 +348,7 @@ def SendBin( inData, memAddr ):
     
     # Prepare unirom for data reception - sent "SBIN" - received : "OKV2"
     
-    if DEBUG:
+    if DEBUG > 1:
         
         print("Sending SBIN command...")
     
@@ -358,7 +368,7 @@ def SendBin( inData, memAddr ):
     # ~ Init = 1
     
     # From now on, we're using the rolling buffer
-    if DEBUG:
+    if DEBUG  > 1:
         
         print("Waiting for OKAY...")
     
@@ -368,9 +378,9 @@ def SendBin( inData, memAddr ):
 
     checkSum = CalculateChecksum( inData )
 
-    if DEBUG:
+    if DEBUG :
         
-        print("checkSum : " + str(checkSum) )
+        print("Data checkSum : " + str(checkSum) )
     
     # Send memory address to load data to, size of data and checkSum
     # Unirom expects unsigned longs ( 32bits ), byte endianness little
@@ -429,8 +439,6 @@ def resetListener():
     
     ser.reset_output_buffer()
     
-    
-
 def main(args):
     
     # ~ signal.signal(signal.SIGINT, sig_interrupt_handler)
@@ -439,7 +447,7 @@ def main(args):
     
     while True:
     
-        global checkSum, chunkSize, data, Listen, Transfer, dataSize, memAddr, loadFile, flagAddr
+        global checkSum, data, Listen, Transfer, dataSize, memAddr, loadFile, flagAddr
         
         # Flush serial buffers to avoid residual data
         
@@ -456,7 +464,7 @@ def main(args):
 
             print("Listening for incoming data...")
             
-            if DEBUG:
+            if DEBUG  > 1:
             
                 print("memAddr : " + str(memAddr) + " - loadFile" + loadFile )
             
@@ -470,7 +478,7 @@ def main(args):
                 
                 if inputBuffer:
                     
-                    if DEBUG == 1:
+                    if DEBUG:
                     
                         print( "Incoming data : " + inputBuffer )
                     
@@ -492,7 +500,7 @@ def main(args):
                             
                             inputBuffer = ""
                             
-                            if DEBUG:
+                            if DEBUG > 1:
                             
                                 print( memAddr + " - " + flagAddr + " - " + loadFile )
                             
@@ -509,16 +517,18 @@ def main(args):
             print("Received addresses and filename : " + memAddr + " - " + flagAddr + " - " + fileClean)
             
             # TODO : replace with a proper level naming scheme
+            # right now, we're receiving currently loaded file
+            # so we have to switch manually here.
             
             binFileName = ""
             
             if fileClean == "level0.bin":
             
-                binFileName = "Overlay.lvl0" 
+                binFileName = "Overlay.lvl1" 
             
             if fileClean == "level1.bin":
                 
-                binFileName = "Overlay.lvl1"
+                binFileName = "Overlay.lvl0"
             
             if DEBUG:
 
@@ -575,8 +585,6 @@ def main(args):
             resetListener()
             
             print("DONE!")
-    
-        
     
     return 0
 

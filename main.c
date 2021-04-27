@@ -1281,7 +1281,7 @@ void callback() {
 
         // Analog stick L down
             
-        if ( theControllers[0].analog3 > 148 && theControllers[0].analog3 <= 255 ) {
+        if ( theControllers[0].analog3 > 168 && theControllers[0].analog3 <= 255 ) {
             
             curLvl.actorPtr->body->gForce.vz = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vz *  ( theControllers[0].analog3 - 128 ) >> 15 ;
             
