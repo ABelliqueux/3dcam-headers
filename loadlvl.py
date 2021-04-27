@@ -18,310 +18,565 @@
 # - reduced sleeps
 # - inc var i with chunkSize
 
+
+#TODO
+# - reduce/remove sleeps
+# - keep listening!
+
 import sys
+import os
 import serial
 import time
+import calendar
 import math
+import signal
+
+DEBUG = 1
+
+# Working directory
+
+cwd = os.getcwd()
+
+levelsFolder = cwd + os.sep + os.sep
+
+# Receive commands from PSX
+# ~ Run = True
+
+Listen    = 1 
+
+uniDebugMode = 0
+
+Command = ""
+
+memAddr = ""
+
+flagAddr = ""
+
+loadFile = ""
+
+# One byte
+
+uno = int(1).to_bytes(1, byteorder='little', signed=False)
+
+data = 0
+
+# ~ dataSize = 0
+
+# Serial connection setup
 
 ser = serial.Serial('/dev/ttyUSB0')
 
+# Unirom can do 115200 and 510000 ( https://github.com/JonathanDotCel/NOTPSXSerial/blob/bce29e87cb858769fe60eb34d8eb123f9f36c8db/NOTPSXSERIAL.CS#L842 )
+
 ser.baudrate = '115200'
+
+# The data needs to be split in 2K chunks 
 
 chunkSize = 2048
 
-responseBuffer = ''
+numChunk = 0
 
-address = '800b1470' # We're receiving this info as a string from the psx
+# checkSum is the checkSum for the full data
 
-# test data
+checkSum = 0
 
-data = int(111111111111111111111111111111111).to_bytes(14, byteorder='little', signed=False)
+# If set, it means the data transfer has been initiated 
 
-size = len( data )
+Transfer = 0
 
-checkSum = 0 # should be 1701
+# Delay between write operations. These seem to be needed for the connection not to hang.
 
-Ssbin = 0
+sleepTime = 0.08    # Seems like safe minimum
 
-Saddr = 0
+def sig_interrupt_handler(signal, frame):
+    
+    global Run
+    
+    Run = False
 
-Slen = 0
+def setDEBG():
+    
+    global sleepTime, ser, uniDebugMode
+    
+    if DEBUG:
+        
+        print("Sending DEBG command...")
+    
+    ser.write( bytes( 'DEBG' , 'ascii' ) )
+    
+    time.sleep(sleepTime)
+                
+    # Empty in waiting buffer
+    
+    ser.reset_input_buffer()
+    
+    time.sleep(sleepTime)
+    
+    uniDebugMode = 1
 
 def WaitForResponse( expectedAnswer ):
+
+    # Get incoming data from the serial port in a rolling buffer 
+    # when the content of the buffer corresponds to 'expectedAnswer', returns True
+    
+    global DEBUG
     
     responseBuffer = ""
     
+    success = False
+    
     while True:
-                
+        
+        # If data in serial's incoming buffer
+        
         if ser.in_waiting:
         
-            print( "Input buffer : " + str(ser.in_waiting))
+            # Read 1 byte
+        
+            byteValue = ser.read(1)
             
-            chkValue = ser.read(1)
+            # Make sure byte value is < 128 so that it can be decoded to ascii
             
-            # Make sure byte value is < 128 so that it can be decoded to ascii :: always getting '\xc7' 'q' '\x1c' '\xc7'  '\xab' '\xed' '1' '\x05'
+            if byteValue[0] < 128:
             
-            if chkValue[0] < 128:
-            
-                responseBuffer += chkValue.decode('ascii')  
+                responseBuffer += byteValue.decode('ascii')  
             
             else:
                 
                 responseBuffer += '.'
             
+            # Always keep response buffer 4 chars long
+            
             if len( responseBuffer ) > 4:
                 
-                # remove first char in buffer
+                # Remove first char in buffer
                 
                 responseBuffer = responseBuffer[1:]
             
-                print( "Response buffer : " + responseBuffer )
             
+            # If response is ERR!, checksum check does not check, so check it again
             
-            if responseBuffer == expectedAnswer:
+            if responseBuffer == "ERR!":
+                
+                success = False
                 
                 break
                 
-    print( "Got response : " + responseBuffer + " - " + expectedAnswer )
+            # When expected response shows up, break from the while loop
+            
+            if responseBuffer == expectedAnswer:
+                
+                success = True
+                
+                break
+    if DEBUG:
+    
+        print( "Got : " + responseBuffer )
+    
+    return success
+    
+def CalculateChecksum( inBytes, skipFirstSector = False):
+    
+    returnVal = 0;
+    
+    i = 0
+    
+    if skipFirstSector:
+        
+         i = 2048
+    
+    while i < len( inBytes ):
 
-def main(args):
+        returnVal += inBytes[i];
+        
+        i += 1
     
-    global checkSum, responseBuffer, Ssbin, Saddr, Slen, chunkSize
+    return returnVal;
+
+def WriteBytes( inData ):
     
+    if DEBUG:
+        
+        print("Preparing to write bytes...")
+        
+    global chunkSize, numChunk
     
-    # Just to be sure 
+    # BEGIN WHILE DATA
     
+    i = 0
+    
+    while i < len( inData ):
+        
+        # BEGIN WHILE TRUE
+        
+        while True:
+            
+            # BEGIN TRY/EXCEPT
+            
+            try:
+                    
+                # Calculate number of 2K chunks we're about to send
+                
+                numChunk = math.ceil( len( inData ) / chunkSize )
+                
+                # Calculate current chunk
+                
+                currentChunk = math.ceil( (i + 1) / chunkSize)                
+                
+                if DEBUG:
+                    
+                    print( str ( numChunk + 1 - currentChunk ) + " chunks to send" )
+                
+                # Avoid going out of range
+                
+                if ( i + chunkSize ) > len( inData ):
+                    
+                    chunkSize = len( inData ) - i
+                    
+                print("Writing chunk " + str( currentChunk ) + " of " + str( numChunk ) )
+                                
+                # ~ ser.write(inData)
+
+                chunkChecksum = 0
+                
+                # Send inData in 2048B chunks
+                
+                for byte in range( chunkSize ):
+                    
+                    # Send byte
+                    
+                    ser.write( inData[ i + byte ].to_bytes(1, byteorder='little', signed=False) )
+                    
+                    # Calculate chunk checksum
+                    
+                    chunkChecksum += inData[ i + byte ]
+                                            
+                time.sleep(sleepTime)
+                
+                if DEBUG:                        
+                
+                    print( "Chunk cheksum : " + str( chunkChecksum ) ) 
+                
+                # Wait for output buffer to be empty
+                # REMOVE ? Is this needed ?
+                
+                while ser.out_waiting:
+                    
+                    print("*")
+                    
+                    wait += 1
+                
+                time.sleep(sleepTime)
+                
+                # Wait for unirom to request the checksum
+                
+                if DEBUG:
+                
+                    print( "Chunk " + str( currentChunk ) + " waiting for unirom to request checksum (CHEK)..." )
+                
+                WaitForResponse( "CHEK" )
+                
+                # Send checksum
+                
+                if DEBUG:
+                
+                    print( "Sending checksum to unirom..." );
+                
+                # ~ chunkChecksum = 170
+                
+                bytesChunkChecksum = chunkChecksum.to_bytes( 4, byteorder='little', signed = False )
+                
+                ser.write( bytesChunkChecksum )
+                
+                # ~ time.sleep( sleepTime )
+            
+                if DEBUG:
+                    
+                    print( "Waiting for unirom to request more data (MORE)..." )
+            
+                # Wait for unirom to request MORE inData ( next chunk )
+            
+                if not WaitForResponse("MORE"):
+                    
+                    if DEBUG:
+                        
+                        print("ERROR ! Retrying...")
+
+                    raise Exception()
+            
+                if DEBUG:
+                    
+                    print( str( currentChunk ) + " chunk sent with correct checksum.")
+        
+                # Increment i from chunkSize
+        
+                i += chunkSize
+                
+            except Exception:
+                
+                continue
+            
+            # END TRY/EXCEPT
+            
+            break
+        
+        # END WHILE TRUE
+    
+        numChunk = 0
+    
+    # END WHILE DATA
+
+def SendBin( inData, memAddr ):
+    
+    global sleepTime 
+    
+    dataSize = len( inData )
+    
+    if DEBUG:
+        
+        print("Data size : " + str( dataSize ) )
+    
+    # Prepare unirom for data reception - sent "SBIN" - received : "OKV2"
+    
+    if DEBUG:
+        
+        print("Sending SBIN command...")
+    
+    ser.write( bytes( 'SBIN' , 'ascii' ) )
+    
+    time.sleep(sleepTime)
+    
+    # We're using unirom in debug mode, which means protocol version 2 is available
+    # Upgrade protocol  - sent "UPV2" - received : "OKAY"
+    
+    ser.write( bytes( 'UPV2' , 'ascii' ) )
+
+    time.sleep(sleepTime)
+
+    # Initialisation done, set flag
+    
+    # ~ Init = 1
+    
+    # From now on, we're using the rolling buffer
+    if DEBUG:
+        
+        print("Waiting for OKAY...")
+    
+    WaitForResponse("OKAY")
+    
+    # Calculate data checkSum
+
+    checkSum = CalculateChecksum( inData )
+
+    if DEBUG:
+        
+        print("checkSum : " + str(checkSum) )
+    
+    # Send memory address to load data to, size of data and checkSum
+    # Unirom expects unsigned longs ( 32bits ), byte endianness little
+    
+    # Convert address from string to integer, then to ulong 32b
+    
+    bytesAddr = int( memAddr, 16 ).to_bytes( 4, byteorder='little', signed=False )
+    
+    # Write address to serial
+    
+    ser.write( bytesAddr )
+    
+    time.sleep(sleepTime)
+    
+    # Convert and write int size to serial
+    
+    bytesSize = dataSize.to_bytes( 4, byteorder='little', signed = False )
+    
+    ser.write( bytesSize )
+    
+    time.sleep(sleepTime)
+    
+    # Convert and write int chekSum to serial
+    
+    bytesChk = checkSum.to_bytes( 4, byteorder='little', signed = False )
+    
+    ser.write( bytesChk )
+    
+    time.sleep(sleepTime)
+
+    # Send dat data
+    
+    WriteBytes( inData )
+
+def resetListener():
+    
+    global checkSum, data, Listen, Transfer, dataSize, memAddr, loadFile, flagAddr
+    
+    memAddr = ""
+
+    flagAddr = ""
+    
+    loadFile = ""
+    
+    checkSum = 0
+    
+    data = 0
+    
+    dataSize = 0
+    
+    Transfer = 0
+    
+    Listen = 1
+
     ser.reset_input_buffer()
     
     ser.reset_output_buffer()
     
-    i = 0
     
-    while i < len( data ):
 
-        checkSum += data[i];
-        
-        i += 1
-        
-    print("checkSum : " + str(checkSum) )
+def main(args):
     
-    # ~ while True:
-
-    # ~ global responseBuffer, Ssbin, Saddr, Slen, chunkSize
+    # ~ signal.signal(signal.SIGINT, sig_interrupt_handler)
     
-    if not Ssbin:
+    # ~ global Run, memAddr
+    
+    while True:
+    
+        global checkSum, chunkSize, data, Listen, Transfer, dataSize, memAddr, loadFile, flagAddr
         
-        print("Sending DEBG command...")
-        
-        ser.write( bytes( 'DEBG' , 'ascii' ) )
-        
-        time.sleep(.3)
-                    
-        # Empty in waiting buffer to get rid of 'DEBGOKAY'
+        # Flush serial buffers to avoid residual data
         
         ser.reset_input_buffer()
         
-        time.sleep(.5)
+        ser.reset_output_buffer()
         
-        print("Sending SBIN command...")
+        inputBuffer = ""
+            
+        # Listen to incomming connections on serial
         
-        ser.write( bytes( 'SBIN' , 'ascii' ) )
+        if Listen:
+
+
+            print("Listening for incoming data...")
+            
+            if DEBUG:
+            
+                print("memAddr : " + str(memAddr) + " - loadFile" + loadFile )
+            
+            while True:
+
+                # If data on serial, fill buffer
+                
+                while ser.in_waiting:
+                    
+                    inputBuffer += ser.read().decode('ascii')
+                
+                if inputBuffer:
+                    
+                    if DEBUG == 1:
+                    
+                        print( "Incoming data : " + inputBuffer )
+                    
+                    # parse command ADDRESS:FILENAME
+                    
+                    parsedBuffer = inputBuffer.split(':')
+                    
+                    if inputBuffer.startswith(str(800)):
+                    
+                        if len( parsedBuffer ) > 2:
+                        
+                            memAddr   = str(parsedBuffer[0])
+                        
+                            flagAddr  = str(parsedBuffer[1])
+                        
+                            loadFile     = str(parsedBuffer[2])
+                            
+                            ser.reset_input_buffer()
+                            
+                            inputBuffer = ""
+                            
+                            if DEBUG:
+                            
+                                print( memAddr + " - " + flagAddr + " - " + loadFile )
+                            
+                            Listen = 0
+                            
+                            break
         
-        time.sleep(.1)
+        if memAddr and loadFile:
         
-        ser.write( bytes( 'UPV2' , 'ascii' ) )
+            # Remove separator and ';1' at end of the string
+        
+            fileClean = loadFile.split(';')[0][1:]
+
+            print("Received addresses and filename : " + memAddr + " - " + flagAddr + " - " + fileClean)
+            
+            # TODO : replace with a proper level naming scheme
+            
+            binFileName = ""
+            
+            if fileClean == "level0.bin":
+            
+                binFileName = "Overlay.lvl0" 
+            
+            if fileClean == "level1.bin":
+                
+                binFileName = "Overlay.lvl1"
+            
+            if DEBUG:
+
+                print(
+                
+                    "Load Data to : " + memAddr + "\n" +
+                    
+                    "Reset flag at: " + flagAddr + "\n" +
+                    
+                    "File   : " + loadFile + "\n" +
+                    
+                    "Bin    : " + binFileName
+            
+                     )
+            
+            # Open file as binary if bin filename is defined
+            
+            if binFileName:
+
+                binFile = open( levelsFolder + binFileName, 'rb' )
+            
+                data = binFile.read()
+            
+                Transfer = 1
+            
+            else:
+                
+                print(" No filename provided, doing nothing ")
+                
+                resetListener()
+        
+        # If Init was set, initialize transfer and send data
+        
+        if Transfer:
+            
+            print("Initializing data transfer...")
+            
+            if not uniDebugMode:
+            
+                # Set unirom to debugmode - sent : "DEBG" - received : "DEBGOKAY"
+            
+                setDEBG()
+            
+            # Send level data
+            
+            SendBin( data, memAddr )
+
+            # Set level changed flag 
+            
+            SendBin( uno , flagAddr)
+            
+            # Reset everything 
+            
+            resetListener()
+            
+            print("DONE!")
     
-        Ssbin = 1
         
-        time.sleep(.1)
-        
-        # ~ while True:
-        
-            #while ser.in_waiting:
-            # ~ print(".")
-            
-            # ~ responseBuffer += ser.read(12).decode('ascii' )
-                
-            # ~ break
-                        
-        # ~ print( "Buffer : " + responseBuffer )
-    
-    # ~ if responseBuffer[-4:] == "OKAY":
-        
-        responseBuffer = ""
-        
-        print("Waiting for OKAY...")
-        
-        WaitForResponse("OKAY")
-        
-        
-        # convert addr str > int > bytes
-        
-        bytesAddr = int( address, 16 ).to_bytes( 4, byteorder='little', signed=False )
-        
-        # same as ?
-    
-        # ~ hexAddr = bytearray()
-        
-        # ~ hexAddr.append( 0x80)
-        
-        # ~ hexAddr.append( 0x0b)
-        
-        # ~ hexAddr.append( 0x14)
-        
-        # ~ hexAddr.append( 0x70)
-        
-        # ~ hexAddr.reverse()
-        
-        # Convert and write address bytes to serial
-        
-        ser.write( bytesAddr )
-        
-        time.sleep(.1)
-        
-        # Convert and write size bytes to serial
-        
-        bytesSize = size.to_bytes( 4, byteorder='little', signed = False )
-        
-        ser.write( bytesSize )
-        
-        time.sleep(.1)
-        
-        # Convert and write chekSum bytes to serial
-        
-        bytesChk = checkSum.to_bytes( 4, byteorder='little', signed = False )
-        
-        ser.write( bytesChk )
-        
-        time.sleep(.1)
-        
-        # Convert and write data bytes to serial
-        
-        numChunk = math.ceil( len( data ) / chunkSize )
-        
-        wait  = 0
-        
-        i = 0
-        
-        while i < len( data ):
-            
-            chunkChk = 0
-            
-            if ( i + chunkSize ) > len( data ):
-                
-                chunkSize = len( data ) - i
-                
-            print("Writing chunk " + str( i + 1  ) + " of " + str( numChunk ) )
-        
-            # we know data length is < 2048, we'd need some code to cut the data in 2K chunks in real use case
-        
-            # ~ print( "Input buffer b : " + str(ser.out_waiting))
-            # ~ print( "Output buffer b : " + str(ser.out_waiting))
-        
-            # ~ for byte in range( len( data ) ):
-        
-            ser.write( data )
-                                
-                # ~ time.sleep(.005)
-                
-            time.sleep(.1)
-            
-            # Put chunk checksum calculation here
-            
-            # Wait for output buffer to be empty
-            
-            while ser.out_waiting:
-                
-                print("\*")
-                
-                wait += 1
-            
-            time.sleep(.1)
-            
-            print("Wait : "+ str(wait))
-            
-            # reset input buffer
-            
-            # ~ print( "Input buffer : " + str(ser.in_waiting))
-            # ~ print( "Output buffer : " + str(ser.out_waiting))
-            
-            # ~ ser.reset_input_buffer()
-            
-            # wait for unirom to request the checksum
-            
-            print( "Chunk" + str( i + 1 ) + " waiting for unirom to request checksum (CHEK)..." )
-            
-            WaitForResponse( "CHEK" )
-            
-            # Wait for "CHEK" - MOVED to WaitForResponse()
-            
-            # ~ while True:
-                
-                # ~ if ser.in_waiting:
-                
-                    # ~ print( "Input buffer : " + str(ser.in_waiting))
-                    
-                    #print(".")
-                    
-                    # ~ chkValue = ser.read()
-                    
-                    # ~ # Make sure byte value is < 128 so that it can be decoded to ascii :: always getting '\xc7' 'q' '\x1c' '\xc7'  '\xab' '\xed' '1' '\x05'
-                    
-                    # ~ print( "chkVal : " + str(chkValue) + " - " + str( int.from_bytes(chkValue, 'big') ) )
-                    
-                    # ~ if int.from_bytes(chkValue, 'big') < 128:
-                    
-                        # ~ responseBuffer += chkValue.decode('ascii')  
-                    
-                    # ~ if len( responseBuffer ) > 4:
-                        
-                        # ~ # remove first char in buffer
-                        
-                        # ~ responseBuffer = responseBuffer[1:]
-                    
-                    # ~ print( "Response buffer : " + responseBuffer )
-                    
-                    # ~ if responseBuffer == "CHEK":
-                        
-                        # ~ print( "Got response : " + responseBuffer )
-                        
-                        # ~ break
-            
-            print( "Sending checksum to unirom..." );
-            
-            ser.write( bytesChk )
-            
-            time.sleep( .1 )
-            
-            # Wait for "MORE" - replace with WaitForResponse()
-            
-            # ~ while True:
-                
-                # ~ if ser.in_waiting:
-                    
-                    # ~ print(".")
-                    
-                    # ~ responseBuffer += ser.read().decode('ascii')
-                    
-                    # ~ if len( responseBuffer ) > 4:
-                        
-                        # ~ # remove first char in buffer
-                        
-                        # ~ responseBuffer = responseBuffer[1:]
-                
-                    # ~ if responseBuffer == "MORE":
-                        
-                        # ~ print( "Got response : " + responseBuffer )
-                        
-                        # ~ break
-        
-            WaitForResponse("MORE")
-        
-            print( str(i+1) + "chunk sent with correct checksum.")    
-    
-            i += chunkSize
-    
-    print("DONE!")
     
     return 0
 

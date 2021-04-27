@@ -74,9 +74,9 @@ u_long overlaySize = 0;
 
 #include "levels/level1.h"
 
-short level = 1;
+uint8_t level = 1;
 
-short levelHasChanged = 0;
+uint16_t levelHasChanged = 0;
 
 static char* overlayFile;
 
@@ -172,18 +172,30 @@ MESH   meshPlan = {0};
 VECTOR modelPlan_pos = {0};
 
 LEVEL curLvl = {
+    
     &cmat,
-	&lgtmat,
-	(MESH **)&meshes,
-	&meshes_length,
-	&actorPtr,
-	&levelPtr,
-	&propPtr,
-	&camPtr,
-	&camPath,
-	(CAMANGLE **)&camAngles,
-	&curNode,
-	&meshPlan
+	
+    &lgtmat,
+	
+    (MESH **)&meshes,
+	
+    &meshes_length,
+	
+    &actorPtr,
+	
+    &levelPtr,
+	
+    &propPtr,
+	
+    &camPtr,
+	
+    &camPath,
+	
+    (CAMANGLE **)&camAngles,
+	
+    &curNode,
+	
+    &meshPlan
 };
 
 // Pad 
@@ -334,7 +346,7 @@ int main() {
     while ( VSync(1) ) {
                 
         if (levelHasChanged){
-    
+            
             switch (level){
     
                 case 0:
@@ -363,17 +375,19 @@ int main() {
             
             #ifdef USECD
             
-            SwitchLevel( overlayFile, &load_all_overlays_here, &curLvl, &level0);
+            LoadLevelCD( overlayFile, &load_all_overlays_here );
             
             #endif
             
-            printf("%p:%s", &load_all_overlays_here, overlayFile);
+            SwitchLevel( overlayFile, &load_all_overlays_here, &curLvl, &level0);
+            
+            //~ printf("%p:%p:%s", &load_all_overlays_here, &levelHasChanged, overlayFile);
              
             levelHasChanged = 0;
         
         }
         
-        FntPrint("Lvl : %s\n", overlayFile);
+        FntPrint("Ovl:%s\nLvlch : %x\nLvl: %x %d", overlayFile, levelHasChanged, &levelHasChanged, level );
 
         //~ FntPrint("%x\n", curLvl.actorPtr->tim);
         
@@ -1360,10 +1374,17 @@ void callback() {
         
         if (!levelHasChanged){
         
+            //~ #ifndef USECD
+            
+            printf("%p:%p:%s", &load_all_overlays_here, &levelHasChanged, overlayFile);
+
+            //~ #endif
+        
             level = !level;
             
             levelHasChanged = 1;
         }
+        
         timer = 30;
         
         lastPad = PADL;

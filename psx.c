@@ -191,7 +191,7 @@ void SwitchLevel(const char*const LevelName,  u_long * LoadAddress, LEVEL * curL
     
     ScrRst();
     
-    LoadLevelCD( LevelName, LoadAddress );
+    //~ LoadLevelCD( LevelName, LoadAddress );
     
     LvlPtrSet( curLevel, loadLevel);
 
