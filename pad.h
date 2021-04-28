@@ -6,7 +6,6 @@ typedef struct
 {
 	int             xpos, ypos;     // Stored position for sprite(s)
 	int             xpos2, ypos2;   // controlled by this controller.
-
 	unsigned char   status;         // These 8 values are obtained
 	unsigned char   type;           // directly from the controller
 	unsigned char   button1;        // buffer we installed with InitPAD.

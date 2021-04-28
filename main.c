@@ -29,6 +29,7 @@
 #include "physics.h"
 #include "graphics.h"
 #include "space.h"
+#include "pcdrv.h"
 
 //~ #define USECD
 
@@ -74,9 +75,13 @@ u_long overlaySize = 0;
 
 #include "levels/level1.h"
 
-uint8_t level = 1;
+// Level
 
-uint16_t levelHasChanged = 0;
+u_short level = 1;
+
+u_short levelWas = 0;
+
+u_short levelHasChanged = 0;
 
 static char* overlayFile;
 
@@ -198,6 +203,8 @@ LEVEL curLvl = {
     &meshPlan
 };
 
+LEVEL * loadLvl;
+
 // Pad 
 
 void callback();
@@ -210,13 +217,16 @@ int main() {
         
         overlaySize = __lvl0_end;
         
+        loadLvl     = &level0;
+        
     } else if ( level == 1) {
 
         overlayFile = "\\level1.bin;1";
         
         overlaySize = __lvl1_end;
         
-        }
+        loadLvl     = &level1;
+    }
     
     // Load overlay
 
@@ -240,6 +250,8 @@ int main() {
         LvlPtrSet( &curLvl, &level1);
 
     } 
+    
+    levelWas = level;
         
     // Overlay 
     
@@ -344,16 +356,18 @@ int main() {
     //~ while (1) {
     
     while ( VSync(1) ) {
-                
-        if (levelHasChanged){
+        
+        if ( levelWas != level ){
             
-            switch (level){
+            switch ( level ){
     
                 case 0:
                     
                     overlayFile = "\\level0.bin;1";
                     
                     overlaySize = __lvl0_end;
+                    
+                    loadLvl     = &level0;
                     
                     break;
 
@@ -363,11 +377,15 @@ int main() {
                     
                     overlaySize = __lvl1_end;
     
+                    loadLvl     = &level1;
+    
                     break;
             
                 default:
                 
                     overlayFile = "\\level0.bin;1";
+                    
+                    loadLvl     = &level0;
                     
                     break;
             
@@ -375,19 +393,17 @@ int main() {
             
             #ifdef USECD
             
-            LoadLevelCD( overlayFile, &load_all_overlays_here );
+              LoadLevelCD( overlayFile, &load_all_overlays_here );
             
             #endif
             
-            SwitchLevel( overlayFile, &load_all_overlays_here, &curLvl, &level0);
-            
-            //~ printf("%p:%p:%s", &load_all_overlays_here, &levelHasChanged, overlayFile);
-             
-            levelHasChanged = 0;
-        
+            SwitchLevel( overlayFile, &load_all_overlays_here, &curLvl, loadLvl);
+                         
+            //~ levelHasChanged = 0;
+            levelWas = level;
         }
         
-        FntPrint("Ovl:%s\nLvlch : %x\nLvl: %x %d", overlayFile, levelHasChanged, &levelHasChanged, level );
+        FntPrint("Ovl:%s\nLvl : %x\nLvl: %d %d \n%x", overlayFile, &level, level, levelWas, loadLvl);
 
         //~ FntPrint("%x\n", curLvl.actorPtr->tim);
         
@@ -1372,18 +1388,25 @@ void callback() {
     
     if ( PADL & PadSelect && !timer ) {
         
-        if (!levelHasChanged){
+        //~ if (!levelHasChanged){
         
-            //~ #ifndef USECD
+        //~ #ifndef USECD
+        
+        printf("load:%p:%08x:%s", &load_all_overlays_here, &level, overlayFile);
+        //~ PCload( &load_all_overlays_here, &levelHasChanged, overlayFile );
+        
+        //~ #endif
+    
+        
+        #ifdef USECD
             
-            printf("%p:%p:%s", &load_all_overlays_here, &levelHasChanged, overlayFile);
-
-            //~ #endif
-        
             level = !level;
             
-            levelHasChanged = 1;
-        }
+            //~ levelHasChanged = 1;
+    
+        #endif
+            
+        //~ }
         
         timer = 30;
         

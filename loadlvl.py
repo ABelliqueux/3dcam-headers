@@ -31,7 +31,7 @@ import calendar
 import math
 import signal
 
-DEBUG = 0
+DEBUG = 1
 
 # Working directory
 
@@ -53,6 +53,8 @@ memAddr = ""
 flagAddr = ""
 
 loadFile = ""
+
+levelId  = ""
 
 # One byte
 
@@ -441,13 +443,9 @@ def resetListener():
     
 def main(args):
     
-    # ~ signal.signal(signal.SIGINT, sig_interrupt_handler)
-    
-    # ~ global Run, memAddr
-    
     while True:
     
-        global checkSum, data, Listen, Transfer, dataSize, memAddr, loadFile, flagAddr
+        global checkSum, data, Listen, Transfer, dataSize, memAddr, loadFile, flagAddr, levelId
         
         # Flush serial buffers to avoid residual data
         
@@ -460,7 +458,6 @@ def main(args):
         # Listen to incomming connections on serial
         
         if Listen:
-
 
             print("Listening for incoming data...")
             
@@ -482,31 +479,49 @@ def main(args):
                     
                         print( "Incoming data : " + inputBuffer )
                     
-                    # parse command ADDRESS:FILENAME
+                    # parse command CMD:ARG1:ARG2(:ARGn)
                     
-                    parsedBuffer = inputBuffer.split(':')
+                    argList = []
                     
-                    if inputBuffer.startswith(str(800)):
-                    
-                        if len( parsedBuffer ) > 2:
+                    argList = inputBuffer.split(':')
+                
+                    # Send command
+                
+                    if argList[0] == "load" and len(argList) == 4:
                         
-                            memAddr   = str(parsedBuffer[0])
-                        
-                            flagAddr  = str(parsedBuffer[1])
-                        
-                            loadFile     = str(parsedBuffer[2])
+                        if len(argList[1]) < 8 or len(argList[2]) < 8:
                             
-                            ser.reset_input_buffer()
-                            
-                            inputBuffer = ""
-                            
-                            if DEBUG > 1:
-                            
-                                print( memAddr + " - " + flagAddr + " - " + loadFile )
-                            
-                            Listen = 0
+                            if DEBUG:
+                                
+                                print("Wrong data format, aborting...")
                             
                             break
+                            
+                        memAddr   = argList[1]
+                    
+                        flagAddr  = argList[2]
+                    
+                        loadFile  = argList[3]
+                            
+                        ser.reset_input_buffer()
+                        
+                        inputBuffer = ""
+                        
+                        if DEBUG > 1:
+                        
+                            print( memAddr + " - " + flagAddr + " - " + loadFile )
+                        
+                        Listen = 0
+                        
+                        break
+        
+                    else:
+                        
+                        ser.reset_input_buffer()
+                        
+                        inputBuffer = ""
+                        
+                        break
         
         if memAddr and loadFile:
         
@@ -526,9 +541,13 @@ def main(args):
             
                 binFileName = "Overlay.lvl1" 
             
+                levelId     = 1
+            
             if fileClean == "level1.bin":
                 
                 binFileName = "Overlay.lvl0"
+            
+                levelId     = 0
             
             if DEBUG:
 
@@ -540,7 +559,7 @@ def main(args):
                     
                     "File   : " + loadFile + "\n" +
                     
-                    "Bin    : " + binFileName
+                    "Bin    : " + binFileName + "ID : " + str(levelId)
             
                      )
             
@@ -578,7 +597,7 @@ def main(args):
 
             # Set level changed flag 
             
-            SendBin( uno , flagAddr)
+            SendBin( levelId.to_bytes(1, byteorder='little', signed=False) , flagAddr)
             
             # Reset everything 
             
