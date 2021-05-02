@@ -189,16 +189,23 @@ int LoadLevelCD(const char*const LevelName, u_long * LoadAddress){
 
 void SwitchLevel(const char*const LevelName,  u_long * LoadAddress, LEVEL * curLevel, LEVEL * loadLevel ){
     
-    ScrRst();
-    
-    //~ LoadLevelCD( LevelName, LoadAddress );
-    
+    //~ ScrRst();
+        
     LvlPtrSet( curLevel, loadLevel);
-
+    
+    // Reload textures
+    
     for (int k = 0; k < *curLevel->meshes_length ; k++){
 
         LoadTexture(curLevel->meshes[k]->tim_data, curLevel->meshes[k]->tim);
 
+    }
+    
+    // BG texture
+    
+    if (curLevel->camPtr->tim_data){
+        
+        LoadTexture(curLevel->camPtr->tim_data, curLevel->camPtr->BGtim);
     }
 
 };

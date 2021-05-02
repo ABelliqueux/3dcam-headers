@@ -10978,14 +10978,14 @@ NODE * level1_curNode =  &level1_nodegnd_002;
 LEVEL level1 = {
 	&level1_cmat,
 	&level1_lgtmat,
-	&level1_meshes,
+	(MESH**)&level1_meshes,
 	&level1_meshes_length,
 	&level1_meshSphere,
 	&level1_meshgnd_002,
 	&level1_meshSphere_001,
 	&level1_camAngle_camPath_001,
 	&level1_camPath,
-	&level1_camAngles,
+	(CAMANGLE **)&level1_camAngles,
 	&level1_nodegnd_002,
 	&level1_meshPlan
 };

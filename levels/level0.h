@@ -136,6 +136,30 @@ extern TMESH level0_modelgnd_002;
 
 extern MESH level0_meshgnd_002;
 
+extern SVECTOR modelLara_mesh[];
+
+extern SVECTOR level0_modelLara_normal[];
+
+extern SVECTOR level0_modelLara_uv[];
+
+extern CVECTOR level0_modelLara_color[];
+
+extern PRIM level0_modelLara_index[];
+
+extern BODY  level0_modelLara_body;
+
+extern TMESH level0_modelLara;
+
+extern unsigned long _binary_TIM_lara_tim_start[];
+
+extern unsigned long _binary_TIM_lara_tim_end[];
+
+extern unsigned long _binary_TIM_lara_tim_length;
+
+extern TIM_IMAGE level0_tim_lara;
+
+extern MESH level0_meshLara;
+
 extern SVECTOR modelobject_mesh[];
 
 extern SVECTOR level0_modelobject_normal[];
@@ -264,13 +288,71 @@ extern TMESH level0_modelwall_003;
 
 extern MESH level0_meshwall_003;
 
-extern MESH * level0_meshes[14];
+extern MESH * level0_meshes[15];
 
 extern int level0_meshes_length;
 
+extern unsigned long _binary_TIM_bg_camPath_tim_start[];
+
+extern unsigned long _binary_TIM_bg_camPath_tim_end[];
+
+extern unsigned long _binary_TIM_bg_camPath_tim_length;
+
+extern TIM_IMAGE tim_bg_camPath;
+
+extern CAMANGLE level0_camAngle_camPath;
+
+extern unsigned long _binary_TIM_bg_camPath_001_tim_start[];
+
+extern unsigned long _binary_TIM_bg_camPath_001_tim_end[];
+
+extern unsigned long _binary_TIM_bg_camPath_001_tim_length;
+
+extern TIM_IMAGE tim_bg_camPath_001;
+
 extern CAMANGLE level0_camAngle_camPath_001;
 
-extern CAMANGLE * level0_camAngles[0];
+extern unsigned long _binary_TIM_bg_camPath_002_tim_start[];
+
+extern unsigned long _binary_TIM_bg_camPath_002_tim_end[];
+
+extern unsigned long _binary_TIM_bg_camPath_002_tim_length;
+
+extern TIM_IMAGE tim_bg_camPath_002;
+
+extern CAMANGLE level0_camAngle_camPath_002;
+
+extern unsigned long _binary_TIM_bg_camPath_003_tim_start[];
+
+extern unsigned long _binary_TIM_bg_camPath_003_tim_end[];
+
+extern unsigned long _binary_TIM_bg_camPath_003_tim_length;
+
+extern TIM_IMAGE tim_bg_camPath_003;
+
+extern CAMANGLE level0_camAngle_camPath_003;
+
+extern unsigned long _binary_TIM_bg_camPath_004_tim_start[];
+
+extern unsigned long _binary_TIM_bg_camPath_004_tim_end[];
+
+extern unsigned long _binary_TIM_bg_camPath_004_tim_length;
+
+extern TIM_IMAGE tim_bg_camPath_004;
+
+extern CAMANGLE level0_camAngle_camPath_004;
+
+extern unsigned long _binary_TIM_bg_camPath_005_tim_start[];
+
+extern unsigned long _binary_TIM_bg_camPath_005_tim_end[];
+
+extern unsigned long _binary_TIM_bg_camPath_005_tim_length;
+
+extern TIM_IMAGE tim_bg_camPath_005;
+
+extern CAMANGLE level0_camAngle_camPath_005;
+
+extern CAMANGLE * level0_camAngles[6];
 
 extern SIBLINGS level0_nodegnd_siblings;
 

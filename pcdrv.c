@@ -48,7 +48,7 @@ void PCload( u_long * loadAddress, u_short * flagAddress, const char * filename 
   //~ printf("open:%s:%i:%08x", filename, attributes, &fd);
   
   //~ waitForSIODone(0);
-  
+
   //~ return fd; // If all is well, returns a positive int . If -1, wrong
 
 //~ };

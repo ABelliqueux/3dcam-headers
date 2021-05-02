@@ -31,7 +31,7 @@
 #include "space.h"
 //~ #include "pcdrv.h"
 
-//~ #define USECD
+#define USECD
 
 // START OVERLAY
 
@@ -74,8 +74,6 @@ u_long overlaySize = 0;
 #include "levels/level0.h"
 
 #include "levels/level1.h"
-
-// Level
 
 volatile u_char level = 1;
 
@@ -144,7 +142,7 @@ u_short timer = 0;
 
 // Cam stuff 
 
-int camMode = 0;
+int camMode = 2;
 
 VECTOR angle     = {250,0,0,0};
 
@@ -593,7 +591,6 @@ int main() {
         
         // Fixed Camera angle
         if (camMode == 2) {                              
-          
           
             // If BG images exist
             

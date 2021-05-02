@@ -16,13 +16,33 @@
     "Bios": "/home/arthus/build/pcsx-redux/src/mips/openbios/openbios.bin",
     "BnWMdec": false,
     "CDDA": 1,
-    "Debug": true,
+    "Debug": {
+      "Debug": false,
+      "FirstChanceException": 7408,
+      "GdbManifest": true,
+      "GdbServer": false,
+      "GdbServerPort": 3333,
+      "GdbServerTrace": false,
+      "KernelCallA0_00_1f": 4294967295,
+      "KernelCallA0_20_3f": 4294967295,
+      "KernelCallA0_40_5f": 4294967295,
+      "KernelCallA0_60_7f": 4294967295,
+      "KernelCallA0_80_9f": 4294967295,
+      "KernelCallA0_a0_bf": 4294967295,
+      "KernelCallB0_00_1f": 4294967295,
+      "KernelCallB0_20_3f": 4294967295,
+      "KernelCallB0_40_5f": 4294967295,
+      "KernelCallC0_00_1f": 4294967295,
+      "KernelLog": false,
+      "LoggingCDROM": false,
+      "SkipISR": false,
+      "Trace": false,
+      "WebServer": false,
+      "WebServerPort": 8080
+    },
     "Dynarec": false,
-    "FastBoot": false,
-    "GdbServer": true,
-    "GdbServerPort": 3333,
-    "GdbServerTrace": false,
-    "IsoPath": "/home/arthus/Jeux/emul/psx/Vagrant Story (USA)",
+    "FastBoot": true,
+    "IsoPath": "/home/arthus/build/pcsx-redux/src/mips/3dcam-bak",
     "Locale": "",
     "Logfile": "",
     "Mcd1": "memcard1.mcd",
@@ -31,27 +51,86 @@
     "Mcd2Inserted": true,
     "Overlay": [],
     "PpfDir": "",
-    "PsxExe": "SLUS_010.40;1",
+    "PsxExe": "SCES_003.90;1",
     "RCntFix": false,
-    "SioIrq": false,
     "SpuIrq": false,
     "Stdout": false,
-    "Verbose": false,
-    "Video": 0,
-    "WebServer": false,
-    "WebServerPort": 8080,
+    "Video": 1,
     "Xa": true
   },
   "gui": {
     "Fullscreen": false,
     "FullscreenRender": true,
-    "IdleSwapInterval": 1,
+    "IdleSwapInterval": 0,
+    "MainFontSize": 16,
+    "MonoFontSize": 16,
     "ShowLog": true,
+    "ShowLuaConsole": false,
+    "ShowLuaEditor": false,
+    "ShowLuaInspector": false,
     "ShowMenu": true,
     "WindowPosX": 1,
     "WindowPosY": 26,
-    "WindowSizeX": 719,
-    "WindowSizeY": 542
+    "WindowSizeX": 898,
+    "WindowSizeY": 683
   },
-  "imgui": "[Window][Debug##Default]\nPos=60,60\nSize=400,400\nCollapsed=0\n\n[Window][Emulation Configuration]\nViewportPos=882,165\nViewportId=0xA515CB4B\nSize=316,619\nCollapsed=0\n\n[Window][Logs]\nViewportPos=-158,629\nViewportId=0x50BD6962\nSize=720,450\nCollapsed=0\n\n[Window][Soft GPU configuration]\nPos=288,182\nSize=300,200\nCollapsed=0\n\n[Window][Main VRAM Viewer]\nViewportPos=1157,-262\nViewportId=0xD2F1ACB4\nSize=1321,900\nCollapsed=0\n\n[Window][Registers]\nViewportPos=1244,-4\nViewportId=0xA4D966FE\nSize=493,512\nCollapsed=0\nDockId=0x00000002,0\n\n[Window][Breakpoints]\nViewportPos=1244,-4\nViewportId=0xA4D966FE\nSize=639,660\nCollapsed=0\nDockId=0x00000003,0\n\n[Window][Assembly]\nViewportPos=1077,89\nViewportId=0xE37F8D5D\nSize=623,751\nCollapsed=0\n\n[Window][Output]\nPos=160,48\nSize=810,532\nCollapsed=0\n\n[Window][About]\nPos=199,66\nSize=880,600\nCollapsed=0\n\n[Window][Dear ImGui Demo]\nPos=669,25\nSize=550,680\nCollapsed=0\n\n[Window][SPU configuration]\nPos=69,56\nSize=550,220\nCollapsed=0\n\n[Window][SPU Debug]\nViewportPos=962,725\nViewportId=0xE5F7C643\nSize=1200,430\nCollapsed=0\n\n[Window][Memory Editor #1]\nViewportPos=1139,76\nViewportId=0xE9869392\nSize=584,539\nCollapsed=0\n\n[Window][Source]\nViewportPos=61,86\nViewportId=0x58267A45\nSize=416,536\nCollapsed=0\n\n[Window][Callstack]\nViewportPos=48,90\nViewportId=0xA9FDEE8E\nSize=426,525\nCollapsed=0\n\n[Window][Dwarf]\nPos=60,60\nSize=404,388\nCollapsed=0\n\n[Window][Symbols]\nPos=60,60\nSize=147,62\nCollapsed=0\n\n[Window][Scratch Pad]\nViewportPos=719,-7\nViewportId=0xB7AD35A5\nSize=484,480\nCollapsed=0\n\n[Window][Hardware Registers]\nViewportPos=847,221\nViewportId=0x311B7332\nSize=584,612\nCollapsed=0\n\n[Window][CLUT VRAM selector]\nViewportPos=737,320\nViewportId=0xF0235A86\nPos=0,5\nSize=330,252\nCollapsed=0\n\n[Docking][Data]\nDockNode    ID=0x00000001 Pos=1244,-4 Size=639,660 Split=X\n  DockNode  ID=0x00000002 Parent=0x00000001 SizeRef=105,512 Selected=0x837A6095\n  DockNode  ID=0x00000003 Parent=0x00000001 SizeRef=103,512 Selected=0x0263173C\n\n"
+  "imgui": "[Window][Debug##Default]\nPos=60,60\nSize=400,400\nCollapsed=0\n\n[Window][Emulation Configuration]\nViewportPos=183,218\nViewportId=0xA515CB4B\nSize=518,555\nCollapsed=0\n\n[Window][Logs]\nViewportPos=0,709\nViewportId=0x50BD6962\nSize=900,709\nCollapsed=0\n\n[Window][Soft GPU configuration]\nPos=288,182\nSize=300,200\nCollapsed=0\n\n[Window][Main VRAM Viewer]\nViewportPos=1543,430\nViewportId=0xD2F1ACB4\nSize=1321,900\nCollapsed=0\n\n[Window][Registers]\nViewportPos=969,588\nViewportId=0xA4D966FE\nSize=639,660\nCollapsed=0\nDockId=0x00000002,0\n\n[Window][Breakpoints]\nViewportPos=1244,-4\nViewportId=0xA4D966FE\nSize=639,660\nCollapsed=0\nDockId=0x00000003,0\n\n[Window][Assembly]\nViewportPos=1077,89\nViewportId=0xE37F8D5D\nSize=623,751\nCollapsed=0\n\n[Window][Output]\nPos=160,48\nSize=810,532\nCollapsed=0\n\n[Window][About]\nPos=199,66\nSize=880,600\nCollapsed=0\n\n[Window][Dear ImGui Demo]\nPos=669,25\nSize=550,680\nCollapsed=0\n\n[Window][SPU configuration]\nPos=69,56\nSize=550,220\nCollapsed=0\n\n[Window][SPU Debug]\nViewportPos=962,725\nViewportId=0xE5F7C643\nSize=1200,430\nCollapsed=0\n\n[Window][Memory Editor #1]\nViewportPos=295,84\nViewportId=0xE9869392\nSize=584,539\nCollapsed=0\n\n[Window][Source]\nViewportPos=61,86\nViewportId=0x58267A45\nSize=416,536\nCollapsed=0\n\n[Window][Callstack]\nViewportPos=48,90\nViewportId=0xA9FDEE8E\nSize=426,525\nCollapsed=0\n\n[Window][Dwarf]\nPos=60,60\nSize=404,388\nCollapsed=0\n\n[Window][Symbols]\nPos=60,60\nSize=147,62\nCollapsed=0\n\n[Window][Scratch Pad]\nViewportPos=719,-7\nViewportId=0xB7AD35A5\nSize=484,480\nCollapsed=0\n\n[Window][Hardware Registers]\nViewportPos=847,221\nViewportId=0x311B7332\nSize=584,612\nCollapsed=0\n\n[Window][CLUT VRAM selector]\nViewportPos=737,320\nViewportId=0xF0235A86\nPos=0,5\nSize=330,252\nCollapsed=0\n\n[Window][Memory Editor #3]\nViewportPos=520,50\nViewportId=0x0788F2BE\nSize=484,480\nCollapsed=0\n\n[Window][Notification]\nPos=174,280\nSize=549,123\nCollapsed=0\n\n[Window][Select BIOS]\nPos=73,92\nSize=774,459\nCollapsed=0\n\n[Docking][Data]\nDockNode    ID=0x00000001 Pos=969,588 Size=639,660 Split=X\n  DockNode  ID=0x00000002 Parent=0x00000001 SizeRef=105,512 Selected=0x837A6095\n  DockNode  ID=0x00000003 Parent=0x00000001 SizeRef=103,512 Selected=0x0263173C\n\n",
+  "loggers": {
+    "CDROM": {
+      "displayed": true,
+      "enabled": true
+    },
+    "CDROM_IO": {
+      "displayed": true,
+      "enabled": true
+    },
+    "CPU": {
+      "displayed": true,
+      "enabled": true
+    },
+    "DMA": {
+      "displayed": true,
+      "enabled": true
+    },
+    "GTE": {
+      "displayed": true,
+      "enabled": true
+    },
+    "HARDWARE": {
+      "displayed": true,
+      "enabled": true
+    },
+    "IRQ": {
+      "displayed": true,
+      "enabled": true
+    },
+    "KERNEL": {
+      "displayed": true,
+      "enabled": true
+    },
+    "MEMORY": {
+      "displayed": true,
+      "enabled": true
+    },
+    "MIPS": {
+      "displayed": true,
+      "enabled": true
+    },
+    "SIO0": {
+      "displayed": true,
+      "enabled": true
+    },
+    "SIO1": {
+      "displayed": true,
+      "enabled": true
+    },
+    "UI": {
+      "displayed": true,
+      "enabled": true
+    },
+    "UNCATEGORIZED": {
+      "displayed": true,
+      "enabled": true
+    }
+  }
 }
