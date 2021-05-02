@@ -29,9 +29,9 @@
 #include "physics.h"
 #include "graphics.h"
 #include "space.h"
-#include "pcdrv.h"
+//~ #include "pcdrv.h"
 
-//~ #define USECD
+#define USECD
 
 // START OVERLAY
 
@@ -77,8 +77,12 @@ u_long overlaySize = 0;
 
 // Level
 
-u_short level = 1;
+volatile u_char level = 1;
 
+// level 1 : 8003F05C -2147225508
+// level 0 : 800AF744 -2146764988
+//           80010000 -2147418112 -> -2147483648
+// ovl     : 800b80d4 -2146729772
 u_short levelWas = 0;
 
 u_short levelHasChanged = 0;
@@ -124,7 +128,9 @@ CAMERA camera = {0};
 
 // physics
 
-long time = 0;
+u_long time = 0;
+
+u_long timeS = 0;
 
 //Pad
 
@@ -356,6 +362,8 @@ int main() {
     //~ while (1) {
     
     while ( VSync(1) ) {
+        
+        timeS = VSync(-1) / 60;
         
         if ( levelWas != level ){
             
@@ -1084,7 +1092,7 @@ int main() {
 
         //~ FntPrint("curLvl.curNode : %x\nIndex: %d", curLvl.curNode, curLvl.curNode->siblings->index);
         
-        FntPrint("Time    : %d dt :%d\n", VSync(-1) / 60, dt);
+        FntPrint("Time    : %d dt :%d", timeS, dt);
         
         //~ FntPrint("%d\n", curCamAngle );
         //~ FntPrint("%x\n", primbuff[db]);
@@ -1411,8 +1419,7 @@ void callback() {
         timer = 30;
         
         lastPad = PADL;
-        
-        
+
     }
     
     if( theControllers[0].type == 0x73 && camMode == 0){

@@ -345,4 +345,3 @@ extern NODE level1_nodegnd_001;
 extern NODE level1_nodegnd_002;
 
 extern NODE level1_nodegnd_003;
-

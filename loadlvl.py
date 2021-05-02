@@ -237,7 +237,7 @@ def WriteBytes( inData ):
                 
                 if DEBUG:
                     
-                    print( str ( numChunk + 1 - currentChunk ) + " chunks of " + str ( chunkSize) + "bytes to send " )
+                    print( str ( numChunk + 1 - currentChunk ) + " chunks of " + str ( chunkSize) + " bytes to send " )
                 
                 # Avoid going out of range
                 
@@ -256,6 +256,10 @@ def WriteBytes( inData ):
                 for byte in range( chunkSize ):
                     
                     # Send byte
+                    
+                    if DEBUG > 1:
+                        
+                        print("Writing " + str( inData[ i + byte ].to_bytes(1, byteorder='little', signed=False) ) + " to serial..." )
                     
                     ser.write( inData[ i + byte ].to_bytes(1, byteorder='little', signed=False) )
                     
@@ -419,7 +423,7 @@ def SendBin( inData, memAddr ):
 
 def resetListener():
     
-    global checkSum, data, Listen, Transfer, dataSize, memAddr, loadFile, flagAddr
+    global checkSum, data, Listen, Transfer, dataSize, memAddr, loadFile, flagAddr, levelId
     
     memAddr = ""
 
@@ -434,6 +438,8 @@ def resetListener():
     dataSize = 0
     
     Transfer = 0
+    
+    levelId  = 0
     
     Listen = 1
 
@@ -559,7 +565,7 @@ def main(args):
                     
                     "File   : " + loadFile + "\n" +
                     
-                    "Bin    : " + binFileName + "ID : " + str(levelId)
+                    "Bin    : " + binFileName + " - ID : " + str(levelId)
             
                      )
             
@@ -596,6 +602,12 @@ def main(args):
             SendBin( data, memAddr )
 
             # Set level changed flag 
+            
+            if DEBUG:
+                
+                print("Sending value " + str( levelId.to_bytes(1, byteorder='little', signed=False) ) + " to " + flagAddr )
+            
+            time.sleep( sleepTime )
             
             SendBin( levelId.to_bytes(1, byteorder='little', signed=False) , flagAddr)
             
