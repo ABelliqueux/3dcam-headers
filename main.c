@@ -31,7 +31,7 @@
 #include "space.h"
 //~ #include "pcdrv.h"
 
-#define USECD
+//~ #define USECD
 
 // START OVERLAY
 
