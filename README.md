@@ -19,14 +19,14 @@ Real-time 3D / 8bpp background / 4bpp background
   
 ### "Engine"
 
-  * Very basic physics / collision detection
-  * Constrained camera trajectory
-  * Orbital camera mode
-  * Basic Spatial partitioning
-  * Portal based camera angle switch
-  * 3D sprite
-  * VRam auto layout for TIMs
-
+  * UV textured models
+  * Vertex painted models
+  * Multiple camera modes
+  * Vertex animations
+  * Up to 3 light sources
+  * Use pre-rendered backgrounds (8bpp and 4bpp)
+  * Basic collisions
+  
 ## Planned
 
   * Fix and improve all the things !
