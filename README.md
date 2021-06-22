@@ -2,11 +2,11 @@
 
 This a WIP PSX 3d engine. Use this with the [companion blender exporter](https://github.com/ABelliqueux/blender_io_export_psx_mesh) to create levels for the engine.
 
-![3d scene](https://github.com/ABelliqueux/blender_io_export_psx_mesh/blob/main/gif/3d.gif)
-![pre-rendered BGs](https://github.com/ABelliqueux/blender_io_export_psx_mesh/blob/main/gif/precalc.gif)
-![Push things](https://github.com/ABelliqueux/blender_io_export_psx_mesh/blob/main/gif/push.gif)
-![Sprite](https://github.com/ABelliqueux/blender_io_export_psx_mesh/blob/main/gif/sprite.gif)
-![Vertex animation](https://github.com/ABelliqueux/blender_io_export_psx_mesh/blob/main/gif/vertexanim.gif)
+![3d scene](https://wiki.arthus.net/assets/3d.gif)
+![pre-rendered BGs](https://wiki.arthus.net/assets/precalc.gif)
+![Push things](https://wiki.arthus.net/assets/push.gif)
+![Sprite](https://wiki.arthus.net/assets/sprite.gif)
+![Vertex animation](https://wiki.arthus.net/assets/vertexanim.gif)
 
 More video samples [here.](https://tube.fdn.fr/video-channels/psxdev/videos)
 
@@ -14,7 +14,7 @@ More video samples [here.](https://tube.fdn.fr/video-channels/psxdev/videos)
 
 **Be warned this is WIP** !
 
-![comparison](https://github.com/ABelliqueux/blender_io_export_psx_mesh/blob/main/gif/rt-8b-4b.gif)  
+![comparison](https://wiki.arthus.net/assets/rt-8b-4b.gif)  
 Real-time 3D / 8bpp background / 4bpp background
   
 ### "Engine"
