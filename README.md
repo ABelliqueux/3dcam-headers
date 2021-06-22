@@ -1,5 +1,3 @@
-![Pic or it didn't happen](blender-psx.jpg)
-
 # 3dcam PSX engine
 
 This a WIP PSX 3d engine. Use this with the [companion blender exporter](https://github.com/ABelliqueux/blender_io_export_psx_mesh) to create levels for the engine.
