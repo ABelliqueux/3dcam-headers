@@ -8,11 +8,13 @@ This a WIP PSX 3d engine. Use this with the [companion blender exporter](https:/
 ![Sprite](https://github.com/ABelliqueux/blender_io_export_psx_mesh/blob/main/gif/sprite.gif)
 ![Vertex animation](https://github.com/ABelliqueux/blender_io_export_psx_mesh/blob/main/gif/vertexanim.gif)
 
+More video samples [here.](https://tube.fdn.fr/video-channels/psxdev/videos)
+
 ## Features
 
 **Be warned this is WIP** !
 
-![comparison](gif/rt-8b-4b.gif)  
+![comparison](https://github.com/ABelliqueux/blender_io_export_psx_mesh/blob/main/gif/rt-8b-4b.gif)  
 Real-time 3D / 8bpp background / 4bpp background
   
 ### "Engine"
