@@ -47,8 +47,6 @@ cd /pcsx-redux/src/mips/3dcam-headers
   
 # Credits
 
-Based on the [code](https://pastebin.com/suU9DigB) provided by TheDukeOfZill, 04-2014, on http://www.psxdev.net/forum/viewtopic.php?f=64&t=537#p4088  
 PSX code based on [example](http://psx.arthus.net/code/primdraw.7z) by [Lameguy64](https://github.com/Lameguy64)  
-pngquant : [https://github.com/kornelski/pngquant](https://github.com/kornelski/pngquant)  
-img2tim : [https://github.com/Lameguy64/img2tim](https://github.com/Lameguy64/img2tim)  
-Freeimage : [https://freeimage.sourceforge.io/](https://freeimage.sourceforge.io/)  
+An incredible amount of help from the good fellows at the [psxdev discord](https://discord.com/invite/EnaNgrqJ?utm_source=Discord%20Widget&utm_medium=Connect),  
+Including but not limited to @NicolasNoble, @Lameguy64, @Impiaa, @paul, @sickle, @danhans42...
