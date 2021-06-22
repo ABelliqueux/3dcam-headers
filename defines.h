@@ -40,7 +40,7 @@
 
 #define OT2LEN 8
                  
-#define OTLEN	    768	
+#define OTLEN	    768
 
 #define PRIMBUFFLEN	4096 * sizeof(POLY_GT4)	    // Maximum number of POLY_GT3 primitives
 

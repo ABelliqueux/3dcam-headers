@@ -5,8 +5,8 @@
 // @Impiaa
 // @paul
 
-		
- /*		   PSX screen coordinate system 
+        
+ /*        PSX screen coordinate system 
  *
  *                           Z+
  *                          /
@@ -15,7 +15,7 @@
  *                       /|
  *                      / |
  *                     /  Y+
- *                   eye		*/
+ *                   eye        */
 
 // Blender debug mode
 // bpy. app. debug = True 
@@ -29,7 +29,6 @@
 #include "physics.h"
 #include "graphics.h"
 #include "space.h"
-//~ #include "pcdrv.h"
 
 #define USECD
 
@@ -42,34 +41,6 @@ extern u_long __lvl0_end;
 extern u_long __lvl1_end;
 
 u_long overlaySize = 0;
-
-//~ #define LLEVEL 0
-
-//#define USE_POINTER
-
-//~ #if LLEVEL == 0
-
-    //~ static const char*const overlayFile = "\\level0.bin;1";
-
-//~ #else
-
-    //~ static const char*const overlayFile = "\\level1.bin;1";
-
-//~ #endif
-
-//~ #ifdef USE_POINTER
-
-//~ #if LEVEL == 0
-  //~ #include "levels/level.h"
-//~ #else
-  //~ #include "levels/level1.h"
-//~ #endif
-
-//~ #else
-  //~ #define str (char*)(&__load_start_ovly0)
-//~ #endif
-
-// END OVERLAY
 
 #include "levels/level0.h"
 
@@ -99,27 +70,27 @@ u_long otdisc[2][OT2LEN] = {0};
 
 // Main OT
 
-u_long	    ot[2][OTLEN]  = {0};   		        // Ordering table (contains addresses to primitives)
+u_long      ot[2][OTLEN]  = {0};                // Ordering table (contains addresses to primitives)
 
-char	primbuff[2][PRIMBUFFLEN] = {0};	        // Primitive list // That's our prim buffer
+char    primbuff[2][PRIMBUFFLEN] = {0};         // Primitive list // That's our prim buffer
 
-int		    primcnt=0;			            // Primitive counter
+int         primcnt=0;                      // Primitive counter
 
-char * nextpri = primbuff[0];			        // Primitive counter
+char * nextpri = primbuff[0];                   // Primitive counter
 
-char		    db	= 0;                        // Current buffer counter
+char            db  = 0;                        // Current buffer counter
 
 
 CVECTOR BGc = {50, 50, 75, 0};                  // Far color
 
-VECTOR BKc = {128, 128, 128, 0};                // Back color	
+VECTOR BKc = {128, 128, 128, 0};                // Back color   
 
-MATRIX		rotlgt;	
+MATRIX      rotlgt; 
 
-SVECTOR	    lgtang = {0, 0, 0};	
+SVECTOR     lgtang = {0, 0, 0}; 
 
-MATRIX		light;
-	
+MATRIX      light;
+    
 short vs;
 
 CAMERA camera = {0};
@@ -142,7 +113,7 @@ u_short timer = 0;
 
 // Cam stuff 
 
-int camMode = 2;
+int camMode = FIXED;
 
 VECTOR angle     = {250,0,0,0};
 
@@ -183,27 +154,27 @@ VECTOR modelPlan_pos = {0};
 LEVEL curLvl = {
     
     &cmat,
-	
+    
     &lgtmat,
-	
+    
     (MESH **)&meshes,
-	
+    
     &meshes_length,
-	
+    
     &actorPtr,
-	
+    
     &levelPtr,
-	
+    
     &propPtr,
-	
+    
     &camPtr,
-	
+    
     &camPath,
-	
+    
     (CAMANGLE **)&camAngles,
-	
+    
     &curNode,
-	
+    
     &meshPlan
 };
 
@@ -265,18 +236,18 @@ int main() {
     
     // FIXME : Poly subdiv
     
-    //~ DIVPOLYGON4	div4 = { 0 };
+    //~ DIVPOLYGON4 div4 = { 0 };
     //~ div4.pih = SCREENXRES;
-	//~ div4.piv = SCREENYRES;
+    //~ div4.piv = SCREENYRES;
     //~ div4.ndiv = 2;
     //~ long OTc = 0;
     
-    //~ DIVPOLYGON3	div3 = { 0 };
+    //~ DIVPOLYGON3 div3 = { 0 };
     //~ div3.pih = SCREENXRES;
-	//~ div3.piv = SCREENYRES;
+    //~ div3.piv = SCREENYRES;
     //~ div3.ndiv = 1;
     
-	init(disp, draw, db, curLvl.cmat, &BGc, &BKc);
+    init(disp, draw, db, curLvl.cmat, &BGc, &BKc);
     
     InitPAD(controllers[0].pad, 34, controllers[1].pad, 34);
     
@@ -355,8 +326,8 @@ int main() {
         }
     }
     
-	// Main loop
-	
+    // Main loop
+    
     //~ while (1) {
     
     while ( VSync(1) ) {
@@ -403,7 +374,7 @@ int main() {
             
             #endif
             
-            SwitchLevel( overlayFile, &load_all_overlays_here, &curLvl, loadLvl);
+            SwitchLevel( &curLvl, loadLvl);
                          
             //~ levelHasChanged = 0;
             levelWas = level;
@@ -414,9 +385,9 @@ int main() {
         //~ FntPrint("%x\n", curLvl.actorPtr->tim);
         
         // Clear the main OT
-		
+        
         ClearOTagR(otdisc[db], OT2LEN);
-		
+        
         // Clear Secondary OT
         
         ClearOTagR(ot[db], OTLEN);
@@ -1073,7 +1044,7 @@ int main() {
         
         // Find and apply light rotation matrix
 
-        RotMatrix(&lgtang, &rotlgt);	
+        RotMatrix(&lgtang, &rotlgt);    
 
         MulMatrix0(curLvl.lgtmat, &rotlgt, &light);
 
@@ -1102,13 +1073,13 @@ int main() {
         //~ FntPrint(" %d %d %d\n", wp.vx, wp.vy, wp.vz);
         
         FntFlush(-1);
-		
-		display( &disp[db], &draw[db], otdisc[db], primbuff[db], &nextpri, &db);
-		//~ display(disp, draw, otdisc[db], primbuff[db], nextpri, db);
+        
+        display( &disp[db], &draw[db], otdisc[db], primbuff[db], &nextpri, &db);
+        //~ display(disp, draw, otdisc[db], primbuff[db], nextpri, db);
         
         //~ frame = VSync(-1);
 
-	}
+    }
     return 0;
 }
 

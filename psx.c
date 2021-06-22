@@ -16,23 +16,23 @@ void init(DISPENV disp[2], DRAWENV draw[2], short db, MATRIX * cmat, CVECTOR * B
     
     ResetGraph( 0 );
 
-	// Initialize and setup the GTE
-	
+    // Initialize and setup the GTE
+    
     InitGeom();
-	
+    
     SetGeomOffset( CENTERX, CENTERY );        // x, y offset
-	
+    
     SetGeomScreen( FOV );            // Distance between eye and screen  - Camera FOV
-	
+    
     // Set the display and draw environments
-	
+    
     SetDefDispEnv(&disp[0], 0, 0         , SCREENXRES, SCREENYRES);
-	
+    
     SetDefDispEnv(&disp[1], 0, SCREENYRES, SCREENXRES, SCREENYRES);
     
-	
+    
     SetDefDrawEnv(&draw[0], 0, SCREENYRES, SCREENXRES, SCREENYRES);
-	
+    
     SetDefDrawEnv(&draw[1], 0, 0, SCREENXRES, SCREENYRES);
     
     
@@ -46,7 +46,7 @@ void init(DISPENV disp[2], DRAWENV draw[2], short db, MATRIX * cmat, CVECTOR * B
         
         disp[1].screen.y += 8;
     }
-	
+    
     // Set Draw area color
     
     setRGB0(&draw[0], BGc->r, BGc->g, BGc->b);
@@ -63,13 +63,13 @@ void init(DISPENV disp[2], DRAWENV draw[2], short db, MATRIX * cmat, CVECTOR * B
 
     PutDispEnv(&disp[db]);
 
-	PutDrawEnv(&draw[db]);
-		
-	// Init font system
+    PutDrawEnv(&draw[db]);
+        
+    // Init font system
 
-	FntLoad(FNT_VRAM_X, FNT_VRAM_Y);
+    FntLoad(FNT_VRAM_X, FNT_VRAM_Y);
 
-	FntOpen( FNT_SCR_X,
+    FntOpen( FNT_SCR_X,
              
              FNT_SCR_Y, 
              
@@ -177,9 +177,9 @@ void LvlPtrSet(LEVEL * curLevel, LEVEL * level){
 int LoadLevelCD(const char*const LevelName, u_long * LoadAddress){
     
     int cdread = 0, cdsync = 1;
-    	
-	cdread = CdReadFile( (char *)(LevelName), LoadAddress, 0);
-	
+        
+    cdread = CdReadFile( (char *)(LevelName), LoadAddress, 0);
+    
     cdsync = CdReadSync(0, 0);
     
     // return loaded size
@@ -187,7 +187,7 @@ int LoadLevelCD(const char*const LevelName, u_long * LoadAddress){
     return cdread;
 };
 
-void SwitchLevel(const char*const LevelName,  u_long * LoadAddress, LEVEL * curLevel, LEVEL * loadLevel ){
+void SwitchLevel( LEVEL * curLevel, LEVEL * loadLevel ){
     
     //~ ScrRst();
         
@@ -211,20 +211,20 @@ void SwitchLevel(const char*const LevelName,  u_long * LoadAddress, LEVEL * curL
 };
 
 void LoadTexture(u_long * tim, TIM_IMAGE * tparam){     // This part is from Lameguy64's tutorial series : lameguy64.net/svn/pstutorials/chapter1/3-textures.html login/pw: annoyingmous
-		
+        
         OpenTIM(tim);                                   // Open the tim binary data, feed it the address of the data in memory
-		
+        
         ReadTIM(tparam);                                // This read the header of the TIM data and sets the corresponding members of the TIM_IMAGE structure
-		
+        
         LoadImage(tparam->prect, tparam->paddr);        // Transfer the data from memory to VRAM at position prect.x, prect.y
-		
+        
         DrawSync(0);                                    // Wait for the drawing to end
-		
-		if (tparam->mode & 0x8){ // check 4th bit       // If 4th bit == 1, TIM has a CLUT
-		
-        	LoadImage(tparam->crect, tparam->caddr);    // Load it to VRAM at position crect.x, crect.y
-		
-        	DrawSync(0);                                // Wait for drawing to end
-	}
+        
+        if (tparam->mode & 0x8){ // check 4th bit       // If 4th bit == 1, TIM has a CLUT
+        
+            LoadImage(tparam->crect, tparam->caddr);    // Load it to VRAM at position crect.x, crect.y
+        
+            DrawSync(0);                                // Wait for drawing to end
+    }
 
 };

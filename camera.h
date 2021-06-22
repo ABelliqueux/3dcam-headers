@@ -3,6 +3,14 @@
 #include <sys/types.h>
 #include <libgte.h>
 
+// Camera modes
+#define ACTOR  0
+#define ROTATE 1
+#define FIXED  2
+#define TRACK  3
+#define FLYCAM 4
+#define FOLLOW 5
+
 typedef struct{
     
     int x, xv;                                 // x: current value += xv : new value 
