@@ -37,10 +37,13 @@ Real-time 3D / 8bpp background / 4bpp background
 You need to install [mkpsxiso](https://github.com/Lameguy64/mkpsxiso) and the [pcsx-redux emulator and Nugget+PsyQ SDK](https://github.com/ABelliqueux/nolibgs_hello_worlds#setting-up-the-sdk--modern-gcc--psyq-aka-nuggetpsyq) before
 you can build the engine. Put `mkpsxiso` and `pcsx-redux` in your $PATH and you should be good to go.
 
-  1. Clone this repo in `(...)/pcsx-redux/src/mips/`
+  1. Clone this repo in `(...)/pcsx-redux/src/mips/` as a new project :
+```bash
+git clone https://github.com/ABelliqueux/3dcam-headers my-project
+```
   2. Navigate to that folder in a terminal :
 ```bash
-cd /pcsx-redux/src/mips/3dcam-headers
+cd /pcsx-redux/src/mips/my-project
 ```
   3. Type `./isotest.sh`. This should compile the example, build an iso with `mkpsxiso` and launch it with `pcsx-redux`.
   4. Install the [blender extension](https://github.com/ABelliqueux/blender_io_export_psx_mesh) to create your own levels.

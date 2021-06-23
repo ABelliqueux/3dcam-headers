@@ -1,14 +1,14 @@
 TARGET = main
 TYPE = ps-exe
 
-SRCS = main.c \
-pad.c \
-math.c \
-camera.c \
-physics.c \
-graphics.c \
-psx.c \
-space.c \
+SRCS = src/main.c \
+src/pad.c \
+src/math.c \
+src/camera.c \
+src/physics.c \
+src/graphics.c \
+src/psx.c \
+src/space.c \
 levels/level0.c \
 levels/level1.c \
 ../common/crt0/crt0.s \
