@@ -73,7 +73,7 @@ Controller_Data theControllers[8];  // Processed controller data
 int pressed = 0;
 u_short timer = 0;
 // Cam stuff 
-int camMode = FIXED;
+int camMode = ACTOR;
 VECTOR angle     = {250,0,0,0};
 VECTOR angleCam  = {0,0,0,0};
 int dist      = 150; 
