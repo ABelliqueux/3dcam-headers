@@ -46,7 +46,7 @@ u_long overlaySize = 0;
 
 #include "levels/level1.h"
 
-volatile u_char level = 1;
+volatile u_char level = 0;
 
 // level 1 : 8003F05C -2147225508
 // level 0 : 800AF744 -2146764988
@@ -153,6 +153,8 @@ VECTOR modelPlan_pos = {0};
 
 LEVEL curLvl = {
     
+    &BGc,
+    
     &cmat,
     
     &lgtmat,
@@ -247,7 +249,7 @@ int main() {
     //~ div3.piv = SCREENYRES;
     //~ div3.ndiv = 1;
     
-    init(disp, draw, db, curLvl.cmat, &BGc, &BKc);
+    init(disp, draw, db, curLvl.cmat, curLvl.BGc, &BKc);
     
     InitPAD(controllers[0].pad, 34, controllers[1].pad, 34);
     

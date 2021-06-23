@@ -141,6 +141,8 @@ void display(DISPENV * disp, DRAWENV * draw, u_long * otdisc, char * primbuff, c
 
 void LvlPtrSet(LEVEL * curLevel, LEVEL * level){
 
+    curLevel->BGc = level->BGc;
+    
     curLevel->cmat = level->cmat;
     
     curLevel->lgtmat  = level->lgtmat;
