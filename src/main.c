@@ -36,7 +36,9 @@ u_long overlaySize = 0;
 #include "../levels/level0.h"
 #include "../levels/level1.h"
 
-volatile u_char level = 0;
+//FIXME : Refresh BGc, lightmatrix on ovly upload...
+
+volatile u_char level = 1;
 // level 1 : 8003F05C -2147225508
 // level 0 : 800AF744 -2146764988
 //           80010000 -2147418112 -> -2147483648
