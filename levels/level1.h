@@ -4,6 +4,8 @@
 
 extern CVECTOR level1_BGc;                  // Far color
 
+extern VECTOR level1_BKc;
+
 extern LEVEL level1;
 
 extern CAMPOS level1_camPos_camPath;

@@ -2,6 +2,8 @@
 
 CVECTOR level1_BGc = {150, 50, 75, 0};                  // Far color
 
+VECTOR level1_BKc = {128, 128, 128, 0};
+
 CAMPOS level1_camPos_camPath = {
     { -205,156,-17 },
     { 371,707,0 }
@@ -10007,7 +10009,7 @@ MESH level1_meshSphere_001 = {
     {0,0,0},
     1,
     0,
-    0,
+    1,
     0,
     0,
     0,
@@ -10994,6 +10996,7 @@ NODE * level1_curNode =  &level1_nodegnd_002;
 
 LEVEL level1 = {
     &level1_BGc,
+    &level1_BKc,
     &level1_cmat,
     &level1_lgtmat,
     (MESH**)&level1_meshes,

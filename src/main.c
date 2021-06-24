@@ -38,7 +38,7 @@ u_long overlaySize = 0;
 
 //FIXME : Refresh BGc, lightmatrix on ovly upload...
 
-volatile u_char level = 1;
+volatile u_char level = 0;
 // level 1 : 8003F05C -2147225508
 // level 0 : 800AF744 -2146764988
 //           80010000 -2147418112 -> -2147483648
@@ -57,7 +57,7 @@ char    primbuff[2][PRIMBUFFLEN] = {0};         // Primitive list // That's our 
 int         primcnt=0;                      // Primitive counter
 char * nextpri = primbuff[0];                   // Primitive counter
 char            db  = 0;                        // Current buffer counter
-CVECTOR BGc = {50, 50, 75, 0};                  // Far color
+CVECTOR BGc = {128, 128, 128, 0};                  // Default Far color - This can be set in each level.
 VECTOR BKc = {128, 128, 128, 0};                // Back color   
 MATRIX      rotlgt; 
 SVECTOR     lgtang = {0, 0, 0}; 
@@ -94,6 +94,7 @@ MESH   meshPlan = {0};
 VECTOR modelPlan_pos = {0};
 LEVEL curLvl = {
     &BGc,
+    &BKc,
     &cmat,
     &lgtmat,
     (MESH **)&meshes,
@@ -146,7 +147,7 @@ int main() {
     //~ div3.pih = SCREENXRES;
     //~ div3.piv = SCREENYRES;
     //~ div3.ndiv = 1;
-    init(disp, draw, db, curLvl.cmat, curLvl.BGc, &BKc);
+    init(disp, draw, db, curLvl.cmat, curLvl.BGc, curLvl.BKc);
     InitPAD(controllers[0].pad, 34, controllers[1].pad, 34);
     StartPAD();
     generateTable();
@@ -210,6 +211,7 @@ int main() {
               LoadLevelCD( overlayFile, &load_all_overlays_here );
             #endif
             SwitchLevel( &curLvl, loadLvl);
+            setLightEnv(draw, curLvl.BGc, curLvl.BKc, curLvl.cmat);
             //~ levelHasChanged = 0;
             levelWas = level;
         }

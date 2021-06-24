@@ -139,19 +139,19 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                     if ( mesh->isSprite ) { 
                         SetShadeTex( poly, 1 );
                     }
-                    // Defaults depth color to neutral grey
-                    CVECTOR outCol  = { 128,128,128,0 };
-                    CVECTOR outCol1 = { 128,128,128,0 };
-                    CVECTOR outCol2 = { 128,128,128,0 };
-                    NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vx ], &mesh->tmesh->c[ mesh->index[t].order.vx ], mesh->p, &outCol);
-                    NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vz ], &mesh->tmesh->c[ mesh->index[t].order.vz ], mesh->p, &outCol1);
-                    NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vy ], &mesh->tmesh->c[ mesh->index[t].order.vy ], mesh->p, &outCol2);                           
+                    // Init to 0
+                    CVECTOR outCol  = { 0,0,0,0 };
+                    CVECTOR outCol1 = { 0,0,0,0 };
+                    CVECTOR outCol2 = { 0,0,0,0 };
+                    NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vx ], &mesh->tmesh->c[ i+0 ], mesh->p, &outCol);
+                    NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vz ], &mesh->tmesh->c[ i+2 ], mesh->p, &outCol1);
+                    NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vy ], &mesh->tmesh->c[ i+1 ], mesh->p, &outCol2);                           
                     // If transparent effect is in use, inhibit shadows
                     if (mesh->isPrism){ 
                         // Use un-interpolated (i.e: no light, no fog) colors
                         setRGB0(poly, mesh->tmesh->c[i].r,   mesh->tmesh->c[i].g, mesh->tmesh->c[i].b);
-                        setRGB1(poly, mesh->tmesh->c[i+1].r, mesh->tmesh->c[i+1].g, mesh->tmesh->c[i+1].b);
-                        setRGB2(poly, mesh->tmesh->c[i+2].r, mesh->tmesh->c[i+2].g, mesh->tmesh->c[i+2].b);
+                        setRGB1(poly, mesh->tmesh->c[i+2].r, mesh->tmesh->c[i+2].g, mesh->tmesh->c[i+2].b);
+                        setRGB2(poly, mesh->tmesh->c[i+1].r, mesh->tmesh->c[i+1].g, mesh->tmesh->c[i+1].b);
                     } else {
                         setRGB0(poly, outCol.r, outCol.g  , outCol.b);
                         setRGB1(poly, outCol1.r, outCol1.g, outCol1.b);
@@ -325,24 +325,28 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                                     mesh->tim->crect->y
                             );
                         }
-                        CVECTOR outCol  = {128,128,128,0};
-                        CVECTOR outCol1 = {128,128,128,0};
-                        CVECTOR outCol2 = {128,128,128,0};
-                        CVECTOR outCol3 = {128,128,128,0};
-                        NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.pad ] , &mesh->tmesh->c[ mesh->index[t].order.pad ], mesh->p, &outCol);
-                        NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vz ], &mesh->tmesh->c[ mesh->index[t].order.vz ], mesh->p, &outCol1);
-                        NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vx ], &mesh->tmesh->c[ mesh->index[t].order.vx ], mesh->p, &outCol2);
-                        NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vy ], &mesh->tmesh->c[  mesh->index[t].order.vy ], mesh->p, &outCol3);
+                        CVECTOR outCol  = {0,0,0,0};
+                        CVECTOR outCol1 = {0,0,0,0};
+                        CVECTOR outCol2 = {0,0,0,0};
+                        CVECTOR outCol3 = {0,0,0,0};
+                        NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.pad ] , &mesh->tmesh->c[ i+3 ], mesh->p, &outCol);
+                        NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vz ]  , &mesh->tmesh->c[ i+2 ], mesh->p, &outCol1);
+                        NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vx ]  , &mesh->tmesh->c[ i+0 ], mesh->p, &outCol2);
+                        NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vy ]  , &mesh->tmesh->c[ i+1 ], mesh->p, &outCol3);
                     if (mesh->isPrism){ 
-                        setRGB0(poly4, mesh->tmesh->c[i].r, mesh->tmesh->c[i].g, mesh->tmesh->c[i].b);
-                        setRGB1(poly4, mesh->tmesh->c[i+1].r, mesh->tmesh->c[i+1].g, mesh->tmesh->c[i+1].b);
-                        setRGB2(poly4, mesh->tmesh->c[i+2].r, mesh->tmesh->c[i+2].g, mesh->tmesh->c[i+2].b);
-                        setRGB3(poly4, mesh->tmesh->c[i+3].r, mesh->tmesh->c[i+3].g, mesh->tmesh->c[i+3].b);
+                        setRGB0(poly4, mesh->tmesh->c[i+3].r, mesh->tmesh->c[i+3].g, mesh->tmesh->c[i+3].b);
+                        setRGB1(poly4, mesh->tmesh->c[i+2].r, mesh->tmesh->c[i+2].g, mesh->tmesh->c[i+2].b);
+                        setRGB2(poly4, mesh->tmesh->c[i+0].r, mesh->tmesh->c[i+0].g, mesh->tmesh->c[i+0].b);
+                        setRGB3(poly4, mesh->tmesh->c[i+1].r, mesh->tmesh->c[i+1].g, mesh->tmesh->c[i+1].b);
                     } else {
                         setRGB0(poly4, outCol.r, outCol.g  , outCol.b);
                         setRGB1(poly4, outCol1.r, outCol1.g, outCol1.b);
                         setRGB2(poly4, outCol2.r, outCol2.g, outCol2.b);
                         setRGB3(poly4, outCol3.r, outCol3.g, outCol3.b);
+                        //~ setRGB0(poly4, mesh->tmesh->c[i+3].r, mesh->tmesh->c[i+3].g, mesh->tmesh->c[i+3].b);
+                        //~ setRGB1(poly4, mesh->tmesh->c[i+2].r, mesh->tmesh->c[i+2].g, mesh->tmesh->c[i+2].b);
+                        //~ setRGB2(poly4, mesh->tmesh->c[i+0].r, mesh->tmesh->c[i+0].g, mesh->tmesh->c[i+0].b);
+                        //~ setRGB3(poly4, mesh->tmesh->c[i+1].r, mesh->tmesh->c[i+1].g, mesh->tmesh->c[i+1].b);
                     } 
                     if ( (mesh->OTz > 0) /*&& (*mesh->OTz < OTLEN)*/ && (mesh->p < 4096) ) {
                         AddPrim( &ot[ mesh->OTz-3 ], poly4 );      

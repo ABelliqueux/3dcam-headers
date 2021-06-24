@@ -1,5 +1,17 @@
 #include "../include/psx.h"
 
+void setLightEnv(DRAWENV draw[2], CVECTOR * BGc, VECTOR * BKc, MATRIX * cmat){
+    // Set Draw area color
+    setRGB0(&draw[0], BGc->r, BGc->g, BGc->b);
+    setRGB0(&draw[1], BGc->r, BGc->g, BGc->b);
+    // Set Farcolor from here
+    //~ SetFarColor( BGc->r, BGc->g, BGc->b );
+    // Set Ambient color
+    SetBackColor( BKc->vx, BKc->vy, BKc->vz );
+    // Set Light matrix
+    SetColorMatrix(cmat);
+};
+
 void init(DISPENV disp[2], DRAWENV draw[2], short db, MATRIX * cmat, CVECTOR * BGc, VECTOR * BKc) {
     ResetCallback();
     // Init pad
@@ -24,8 +36,8 @@ void init(DISPENV disp[2], DRAWENV draw[2], short db, MATRIX * cmat, CVECTOR * B
         disp[1].screen.y += 8;
     }
     // Set Draw area color
-    setRGB0(&draw[0], BGc->r, BGc->g, BGc->b);
-    setRGB0(&draw[1], BGc->r, BGc->g, BGc->b);
+    setLightEnv(draw, BGc, BKc, cmat);
+    
     // Set Draw area clear flag
     draw[0].isbg = 1;
     draw[1].isbg = 1;
@@ -41,10 +53,12 @@ void init(DISPENV disp[2], DRAWENV draw[2], short db, MATRIX * cmat, CVECTOR * B
              FNT_SCR_BG,
              FNT_SCR_MAX_CHAR
             );
-    // Lighting setup
-    SetColorMatrix( cmat );
-    SetBackColor( BKc->vx, BKc->vy, BKc->vz );
-    SetFarColor( BGc->r, BGc->g, BGc->b );
+    // TODO : Move these to level files
+    SetFarColor( 128, 128, 128 );
+    //~ // Set Ambient color
+    //~ SetBackColor( BKc->vx, BKc->vy, BKc->vz );
+    //~ // Set Light matrix
+    //~ SetColorMatrix(cmat);
     SetFogNearFar( FOG_NEAR, FOG_FAR, SCREENXRES );
 };
 void ScrRst(void){
@@ -71,6 +85,7 @@ void display(DISPENV * disp, DRAWENV * draw, u_long * otdisc, char * primbuff, c
 };
 void LvlPtrSet(LEVEL * curLevel, LEVEL * level){
     curLevel->BGc = level->BGc;
+    curLevel->BKc = level->BKc;
     curLevel->cmat = level->cmat;
     curLevel->lgtmat  = level->lgtmat;
     curLevel->meshes  = level->meshes;

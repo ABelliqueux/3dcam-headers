@@ -4,9 +4,9 @@
 
 extern LEVEL level0;
 
-extern CVECTOR level0_BGc;;
+extern CVECTOR level0_BGc;
 
-extern VECTOR level0_BKc;;
+extern VECTOR level0_BKc;
 
 extern CAMPOS level0_camPos_Camera;
 
@@ -71,4 +71,3 @@ extern CAMANGLE * level0_camPtr;
 extern NODE * level0_curNode;
 
 extern NODE level0_nodePlane;
-
