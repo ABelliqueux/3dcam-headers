@@ -10005,6 +10005,7 @@ MESH level1_meshSphere_001 = {
     0,
     0,
     0,
+    0,
     &level1_modelSphere_001_body,
     0,
     &level1_nodegnd,

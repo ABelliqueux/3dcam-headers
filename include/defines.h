@@ -25,8 +25,8 @@
 #define PRIMBUFFLEN 4096 * sizeof(POLY_GT4)     // Maximum number of POLY_GT3 primitives
 
 // Fog
-#define FOG_NEAR 1300
-#define FOG_FAR  1600
+#define FOG_NEAR 2300
+#define FOG_FAR  2600
 
 // Physics
 #define GRAVITY 10

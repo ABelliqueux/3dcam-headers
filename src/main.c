@@ -492,11 +492,11 @@ int main() {
                         if (col_sphere_act.vx && col_sphere_act.vz ) {
                             curLvl.propPtr->body->velocity.vx += curLvl.actorPtr->body->velocity.vx;
                             curLvl.propPtr->body->velocity.vz += curLvl.actorPtr->body->velocity.vz;
-                            if ( curLvl.propPtr->body->velocity.vx ) {
+                            if ( curLvl.propPtr->isRound && curLvl.propPtr->body->velocity.vx ) {
                                 VECTOR L = angularMom( *curLvl.propPtr->body );
                                 curLvl.propPtr->rot.vz -= L.vx;
                             }
-                            if ( curLvl.propPtr->body->velocity.vz ) {
+                            if ( curLvl.propPtr->isRound && curLvl.propPtr->body->velocity.vz ) {
                                 VECTOR L = angularMom( *curLvl.propPtr->body );
                                 curLvl.propPtr->rot.vx -= L.vz;
                             }
