@@ -46,6 +46,10 @@ git clone https://github.com/ABelliqueux/3dcam-headers my-project
 cd /pcsx-redux/src/mips/my-project
 ```
   3. Type `./isotest.sh`. This should compile the example, build an iso with `mkpsxiso` and launch it with `pcsx-redux`.
+  On first launch, `pcsx-redux` will ask for a PSX bios. You can use your own or [the open source OpenBios](https://github.com/grumpycoders/pcsx-redux/tree/main/src/mips/openbios).  
+  A [prebuilt binary](http://psx.arthus.net/roms/bios/openbios.bin) is available here for convenience.  
+  Set it in pcsx-redux ; `Configuration > Emulation`, then reboot the emulator ; `File > Reboot`. 
+  
   4. Install the [blender extension](https://github.com/ABelliqueux/blender_io_export_psx_mesh) to create your own levels.
   
 # Credits
