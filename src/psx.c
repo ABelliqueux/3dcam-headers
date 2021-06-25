@@ -5,7 +5,7 @@ void setLightEnv(DRAWENV draw[2], CVECTOR * BGc, VECTOR * BKc, MATRIX * cmat){
     setRGB0(&draw[0], BGc->r, BGc->g, BGc->b);
     setRGB0(&draw[1], BGc->r, BGc->g, BGc->b);
     // Set Farcolor from here
-    //~ SetFarColor( BGc->r, BGc->g, BGc->b );
+    SetFarColor( BGc->r, BGc->g, BGc->b );
     // Set Ambient color
     SetBackColor( BKc->vx, BKc->vy, BKc->vz );
     // Set Light matrix
@@ -53,12 +53,7 @@ void init(DISPENV disp[2], DRAWENV draw[2], short db, MATRIX * cmat, CVECTOR * B
              FNT_SCR_BG,
              FNT_SCR_MAX_CHAR
             );
-    // TODO : Move these to level files
-    SetFarColor( 128, 128, 128 );
-    //~ // Set Ambient color
-    //~ SetBackColor( BKc->vx, BKc->vy, BKc->vz );
-    //~ // Set Light matrix
-    //~ SetColorMatrix(cmat);
+    // TODO : Move this to level files
     SetFogNearFar( FOG_NEAR, FOG_FAR, SCREENXRES );
 };
 void ScrRst(void){

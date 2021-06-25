@@ -36,8 +36,6 @@ u_long overlaySize = 0;
 #include "../levels/level0.h"
 #include "../levels/level1.h"
 
-//FIXME : Refresh BGc, lightmatrix on ovly upload...
-
 volatile u_char level = 0;
 // level 1 : 8003F05C -2147225508
 // level 0 : 800AF744 -2146764988
@@ -60,7 +58,10 @@ char            db  = 0;                        // Current buffer counter
 CVECTOR BGc = {128, 128, 128, 0};                  // Default Far color - This can be set in each level.
 VECTOR BKc = {128, 128, 128, 0};                // Back color   
 MATRIX      rotlgt; 
+MATRIX      rotactor; 
 SVECTOR     lgtang = {0, 0, 0}; 
+SVECTOR     invang = {0, 0, 0}; 
+SVECTOR     actorang = {0, 0, 0}; 
 MATRIX      light;
 short vs;
 CAMERA camera = {0};
@@ -561,7 +562,12 @@ int main() {
             }    
         }
         // Find and apply light rotation matrix
-        RotMatrix(&lgtang, &rotlgt);    
+        
+        // Update light rotation on actor
+        // Find rotmat from actor angle
+        RotMatrix_gte(&curLvl.actorPtr->rot, &rotactor);     
+        RotMatrix_gte(&lgtang, &rotlgt);  
+        MulMatrix0(&rotactor, &rotlgt, &rotlgt);
         MulMatrix0(curLvl.lgtmat, &rotlgt, &light);
         SetLightMatrix(&light);
         // Set camera
