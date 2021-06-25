@@ -26,6 +26,16 @@ Real-time 3D / 8bpp background / 4bpp background
   * Up to 3 light sources
   * Use pre-rendered backgrounds (8bpp and 4bpp)
   * Basic collisions
+
+### Demo Controls
+
+ * L1, L2 : rotate light matrix.
+ * R1     : Change camera mode.
+ * R3 (Dualshock) : Rotate camera in orbital mode.
+ * Up, Down, Left Right, L3 (Dualshock) : Move actor.
+ * X      : "Jump" .
+ * Select : Switch level.
+ 
   
 ## Planned
 
