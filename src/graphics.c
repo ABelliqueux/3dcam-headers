@@ -1,27 +1,38 @@
 #include "../include/graphics.h"
 #include "../include/math.h"
+void enlightMesh(LEVEL * curLvl, MESH * mesh, SVECTOR * lgtang){
+    // Update light rotation on actor
+    MATRIX      rotlgt, rotmesh, light; 
+    // Find rotmat from actor angle
+    RotMatrix_gte(&mesh->rot, &rotmesh);     
+    RotMatrix_gte(lgtang, &rotlgt);
+    MulMatrix0(&rotmesh, &rotlgt, &rotlgt);
+    MulMatrix0(curLvl->lgtmat, &rotlgt, &light);
+    SetLightMatrix(&light);
+};
 void transformMesh(CAMERA * camera, MESH * mesh){
-        MATRIX mat;
-        // Apply rotation matrix
-        RotMatrix_gte(&mesh->rot, &mat);            
-        // Apply translation matrix
-        TransMatrix(&mat, &mesh->pos);
-        // Compose matrix with cam
-        CompMatrix(&camera->mat, &mat, &mat);  
-        // Set default rotation and translation matrices
-        SetRotMatrix(&mat);                             
-        SetTransMatrix(&mat);                           
-    //~ }
+    MATRIX mat;
+    // Apply rotation matrix
+    RotMatrix_gte(&mesh->rot, &mat);            
+    // Apply translation matrix
+    TransMatrix(&mat, &mesh->pos);
+    // Compose matrix with cam
+    CompMatrix(&camera->mat, &mat, &mat);  
+    // Set default rotation and translation matrices
+    SetRotMatrix(&mat);                             
+    SetTransMatrix(&mat);                           
+//~ }
 };
 //TODO : Break this monster in tiny bits ?
 void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw) {
     long nclip, t = 0;
+    // FIXME : t is not incremented, thus always 0. It works if the mesh only has tris or quads, but won't work with mixed meshes.
     // mesh is POLY_GT3 ( triangle )
-    if (mesh->index[t].code == 4) {
+    if (mesh->index[0].code == 4) {
         drawTri(mesh, Flag, atime, camMode, nextpri, ot, db, draw);
     }
     // If mesh is quad
-    if (mesh->index[t].code == 8) {
+    if (mesh->index[0].code == 8) {
         drawQuad(mesh, Flag, atime, camMode, nextpri, ot, db, draw);
     } 
 };

@@ -36,7 +36,7 @@ u_long overlaySize = 0;
 #include "../levels/level0.h"
 #include "../levels/level1.h"
 
-volatile u_char level = 0;
+volatile u_char level = 1;
 // level 1 : 8003F05C -2147225508
 // level 0 : 800AF744 -2146764988
 //           80010000 -2147418112 -> -2147483648
@@ -57,12 +57,8 @@ char * nextpri = primbuff[0];                   // Primitive counter
 char            db  = 0;                        // Current buffer counter
 CVECTOR BGc = {128, 128, 128, 0};                  // Default Far color - This can be set in each level.
 VECTOR BKc = {128, 128, 128, 0};                // Back color   
-MATRIX      rotlgt; 
-MATRIX      rotactor; 
 SVECTOR     lgtang = {0, 0, 0}; 
-SVECTOR     invang = {0, 0, 0}; 
-SVECTOR     actorang = {0, 0, 0}; 
-MATRIX      light;
+MATRIX rotlgt, light;
 short vs;
 CAMERA camera = {0};
 // physics
@@ -529,12 +525,14 @@ int main() {
                 drawBG(curLvl.camPtr, &nextpri, otdisc[db], &db);
                 // Loop on camAngles
                 for ( int mesh = 0 ; mesh < curLvl.camAngles[ curCamAngle ]->index; mesh ++ ) {
+                    enlightMesh(&curLvl, curLvl.camAngles[curCamAngle]->objects[mesh], &lgtang);
                     transformMesh(&camera, curLvl.camAngles[curCamAngle]->objects[mesh]);
                     drawPoly(curLvl.camAngles[curCamAngle]->objects[mesh], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
                     //                                                          int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw)
                 }
             }
             else {
+                //FIXME : Light is not applied to planes
                 // Draw current node's plane
                 drawPoly( curLvl.curNode->plane, &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
                 // Draw surrounding planes 
@@ -545,17 +543,20 @@ int main() {
                 for ( int sibling = 0; sibling < curLvl.curNode->siblings->index; sibling++ ) {
                     for ( int object = 0; object < curLvl.curNode->siblings->list[ sibling ]->objects->index; object++ ) {
                         long t = 0;
+                        enlightMesh(&curLvl, curLvl.curNode->siblings->list[ sibling ]->objects->list[ object ], &lgtang);
                         transformMesh(&camera, curLvl.curNode->siblings->list[ sibling ]->objects->list[ object ]);
                         drawPoly( curLvl.curNode->siblings->list[ sibling ]->objects->list[ object ], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
                     }
                 }
                 // Draw current plane children
                 for ( int object = 0; object < curLvl.curNode->objects->index; object++ ) {
+                    enlightMesh(&curLvl, curLvl.curNode->objects->list[ object ], &lgtang);
                     transformMesh(&camera, curLvl.curNode->objects->list[ object ]);
                     drawPoly( curLvl.curNode->objects->list[ object ], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
                 }
                 // Draw rigidbodies
                 for ( int object = 0; object < curLvl.curNode->rigidbodies->index; object++ ) {
+                    enlightMesh(&curLvl, curLvl.curNode->rigidbodies->list[ object ], &lgtang);
                     transformMesh(&camera, curLvl.curNode->rigidbodies->list[ object ]);
                     drawPoly( curLvl.curNode->rigidbodies->list[ object ], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
                 }
@@ -563,15 +564,14 @@ int main() {
         }
         // Find and apply light rotation matrix
         
-        // Update light rotation on actor
-        // Find rotmat from actor angle
-        RotMatrix_gte(&curLvl.actorPtr->rot, &rotactor);     
+        // Update global light matrix
         RotMatrix_gte(&lgtang, &rotlgt);  
-        MulMatrix0(&rotactor, &rotlgt, &rotlgt);
         MulMatrix0(curLvl.lgtmat, &rotlgt, &light);
         SetLightMatrix(&light);
+
         // Set camera
         applyCamera(&camera);
+
         // Add secondary OT to main OT
         AddPrims(otdisc[db], ot[db] + OTLEN - 1, ot[db]);
         //~ FntPrint("curLvl.curNode : %x\nIndex: %d", curLvl.curNode, curLvl.curNode->siblings->index);

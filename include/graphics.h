@@ -5,6 +5,7 @@
 
 // Drawing
 void transformMesh(CAMERA * camera, MESH * meshes);
+void enlightMesh(LEVEL * curLvl, MESH * actorPtr, SVECTOR * lgtang);
 void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw);
 // Tri drawing
 void set3VertexLerPos(MESH * mesh, long t);
