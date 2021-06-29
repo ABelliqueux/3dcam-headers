@@ -93,7 +93,7 @@ void LvlPtrSet(LEVEL * curLevel, LEVEL * level){
     curLevel->camAngles = level->camAngles;
     curLevel->curNode   = level->curNode; // Blank
     // Move these to drawPoly()
-    curLevel->meshPlan  = level->meshPlan;
+    //~ curLevel->meshPlan  = level->meshPlan;
     //~ FntPrint("%x %x", curLevel->meshes, level->meshes);
 };
 int LoadLevelCD(const char*const LevelName, u_long * LoadAddress){

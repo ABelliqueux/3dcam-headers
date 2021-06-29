@@ -1,8 +1,8 @@
 #include "level0.h"
 
-CVECTOR level0_BGc = { 149, 218, 216, 0 };
+CVECTOR level0_BGc = { 92, 218, 216, 0 };
 
-VECTOR level0_BKc = { 0, 255, 255, 0 };
+VECTOR level0_BKc = { 88, 4, 0, 0 };
 
 CAMPOS level0_camPos_Camera = {
     { -770,459,623 },
@@ -16,7 +16,7 @@ CAMPATH level0_camPath = {
 };
 
 MATRIX level0_lgtmat = {
-    -1919,  3254,   1581,
+    -2486,  3254,   -22,
     0,0,0,
     0,0,0,
 
@@ -106,13 +106,14 @@ TMESH level0_modelCube = {
 };
 
 MESH level0_meshCube = {
+    24,
     &level0_modelCube,
     level0_modelCube_index,
     0,
     0,
     {0},
     {0,-236,23, 0},
-    {0,-1024,0},
+    {0,-1024,0, 0},
     1, // isRigidBody
     0, // isStaticBody
     0, // isRound 
@@ -903,14 +904,95 @@ TMESH level0_modelPlane = {
     100
 };
 
+SVECTOR level0_modelPlan_mesh[] = {
+    { -45,36,-3 },
+    { 48,36,-3 },
+    { -45,2,2 },
+    { 48,2,2 }
+};
+
+SVECTOR level0_modelPlan_normal[] = {
+    0,638,4046, 0,
+    0,638,4046, 0,
+    0,638,4046, 0,
+    0,638,4046, 0
+};
+
+SVECTOR level0_modelPlan_uv[] = {
+    64,155, 0, 0,
+    129,155, 0, 0,
+    129,130, 0, 0,
+    64,130, 0, 0
+};
+
+CVECTOR level0_modelPlan_color[] = {
+    80, 80, 80, 0,
+    128, 128, 128, 0,
+    128, 128, 128, 0
+};
+
+PRIM level0_modelPlan_index[] = {
+    0,1,3,2,8
+};
+
+BODY level0_modelPlan_body = {
+    {0, 0, 0, 0},
+    -40,-40,194, 0,
+    0,0,0, 0,
+    1,
+    ONE/1,
+    -45,2,-3, 0,
+    48,36,2, 0,
+    0,
+    };
+
+TMESH level0_modelPlan = {
+    level0_modelPlan_mesh,
+    level0_modelPlan_normal,
+    level0_modelPlan_uv,
+    level0_modelPlan_color, 
+    1
+};
+
+extern unsigned long _binary_TIM_home_tim_start[];
+
+TIM_IMAGE level0_tim_home;
+
+MESH level0_meshPlan = {
+    4,
+    &level0_modelPlan,
+    level0_modelPlan_index,
+    &level0_tim_home,
+    _binary_TIM_home_tim_start,
+    {0},
+    {-40,-40,194, 0},
+    {0,0,0},
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    &level0_modelPlan_body,
+    0,
+    0,
+    0
+};
+
 MESH level0_meshPlane = {
+    400,
     &level0_modelPlane,
     level0_modelPlane_index,
     0,
     0,
     {0},
     {0,0,0, 0},
-    {0,0,0},
+    {0,0,0, 0},
     0, // isRigidBody
     0, // isStaticBody
     0, // isRound 
@@ -998,4 +1080,5 @@ LEVEL level0 = {
     &level0_camPath,
     (CAMANGLE **)&level0_camAngles,
     &level0_nodePlane,
+    &level0_meshPlan
 };

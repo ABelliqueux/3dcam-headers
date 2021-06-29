@@ -28,13 +28,17 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
     long nclip, t = 0;
     // FIXME : t is not incremented, thus always 0. It works if the mesh only has tris or quads, but won't work with mixed meshes.
     // mesh is POLY_GT3 ( triangle )
-    if (mesh->index[0].code == 4) {
-        drawTri(mesh, Flag, atime, camMode, nextpri, ot, db, draw);
+    for (int i = 0; i < (mesh->totalVerts);) {
+        if (mesh->index[t].code == 4) {
+            t = drawTri(mesh, Flag, atime, camMode, nextpri, ot, db, draw, t, i);
+            i += 3;
+        }
+        // If mesh is quad
+        if (mesh->index[t].code == 8) {
+            t = drawQuad(mesh, Flag, atime, camMode, nextpri, ot, db, draw, t, i);
+            i += 4;
+        }
     }
-    // If mesh is quad
-    if (mesh->index[0].code == 8) {
-        drawQuad(mesh, Flag, atime, camMode, nextpri, ot, db, draw);
-    } 
 };
 void set3VertexLerPos(MESH * mesh, long t){
     // Find and set 3 interpolated vertex value
@@ -279,11 +283,11 @@ void set4Subdiv(void){
     //~ }
     
 };
-void drawQuad(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw) {
-    long nclip, t = 0;
+long drawQuad(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw, int t, int i) {
+    long nclip = 0;
     // If mesh is quad
-    POLY_GT4 * poly4;
-    for (int i = 0; i < (mesh->tmesh->len * 4); i += 4) {               
+    POLY_GT4 * poly4; 
+    //~ for (int i = 0; i < (mesh->tmesh->len * 4); i += 4) { 
         // if mesh is not part of BG, draw them, else, discard
         if ( !(mesh->isBG) || *camMode != 2 ) {
             poly4 = (POLY_GT4 *)*nextpri;
@@ -343,16 +347,17 @@ void drawQuad(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                 }
                 *nextpri += sizeof( POLY_GT4 );
             }
-        t += 1;
+        t++;
+        return t;
         }
-    }
+    //~ }
 };
-void drawTri(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw) {
-    long nclip, t = 0;
+long drawTri(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw, int t, int i) {
+    long nclip = 0;
     // mesh is POLY_GT3 ( triangle )
     POLY_GT3 * poly;                        
     // len member == # vertices, but here it's # of triangle... So, for each tri * 3 vertices ...
-    for ( int i = 0; i < (mesh->tmesh->len * 3); i += 3 ) {               
+    //~ for ( int i = 0; i < (mesh->tmesh->len * 3); i += 3 ) {               
         // If mesh is not part of precalculated background, draw them, else, discard
         if ( !( mesh->isBG ) || *camMode != 2) {
             poly = (POLY_GT3 *)*nextpri;
@@ -412,9 +417,10 @@ void drawTri(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri
                 }
                 *nextpri += sizeof(POLY_GT3);
             }
-            t+=1;
+        t++;
+        return t;
         }
-    }
+    //~ }
 };
 void drawBG(CAMANGLE * camPtr, char ** nextpri, u_long * otdisc, char * db) {
     // Draw BG image in two SPRT since max width == 256 px 

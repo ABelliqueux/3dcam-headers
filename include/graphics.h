@@ -8,13 +8,13 @@ void transformMesh(CAMERA * camera, MESH * meshes);
 void enlightMesh(LEVEL * curLvl, MESH * actorPtr, SVECTOR * lgtang);
 void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw);
 // Tri drawing
+long drawTri(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw, int t, int i);
 void set3VertexLerPos(MESH * mesh, long t);
 void set3Prism(POLY_GT3 * poly, MESH * mesh, DRAWENV * draw, int i);
 void set3Tex(POLY_GT3 * poly, MESH * mesh, DRAWENV * draw, long t, int i);
 long interpolateTri(POLY_GT3 * poly, MESH * mesh, long t, long * Flag);
-void drawTri(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw);
 //Quad drawing
-void drawQuad(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw);
+long drawQuad(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw, int t, int i);
 void set4VertexLerPos(MESH * mesh, long t);
 void set4Prism(POLY_GT4 * poly4, MESH * mesh, DRAWENV * draw, int i);
 void set4Tex(POLY_GT4 * poly4, MESH * mesh, DRAWENV * draw, long t, int i);

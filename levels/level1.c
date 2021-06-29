@@ -968,6 +968,7 @@ extern unsigned long _binary_TIM_cat_tim_length;
 TIM_IMAGE level1_tim_cat;
 
 MESH level1_meshCube = {
+    324,
     &level1_modelCube,
     level1_modelCube_index,
     &level1_tim_cat,
@@ -1321,7 +1322,7 @@ VANIM level1_modelCylindre_anim = {
     0,
     0,
     1,
-    0,
+    1,
     {
         //Frame 0
         { 3,35,47 },
@@ -1811,6 +1812,7 @@ extern unsigned long _binary_TIM_home_tim_length;
 TIM_IMAGE level1_tim_home;
 
 MESH level1_meshCylindre = {
+    114,
     &level1_modelCylindre,
     level1_modelCylindre_index,
     &level1_tim_home,
@@ -2278,6 +2280,7 @@ TMESH level1_modelgnd = {
 };
 
 MESH level1_meshgnd = {
+    144,
     &level1_modelgnd,
     level1_modelgnd_index,
     &level1_tim_home,
@@ -2595,6 +2598,7 @@ TMESH level1_modelgnd_001 = {
 };
 
 MESH level1_meshgnd_001 = {
+    90,
     &level1_modelgnd_001,
     level1_modelgnd_001_index,
     &level1_tim_home,
@@ -2912,6 +2916,7 @@ TMESH level1_modelgnd_003 = {
 };
 
 MESH level1_meshgnd_003 = {
+    90,
     &level1_modelgnd_003,
     level1_modelgnd_003_index,
     &level1_tim_home,
@@ -3229,6 +3234,7 @@ TMESH level1_modelgnd_002 = {
 };
 
 MESH level1_meshgnd_002 = {
+    90,
     &level1_modelgnd_002,
     level1_modelgnd_002_index,
     &level1_tim_home,
@@ -8840,6 +8846,7 @@ extern unsigned long _binary_TIM_lara_tim_length;
 TIM_IMAGE level1_tim_lara;
 
 MESH level1_meshLara = {
+    2082,
     &level1_modelLara,
     level1_modelLara_index,
     &level1_tim_lara,
@@ -8999,6 +9006,7 @@ TMESH level1_modelobject = {
 };
 
 MESH level1_meshobject = {
+    36,
     &level1_modelobject,
     level1_modelobject_index,
     &level1_tim_home,
@@ -9074,6 +9082,7 @@ TMESH level1_modelPlan = {
 };
 
 MESH level1_meshPlan = {
+    4,
     &level1_modelPlan,
     level1_modelPlan_index,
     &level1_tim_home,
@@ -9537,6 +9546,7 @@ TMESH level1_modelSphere = {
 };
 
 MESH level1_meshSphere = {
+    150,
     &level1_modelSphere,
     level1_modelSphere_index,
     &level1_tim_home,
@@ -10000,6 +10010,7 @@ TMESH level1_modelSphere_001 = {
 };
 
 MESH level1_meshSphere_001 = {
+    150,
     &level1_modelSphere_001,
     level1_modelSphere_001_index,
     &level1_tim_home,
@@ -10167,6 +10178,7 @@ TMESH level1_modelwall = {
 };
 
 MESH level1_meshwall = {
+    36,
     &level1_modelwall,
     level1_modelwall_index,
     &level1_tim_home,
@@ -10402,6 +10414,7 @@ TMESH level1_modelwall_001 = {
 };
 
 MESH level1_meshwall_001 = {
+    60,
     &level1_modelwall_001,
     level1_modelwall_001_index,
     &level1_tim_home,
@@ -10637,6 +10650,7 @@ TMESH level1_modelwall_002 = {
 };
 
 MESH level1_meshwall_002 = {
+    60,
     &level1_modelwall_002,
     level1_modelwall_002_index,
     &level1_tim_home,
@@ -10804,6 +10818,7 @@ TMESH level1_modelwall_003 = {
 };
 
 MESH level1_meshwall_003 = {
+    36,
     &level1_modelwall_003,
     level1_modelwall_003_index,
     &level1_tim_home,
