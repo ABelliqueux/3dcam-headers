@@ -11022,6 +11022,5 @@ LEVEL level1 = {
     &level1_camAngle_camPath_001,
     &level1_camPath,
     (CAMANGLE **)&level1_camAngles,
-    &level1_nodegnd_002,
-    &level1_meshPlan
+    &level1_nodegnd_002
 };

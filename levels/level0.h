@@ -72,16 +72,3 @@ extern NODE * level0_curNode;
 
 extern NODE level0_nodePlane;
 
-extern SVECTOR level0_modelPlan_normal[];
-
-extern SVECTOR level0_modelPlan_uv[];
-
-extern CVECTOR level0_modelPlan_color[];
-
-extern PRIM level0_modelPlan_index[];
-
-extern BODY  level0_modelPlan_body;
-
-extern TMESH level0_modelPlan;
-
-extern MESH level0_meshPlan;

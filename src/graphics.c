@@ -311,7 +311,14 @@ long drawQuad(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                             );
                 }
             } else {                        
-                // No animation
+                // Mesh is sprite
+                if (mesh->isSprite){
+                    // Find inverse rotation matrix so that sprite always faces camera
+                    MATRIX rot, invRot;
+                    ReadRotMatrix(&rot);
+                    TransposeMatrix(&rot, &invRot);
+                    SetMulRotMatrix(&invRot);
+                }
                 // Use regular vertex coords
                 nclip = RotAverageNclip4(
                             &mesh->tmesh->v[ mesh->index[t].order.pad ],  
@@ -334,6 +341,7 @@ long drawQuad(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                     );
                 }
                 if (mesh->isSprite){ 
+                    // Turn off shading on sprite
                     SetShadeTex( poly4, 1 );
                 }
                 // Transparency effect
@@ -381,6 +389,13 @@ long drawTri(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri
                 }
             } else {
             // No animation
+                if (mesh->isSprite){
+                    // Find inverse rotation matrix so that sprite always faces camera
+                    MATRIX rot, invRot;
+                    ReadRotMatrix(&rot);
+                    TransposeMatrix(&rot, &invRot);
+                    SetMulRotMatrix(&invRot);
+                }
                 // Use model's regular vertex coordinates
                 nclip = RotAverageNclip3(
                             &mesh->tmesh->v[ mesh->index[t].order.vx ],  
