@@ -114,6 +114,7 @@ MESH level0_meshCube = {
 	{0},
 	{0,-236,23, 0},
 	{0,-1024,0, 0},
+	1, // isProp
 	1, // isRigidBody
 	0, // isStaticBody
 	0, // isRound 
@@ -127,7 +128,7 @@ MESH level0_meshCube = {
 	0,
 	&level0_modelCube_body,
 	0,
-	0,
+	&level0_nodePlane,
 	0,
 };
 
@@ -913,6 +914,7 @@ MESH level0_meshPlane = {
 	{0},
 	{0,0,0, 0},
 	{0,0,0, 0},
+	0, // isProp
 	0, // isRigidBody
 	0, // isStaticBody
 	0, // isRound 

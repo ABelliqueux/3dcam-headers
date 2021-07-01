@@ -104,6 +104,28 @@ VECTOR getExtCollision(BODY one, BODY two){
     col.vz = d1.vz > 0 && d2.vz > 0;
     return col;
 };
+void checkBodyCol(BODY * one, BODY * two){
+    VECTOR colInt, colExt;
+    colInt = getIntCollision( *one , *two );
+    colExt = getExtCollision( *one , *two );
+    if ( colInt.vy ) {
+        if ( !colInt.vx && !colInt.vz ) {
+            one->position.vy =  one->min.vy;
+        }
+    }
+};
+void applyAngMom(LEVEL curLvl ){
+    if (curLvl.propPtr->isRound){
+        if ( curLvl.propPtr->body->velocity.vx ) {
+            VECTOR L = angularMom( *curLvl.propPtr->body );
+            curLvl.propPtr->rot.vz -= L.vx;
+        }
+        if ( curLvl.propPtr->body->velocity.vz ) {
+            VECTOR L = angularMom( *curLvl.propPtr->body );
+            curLvl.propPtr->rot.vx -= L.vz;
+        }
+    }
+};
 void applyAcceleration(BODY * actor){
     short dt = 1;
     VECTOR acceleration = {actor->invMass * actor->gForce.vx ,  (actor->invMass * actor->gForce.vy) + (GRAVITY * ONE), actor->invMass * actor->gForce.vz};

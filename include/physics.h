@@ -10,6 +10,8 @@ short checkLineW( VECTOR * pointA, VECTOR * pointB, MESH * mesh );
 short checkLineS( VECTOR * pointA, VECTOR * pointB, MESH * mesh );
 VECTOR getIntCollision(BODY one, BODY two);
 VECTOR getExtCollision(BODY one, BODY two);
+void checkBodyCol(BODY * one, BODY * two);
+void applyAngMom(LEVEL curLvl );
 void   ResolveCollision( BODY * one, BODY * two );
 VECTOR angularMom(BODY body);
 void applyAcceleration(BODY * actor);

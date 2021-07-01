@@ -51,6 +51,7 @@ typedef struct MESH {
 	MATRIX      mat;
 	VECTOR      pos;
 	SVECTOR     rot;
+	short       isProp;
 	short       isRigidBody;
 	short       isStaticBody;
 	short       isRound;
