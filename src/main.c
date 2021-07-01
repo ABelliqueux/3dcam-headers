@@ -25,7 +25,7 @@
 #include "../include/graphics.h"
 #include "../include/space.h"
 
-#define USECD
+//~ #define USECD
 
 // START OVERLAY
 extern u_long load_all_overlays_here;
@@ -37,7 +37,7 @@ u_long overlaySize = 0;
 #include "../levels/level1.h"
 
 // Levels
-volatile u_char level = 1;
+volatile u_char level = 0;
 u_short levelWas = 0;
 u_short levelHasChanged = 0;
 // Overlay
@@ -140,7 +140,10 @@ int main() {
     VSyncCallback(callback);
     // Load textures
     for (int k = 0; k < *curLvl.meshes_length ; k++){
-        LoadTexture(curLvl.meshes[k]->tim_data, curLvl.meshes[k]->tim);
+        // Check data exists
+        if (curLvl.meshes[k]->tim_data){
+            LoadTexture(curLvl.meshes[k]->tim_data, curLvl.meshes[k]->tim);
+        }
     }
     // Load current BG if exists
     if (curLvl.camPtr->tim_data){
@@ -323,7 +326,7 @@ int main() {
                 if (curLvl.camPath->pos > (1 << precision) ){
                     curLvl.camPath->pos = 0;
                     curLvl.camPath->cursor ++;
-                }                    
+                }
                 // Last key pos is reached, reset cursor to first key pos, lerping sequence is over
                 if ( curLvl.camPath->cursor == curLvl.camPath->len - 1 ){
                     lerping = 0;
@@ -454,7 +457,6 @@ int main() {
                 }
             }
             else {
-                //FIXME : Light is not applied to planes
                 // Draw current node's plane
                 drawPoly( curLvl.curNode->plane, &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
                 // Draw surrounding planes 

@@ -192,16 +192,21 @@ void set3Tex(POLY_GT3 * poly, MESH * mesh, DRAWENV * draw, long t, int i){
     CVECTOR outCol  = { 0,0,0,0 };
     CVECTOR outCol1 = { 0,0,0,0 };
     CVECTOR outCol2 = { 0,0,0,0 };
-    // No transparency effect
     // Use regular TPAGE
-    ( (POLY_GT3 *) poly )->tpage = getTPage(mesh->tim->mode&0x3, 0,
-                                     mesh->tim->prect->x,
-                                     mesh->tim->prect->y
-    );
-    setUV3(poly,  mesh->tmesh->u[i].vx  , mesh->tmesh->u[i].vy   + mesh->tim->prect->y,
-                  mesh->tmesh->u[i+2].vx, mesh->tmesh->u[i+2].vy + mesh->tim->prect->y,
-                  mesh->tmesh->u[i+1].vx, mesh->tmesh->u[i+1].vy + mesh->tim->prect->y);
-                  
+    if (mesh->tim){
+        ( (POLY_GT3 *) poly )->tpage = getTPage(mesh->tim->mode&0x3, 0,
+                                         mesh->tim->prect->x,
+                                         mesh->tim->prect->y
+        );
+        setUV3(poly,  mesh->tmesh->u[i].vx  , mesh->tmesh->u[i].vy   + mesh->tim->prect->y,
+                      mesh->tmesh->u[i+2].vx, mesh->tmesh->u[i+2].vy + mesh->tim->prect->y,
+                      mesh->tmesh->u[i+1].vx, mesh->tmesh->u[i+1].vy + mesh->tim->prect->y);
+
+    } else {
+        ( (POLY_GT3 *) poly)->tpage = getTPage( 2,0,0,0 );
+        setUV3(poly, 0,0,0,0,0,0);
+
+    }
     NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vx ], &mesh->tmesh->c[ i+0 ], mesh->p, &outCol);
     NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vz ], &mesh->tmesh->c[ i+2 ], mesh->p, &outCol1);
     NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vy ], &mesh->tmesh->c[ i+1 ], mesh->p, &outCol2);
@@ -211,23 +216,29 @@ void set3Tex(POLY_GT3 * poly, MESH * mesh, DRAWENV * draw, long t, int i){
 };
 void set4Tex(POLY_GT4 * poly4, MESH * mesh, DRAWENV * draw, long t, int i){
     
-    CVECTOR outCol  = {0,0,0,0};
-    CVECTOR outCol1 = {0,0,0,0};
-    CVECTOR outCol2 = {0,0,0,0};
-    CVECTOR outCol3 = {0,0,0,0};
+    CVECTOR outCol  = {255,255,255,0};
+    CVECTOR outCol1 = {255,255,255,0};
+    CVECTOR outCol2 = {255,255,255,0};
+    CVECTOR outCol3 = {255,255,255,0};
     // Use regular TPAGE
-    ( (POLY_GT4 *) poly4)->tpage = getTPage( 
-                                    mesh->tim->mode&0x3, 0,
-                                    mesh->tim->prect->x,
-                                    mesh->tim->prect->y
-                                 );
-    // Use model UV coordinates
-    setUV4( poly4, 
-            mesh->tmesh->u[i+3].vx, mesh->tmesh->u[i+3].vy + mesh->tim->prect->y,
-            mesh->tmesh->u[i+2].vx, mesh->tmesh->u[i+2].vy + mesh->tim->prect->y,
-            mesh->tmesh->u[i+0].vx, mesh->tmesh->u[i+0].vy + mesh->tim->prect->y,
-            mesh->tmesh->u[i+1].vx, mesh->tmesh->u[i+1].vy + mesh->tim->prect->y
-    );
+    if (mesh->tim){
+        ( (POLY_GT4 *) poly4)->tpage = getTPage( 
+                                        mesh->tim->mode&0x3, 0,
+                                        mesh->tim->prect->x,
+                                        mesh->tim->prect->y
+                                     );
+    
+        // Use model UV coordinates
+        setUV4( poly4,
+                mesh->tmesh->u[i+3].vx, mesh->tmesh->u[i+3].vy + mesh->tim->prect->y,
+                mesh->tmesh->u[i+2].vx, mesh->tmesh->u[i+2].vy + mesh->tim->prect->y,
+                mesh->tmesh->u[i+0].vx, mesh->tmesh->u[i+0].vy + mesh->tim->prect->y,
+                mesh->tmesh->u[i+1].vx, mesh->tmesh->u[i+1].vy + mesh->tim->prect->y
+              );
+    } else {
+        ( (POLY_GT4 *) poly4)->tpage = getTPage( 2,0,0,0 );
+        setUV4(poly4, 0,0,0,0,0,0,0,0);
+    }
     NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.pad ] , &mesh->tmesh->c[ i+3 ], mesh->p, &outCol);
     NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vz ]  , &mesh->tmesh->c[ i+2 ], mesh->p, &outCol1);
     NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vx ]  , &mesh->tmesh->c[ i+0 ], mesh->p, &outCol2);

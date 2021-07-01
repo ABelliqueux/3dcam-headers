@@ -61,6 +61,7 @@ void ScrRst(void){
     VSync( 0 ); // Wait for current drawing to finish
     SetDispMask( 0 ); // Set mask to not displayed
     ResetGraph( 1 ); // Cancel current drawing
+    // Clear FB
     setRECT(&scr, 0, 0, SCREENXRES, SCREENYRES);
     ClearImage(&scr, CLEAR_COLOR_R, CLEAR_COLOR_G, CLEAR_COLOR_B );
     DrawSync( 0 );
@@ -108,7 +109,10 @@ void SwitchLevel( LEVEL * curLevel, LEVEL * loadLevel ){
     LvlPtrSet( curLevel, loadLevel);
     // Reload textures
     for (int k = 0; k < *curLevel->meshes_length ; k++){
-        LoadTexture(curLevel->meshes[k]->tim_data, curLevel->meshes[k]->tim);
+        // Check data exists
+        if (curLevel->meshes[k]->tim_data){
+            LoadTexture(curLevel->meshes[k]->tim_data, curLevel->meshes[k]->tim);
+        }
     }
     // BG texture
     if (curLevel->camPtr->tim_data){
