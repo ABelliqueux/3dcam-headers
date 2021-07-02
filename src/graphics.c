@@ -349,12 +349,14 @@ long drawQuad(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
             }
             if (nclip > 0 && mesh->OTz > 0 && (mesh->p < 4096)) {
                 SetPolyGT4(poly4);
-                // If tim mode  == 0 | 1, set CLUT coordinates
-                if ( (mesh->tim->mode & 0x3) < 2 ) {
-                    setClut(poly4,             
-                            mesh->tim->crect->x,
-                            mesh->tim->crect->y
-                    );
+                if (mesh->tim){
+                    // If tim mode  == 0 | 1, set CLUT coordinates
+                    if ( (mesh->tim->mode & 0x3) < 2 ) {
+                        setClut(poly4,             
+                                mesh->tim->crect->x,
+                                mesh->tim->crect->y
+                        );
+                    }
                 }
                 if (mesh->isSprite){ 
                     // Turn off shading on sprite
@@ -426,15 +428,17 @@ long drawTri(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri
             // Do not draw invisible meshes 
             if ( nclip > 0 && mesh->OTz > 0 && (mesh->p < 4096) ) {
                 SetPolyGT3( poly );
-                // CLUT setup
-                // If tim mode == 0 | 1 (4bits/8bits image), set CLUT coordinates
-                if ( (mesh->tim->mode & 0x3 ) < 2){
-                    setClut(poly,             
-                            mesh->tim->crect->x,
-                            mesh->tim->crect->y);
-                }
-                if ( mesh->isSprite ) { 
-                    SetShadeTex( poly, 1 );
+                if (mesh->tim){
+                    // CLUT setup
+                    // If tim mode == 0 | 1 (4bits/8bits image), set CLUT coordinates
+                    if ( (mesh->tim->mode & 0x3 ) < 2){
+                        setClut(poly,             
+                                mesh->tim->crect->x,
+                                mesh->tim->crect->y);
+                    }
+                    if ( mesh->isSprite ) { 
+                        SetShadeTex( poly, 1 );
+                    }
                 }
                 // If isPrism flag is set, use it
                 if ( mesh->isPrism ) { 
