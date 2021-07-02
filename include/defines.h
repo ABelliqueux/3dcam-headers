@@ -33,6 +33,9 @@
 #define SCALE 4
 
 // Pad codes defines
+
+// Dual shock sticks dead zone
+#define DS_DZ 60
 // Applied on PADL
 #define PadSelect  ( 1 )
 #define PadStart ( 1 << 3 )

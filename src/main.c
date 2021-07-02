@@ -25,7 +25,7 @@
 #include "../include/graphics.h"
 #include "../include/space.h"
 
-//~ #define USECD
+#define USECD
 
 // START OVERLAY
 extern u_long load_all_overlays_here;
@@ -174,7 +174,7 @@ int main() {
         }
     }
     // Main loop
-    while ( VSync(1) ) {
+    while ( VSync(VSYNC) ) {
         timeS = VSync(-1) / 60;
         // Check if level has changed
         // TODO : Proper level system / loader
@@ -225,10 +225,6 @@ int main() {
                     curLvl.actorPtr->pos.vy, 
                     curLvl.actorPtr->pos.vz - (ncos(curLvl.actorPtr->rot.vy/2))
                 );
-        // TODO : Test with real HW/DS
-        //~ fVecActor = curLvl.actorPtr->pos;
-        //~ fVecActor.vx = curLvl.actorPtr->pos.vx + (nsin(curLvl.actorPtr->rot.vy/2));
-        //~ fVecActor.vz = curLvl.actorPtr->pos.vz - (ncos(curLvl.actorPtr->rot.vy/2));
     // Camera modes
         if(camMode != 2) {
             camera.rot.vy = camAngleToAct.vy;
@@ -660,19 +656,19 @@ void callback() {
     }
     if( theControllers[0].type == 0x73 && camMode == 0){
         // Cam control - horizontal
-        if ( theControllers[0].analog0 >= 0 && theControllers[0].analog0 < 108) {
+        if ( theControllers[0].analog0 >= 0 && theControllers[0].analog0 < (128 - DS_DZ/2) ) {
             angleCam.vy -= ( 16 * ( 128 - theControllers[0].analog0 ) ) >> 7 ;
             angleCamTimer = 120;
         }
-        if ( theControllers[0].analog0 > 148 && theControllers[0].analog0 <= 255) {
+        if ( theControllers[0].analog0 > (128 + DS_DZ/2)  && theControllers[0].analog0 <= 255 ) {
             angleCam.vy += ( 16 * ( theControllers[0].analog0 - 128 ) ) >> 7 ;
             angleCamTimer = 120;
         }
-        if ( theControllers[0].analog0 >= 0 && theControllers[0].analog0 < 108) {
+        if ( theControllers[0].analog0 >= 0 && theControllers[0].analog0 < (128 - DS_DZ/2) ) {
             angleCam.vy -= ( 16 * ( 128 - theControllers[0].analog0 ) ) >> 7 ;
             angleCamTimer = 120;
         }
-        if ( theControllers[0].analog0 > 148 && theControllers[0].analog0 <= 255) {
+        if ( theControllers[0].analog0 > (128 + DS_DZ/2) && theControllers[0].analog0 <= 255) {
             angleCam.vy += ( 16 * ( theControllers[0].analog0 - 128 ) ) >> 7 ;
             angleCamTimer = 120;
         }

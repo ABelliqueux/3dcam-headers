@@ -23,10 +23,8 @@ void transformMesh(CAMERA * camera, MESH * mesh){
     SetTransMatrix(&mat);                           
 //~ }
 };
-//TODO : Break this monster in tiny bits ?
 void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw) {
     long nclip, t = 0;
-    // FIXME : t is not incremented, thus always 0. It works if the mesh only has tris or quads, but won't work with mixed meshes.
     // mesh is POLY_GT3 ( triangle )
     for (int i = 0; i < (mesh->totalVerts);) {
         if (mesh->index[t].code == 4) {
@@ -42,7 +40,7 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
 };
 void set3VertexLerPos(MESH * mesh, long t){
     // Find and set 3 interpolated vertex value
-    // TODO : Finish lerp anim implementation
+    // TODO : Fix artifacts at meshes seams.
     // Fixed point math precision
     short precision = 12;
     // Vertex 1
@@ -145,12 +143,19 @@ long interpolateQuad(POLY_GT4 * poly4, MESH * mesh, long t, long * Flag){
             );
     return nclip;
 };
-void set3Prism(POLY_GT3 * poly, MESH * mesh, DRAWENV * draw, int i){
+void set3Prism(POLY_GT3 * poly, MESH * mesh, DRAWENV * draw, char * db, int i){
     // Transparency effect :
     // Use current DRAWENV clip as TPAGE instead of regular textures
+    //
+    // FIXME : Fixed BGs : find a way to know we're using em.
+    // With pre-rendered background, just set the tpage to bpp, x, y of the image in vram : 8bpp, 320, 0 by default for now 
+    // But how do we now fixed BGs are used ?
+    //~ if (fixed_BGS){
+    //~     ( (POLY_GT3 *) poly )->tpage = getTPage( 0, 0, 320, 0 );
+    //~ }
     ( (POLY_GT3 *) poly )->tpage = getTPage( 2, 0,
-                                             0,
-                                             256
+                                             draw[*db].clip.x,
+                                             draw[*db].clip.y
                                    );
     // Use projected coordinates (results from RotAverage...) as UV coords and clamp them to 0-255,0-224 -> 240 - 16
     setUV3( poly,  
@@ -166,10 +171,10 @@ void set3Prism(POLY_GT3 * poly, MESH * mesh, DRAWENV * draw, int i){
     setRGB1(poly, mesh->tmesh->c[i+2].r, mesh->tmesh->c[i+2].g, mesh->tmesh->c[i+2].b);
     setRGB2(poly, mesh->tmesh->c[i+1].r, mesh->tmesh->c[i+1].g, mesh->tmesh->c[i+1].b);
 };
-void set4Prism(POLY_GT4 * poly4, MESH * mesh, DRAWENV * draw, int i){
+void set4Prism(POLY_GT4 * poly4, MESH * mesh, DRAWENV * draw, char * db, int i){
     ( (POLY_GT4 *) poly4)->tpage = getTPage( 2, 0,
-                                             0,
-                                             256
+                                             draw[*db].clip.x,
+                                             draw[*db].clip.y
                                    );
     // Use projected coordinates
     setUV4( poly4, 
@@ -357,7 +362,7 @@ long drawQuad(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                 }
                 // Transparency effect
                 if (mesh->isPrism){ 
-                    set4Prism(poly4, mesh, draw, i);
+                    set4Prism(poly4, mesh, draw, db, i);
                 } else {
                     set4Tex(poly4, mesh, draw, t, i);
                 }
@@ -432,9 +437,8 @@ long drawTri(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri
                     SetShadeTex( poly, 1 );
                 }
                 // If isPrism flag is set, use it
-                // FIXME : Doesn't work with pre-rendered BGs
                 if ( mesh->isPrism ) { 
-                    set3Prism(poly, mesh, draw, i);
+                    set3Prism(poly, mesh, draw, db, i);
                 } else {
                     set3Tex(poly, mesh, draw, t, i);
                 }
