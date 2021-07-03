@@ -12,7 +12,7 @@ void setLightEnv(DRAWENV draw[2], CVECTOR * BGc, VECTOR * BKc, MATRIX * cmat){
     SetColorMatrix(cmat);
 };
 
-void init(DISPENV disp[2], DRAWENV draw[2], short db, MATRIX * cmat, CVECTOR * BGc, VECTOR * BKc) {
+void init(DISPENV disp[2], DRAWENV draw[2], short db, MATRIX * cmat, CVECTOR * BGc, VECTOR * BKc, VECTOR * FC) {
     ResetCallback();
     // Init pad
     //~ PadInit(0);
@@ -37,7 +37,6 @@ void init(DISPENV disp[2], DRAWENV draw[2], short db, MATRIX * cmat, CVECTOR * B
     }
     // Set Draw area color
     setLightEnv(draw, BGc, BKc, cmat);
-    
     // Set Draw area clear flag
     draw[0].isbg = 1;
     draw[1].isbg = 1;
@@ -53,6 +52,7 @@ void init(DISPENV disp[2], DRAWENV draw[2], short db, MATRIX * cmat, CVECTOR * B
              FNT_SCR_BG,
              FNT_SCR_MAX_CHAR
             );
+    SetFarColor(FC->vx, FC->vy, FC->vz);
     // TODO : Move this to level files
     SetFogNearFar( FOG_NEAR, FOG_FAR, SCREENXRES );
 };

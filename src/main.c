@@ -54,8 +54,9 @@ int         primcnt=0;                      // Primitive counter
 char * nextpri = primbuff[0];                   // Primitive counter
 char            db  = 0;                        // Current buffer counter
 // Lighting
-CVECTOR BGc = {128, 128, 128, 0};                  // Default Far color - This can be set in each level.
+CVECTOR BGc = {128, 128, 128, 0};               // Default Far color - This can be set in each level.
 VECTOR BKc = {128, 128, 128, 0};                // Back color   
+VECTOR FC = FOG_COLOR;                     // Far (Fog) color   
 SVECTOR     lgtang = {0, 0, 0}; 
 MATRIX rotlgt, light;
 short vs;
@@ -130,7 +131,7 @@ int main() {
     } 
     levelWas = level;
     // Init dislay, Gte..
-    init(disp, draw, db, curLvl.cmat, curLvl.BGc, curLvl.BKc);
+    init(disp, draw, db, curLvl.cmat, curLvl.BGc, curLvl.BKc, &FC);
     // Init Pads
     InitPAD(controllers[0].pad, 34, controllers[1].pad, 34);
     StartPAD();

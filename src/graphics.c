@@ -26,7 +26,7 @@ void transformMesh(CAMERA * camera, MESH * mesh){
 void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw) {
     long nclip, t = 0;
     // mesh is POLY_GT3 ( triangle )
-    for (int i = 0; i < (mesh->totalVerts);) {
+    for (int i = 0; i < (mesh->totalVerts) && (mesh->totalVerts - i) > 2;) {
         if (mesh->index[t].code == 4) {
             t = drawTri(mesh, Flag, atime, camMode, nextpri, ot, db, draw, t, i);
             i += 3;

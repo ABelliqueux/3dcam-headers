@@ -5,6 +5,7 @@
 #define CENTERX     SCREENXRES/2
 #define CENTERY     SCREENYRES/2
 #define FOV CENTERX
+#define FOG_COLOR {128, 128, 128} // Default to neutral grey
 #define CLEAR_COLOR_R 0
 #define CLEAR_COLOR_G 0
 #define CLEAR_COLOR_B 0
