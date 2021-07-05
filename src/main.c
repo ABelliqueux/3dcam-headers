@@ -37,7 +37,7 @@ u_long overlaySize = 0;
 #include "../levels/level1.h"
 
 // Levels
-volatile u_char level = 0;
+volatile u_char level = 1;
 u_short levelWas = 0;
 u_short levelHasChanged = 0;
 // Overlay

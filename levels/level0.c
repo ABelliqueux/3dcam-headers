@@ -1,8 +1,8 @@
 #include "level0.h"
 
-CVECTOR level0_BGc = { 92, 218, 216, 0 };
+CVECTOR level0_BGc = { 135, 232, 230, 0 };
 
-VECTOR level0_BKc = { 88, 4, 0, 0 };
+VECTOR level0_BKc = { 174, 174, 174, 0 };
 
 CAMPOS level0_camPos_Camera = {
 	{ -770,459,623 },

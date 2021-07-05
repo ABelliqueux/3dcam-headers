@@ -1,26 +1,28 @@
+#include "../include/psx.h"
 #include "../include/graphics.h"
 #include "../include/math.h"
+
 void enlightMesh(LEVEL * curLvl, MESH * mesh, SVECTOR * lgtang){
     // Update light rotation on actor
     MATRIX      rotlgt, rotmesh, light; 
     // Find rotmat from actor angle
     RotMatrix_gte(&mesh->rot, &rotmesh);     
     RotMatrix_gte(lgtang, &rotlgt);
-    MulMatrix0(&rotmesh, &rotlgt, &rotlgt);
-    MulMatrix0(curLvl->lgtmat, &rotlgt, &light);
-    SetLightMatrix(&light);
+    gte_MulMatrix0(&rotmesh, &rotlgt, &rotlgt);
+    gte_MulMatrix0(curLvl->lgtmat, &rotlgt, &light);
+    gte_SetLightMatrix(&light);
 };
 void transformMesh(CAMERA * camera, MESH * mesh){
     MATRIX mat;
-    // Apply rotation matrix
+    // Find rotation matrix
     RotMatrix_gte(&mesh->rot, &mat);            
-    // Apply translation matrix
+    // Find translation matrix
     TransMatrix(&mat, &mesh->pos);
     // Compose matrix with cam
-    CompMatrix(&camera->mat, &mat, &mat);  
+    gte_CompMatrix(&camera->mat, &mat, &mat);  
     // Set default rotation and translation matrices
-    SetRotMatrix(&mat);                             
-    SetTransMatrix(&mat);                           
+    gte_SetRotMatrix(&mat);                             
+    gte_SetTransMatrix(&mat);                           
 //~ }
 };
 void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw) {
@@ -41,6 +43,7 @@ void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
 void set3VertexLerPos(MESH * mesh, long t){
     // Find and set 3 interpolated vertex value
     // TODO : Fix artifacts at meshes seams.
+    // TODO : Pre-calculate lerp positions at runtime (for i in nframes, do calc)
     // Fixed point math precision
     short precision = 12;
     // Vertex 1
@@ -100,14 +103,15 @@ long interpolateTri(POLY_GT3 * poly, MESH * mesh, long t, long * Flag){
     // Find and set interpolated vertex value
     set3VertexLerPos(mesh, t);
     // Coord transformation from world space to screen space
-    nclip = RotAverageNclip3(
+    gte_RotAverageNclip3(
                 &mesh->tmesh->v[ mesh->index[t].order.vx ],  
                 &mesh->tmesh->v[ mesh->index[t].order.vz ],
                 &mesh->tmesh->v[ mesh->index[t].order.vy ],
                 ( long* ) &poly->x0, ( long* ) &poly->x1, ( long* ) &poly->x2,
                 &mesh->p,
                 &mesh->OTz,
-                Flag
+                &Flag,
+                &nclip
             );
     return nclip;
 };
@@ -131,7 +135,7 @@ long interpolateQuad(POLY_GT4 * poly4, MESH * mesh, long t, long * Flag){
     // Find and set interpolated vertex value
     set4VertexLerPos(mesh, t);
     // Coord transformations
-    nclip = RotAverageNclip4(
+    gte_RotAverageNclip4(
                 &mesh->tmesh->v[ mesh->index[t].order.pad ],  
                 &mesh->tmesh->v[ mesh->index[t].order.vz],
                 &mesh->tmesh->v[ mesh->index[t].order.vx ],
@@ -139,7 +143,8 @@ long interpolateQuad(POLY_GT4 * poly4, MESH * mesh, long t, long * Flag){
                 ( long* )&poly4->x0, ( long* )&poly4->x1, ( long* )&poly4->x2, ( long* )&poly4->x3,
                 &mesh->p,
                 &mesh->OTz,
-                Flag
+                &Flag,
+                &nclip
             );
     return nclip;
 };
@@ -206,15 +211,13 @@ void set3Tex(POLY_GT3 * poly, MESH * mesh, DRAWENV * draw, long t, int i){
         setUV3(poly,  mesh->tmesh->u[i].vx  , mesh->tmesh->u[i].vy   + mesh->tim->prect->y,
                       mesh->tmesh->u[i+2].vx, mesh->tmesh->u[i+2].vy + mesh->tim->prect->y,
                       mesh->tmesh->u[i+1].vx, mesh->tmesh->u[i+1].vy + mesh->tim->prect->y);
-
     } else {
         ( (POLY_GT3 *) poly)->tpage = getTPage( 2,0,0,0 );
         setUV3(poly, 0,0,0,0,0,0);
-
     }
-    NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vx ], &mesh->tmesh->c[ i+0 ], mesh->p, &outCol);
-    NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vz ], &mesh->tmesh->c[ i+2 ], mesh->p, &outCol1);
-    NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vy ], &mesh->tmesh->c[ i+1 ], mesh->p, &outCol2);
+    gte_NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vx ], &mesh->tmesh->c[ i+0 ], mesh->p, &outCol);
+    gte_NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vz ], &mesh->tmesh->c[ i+2 ], mesh->p, &outCol1);
+    gte_NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vy ], &mesh->tmesh->c[ i+1 ], mesh->p, &outCol2);
     setRGB0(poly, outCol.r, outCol.g  , outCol.b);
     setRGB1(poly, outCol1.r, outCol1.g, outCol1.b);
     setRGB2(poly, outCol2.r, outCol2.g, outCol2.b);
@@ -244,63 +247,59 @@ void set4Tex(POLY_GT4 * poly4, MESH * mesh, DRAWENV * draw, long t, int i){
         ( (POLY_GT4 *) poly4)->tpage = getTPage( 2,0,0,0 );
         setUV4(poly4, 0,0,0,0,0,0,0,0);
     }
-    NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.pad ] , &mesh->tmesh->c[ i+3 ], mesh->p, &outCol);
-    NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vz ]  , &mesh->tmesh->c[ i+2 ], mesh->p, &outCol1);
-    NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vx ]  , &mesh->tmesh->c[ i+0 ], mesh->p, &outCol2);
-    NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vy ]  , &mesh->tmesh->c[ i+1 ], mesh->p, &outCol3);
+    gte_NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.pad ] , &mesh->tmesh->c[ i+3 ], mesh->p, &outCol);
+    gte_NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vz ]  , &mesh->tmesh->c[ i+2 ], mesh->p, &outCol1);
+    gte_NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vx ]  , &mesh->tmesh->c[ i+0 ], mesh->p, &outCol2);
+    gte_NormalColorDpq(&mesh->tmesh->n[ mesh->index[t].order.vy ]  , &mesh->tmesh->c[ i+1 ], mesh->p, &outCol3);
     setRGB0(poly4, outCol.r, outCol.g  , outCol.b);
     setRGB1(poly4, outCol1.r, outCol1.g, outCol1.b);
     setRGB2(poly4, outCol2.r, outCol2.g, outCol2.b);
     setRGB3(poly4, outCol3.r, outCol3.g, outCol3.b);
 };
-void set4Subdiv(void){
-    //(MESH * mesh, char ** nextpri, u_long * ot, long t, int i)
-    // FIXME : Polygon subdiv - is it working ?
-    // In main.c, l.141
+int set4Subdiv(MESH * mesh, POLY_GT4 * poly4, u_long * ot, long t, int i, char ** nextpri){
+    //~ // FIXME : Poly subdiv
     //~ DIVPOLYGON4 div4 = { 0 };
     //~ div4.pih = SCREENXRES;
     //~ div4.piv = SCREENYRES;
-    //~ div4.ndiv = 2;
-    //~ long OTc = 0;
-    //~ DIVPOLYGON3 div3 = { 0 };
-    //~ div3.pih = SCREENXRES;
-    //~ div3.piv = SCREENYRES;
-    //~ div3.ndiv = 1;
-    //
-    //~ long OTc = *mesh->OTz >> 4;
+    //~ div4.ndiv = 1;
+    
+    //~ long OTc = mesh->OTz >> 4;
     //~ FntPrint("OTC:%d", OTc);
     //~ if (OTc < 4) {
-        //~ if (OTc > 1) div4.ndiv = 1; else div4.ndiv = 2;
+        //~ // if (OTc > 1) div4.ndiv = 1; else div4.ndiv = 2;
             //~ DivideGT4(
                 //~ // Vertex coord
-                //~ &mesh->tmesh->v[ mesh->index[t].order.pad ],  
-                //~ &mesh->tmesh->v[ mesh->index[t].order.vz ],
-                //~ &mesh->tmesh->v[ mesh->index[t].order.vx ],
-                //~ &mesh->tmesh->v[ mesh->index[t].order.vy ],
+                //~ mesh->tmesh->v[ mesh->index[t].order.pad ],  
+                //~ mesh->tmesh->v[ mesh->index[t].order.vz ],
+                //~ mesh->tmesh->v[ mesh->index[t].order.vx ],
+                //~ mesh->tmesh->v[ mesh->index[t].order.vy ],
                 //~ // UV coord
                 //~ mesh->tmesh->u[i+3],
                 //~ mesh->tmesh->u[i+2],
                 //~ mesh->tmesh->u[i+0],
                 //~ mesh->tmesh->u[i+1],
                 //~ // Color
-                //~ mesh->tmesh->c[i], 
-                //~ mesh->tmesh->c[i+1], 
-                //~ mesh->tmesh->c[i+2], 
                 //~ mesh->tmesh->c[i+3], 
+                //~ mesh->tmesh->c[i+2], 
+                //~ mesh->tmesh->c[i+0], 
+                //~ mesh->tmesh->c[i+1], 
                 //~ // Gpu packet
                 //~ poly4,
-                //~ &ot[db][*mesh->OTz],
+                //~ &ot[ mesh->OTz-4],
                 //~ &div4);
             //~ // Increment primitive list pointer
-            //~ *nextpri  += ( (sizeof(POLY_GT4) + 3) / 4 ) * (( 1 << ( div4.ndiv )) << ( div4.ndiv ));
-            //~ triCount = ((1<<(div4.ndiv))<<(div4.ndiv));
-    //~ } else if (OTc < 48) {
-        //~ return 0;
+            //~ // *nextpri  += ( (sizeof(POLY_GT4) + 3) / 4 ) * (( 1 << ( div4.ndiv )) << ( div4.ndiv ));
+            //~ return ( (sizeof(POLY_GT4) * 4) );
+            //~ // triCount = ((1<<(div4.ndiv))<<(div4.ndiv));
+    //~ } 
+    //~ else if (OTc < 48) {
+        //~ return (sizeof( POLY_GT4 ));
     //~ }
-    
+    return 0;
 };
 long drawQuad(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw, int t, int i) {
     long nclip = 0;
+    int subSkip = 0;
     // If mesh is quad
     POLY_GT4 * poly4; 
     //~ for (int i = 0; i < (mesh->tmesh->len * 4); i += 4) { 
@@ -315,7 +314,7 @@ long drawQuad(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                     interpolateQuad(poly4, mesh, t, Flag);
                 } else {
                     // No interpolation, use all vertices coordinates in anim data
-                    nclip = RotAverageNclip4(
+                    gte_RotAverageNclip4(
                                 &mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.pad ],
                                 &mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.vz ],
                                 &mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.vx ],
@@ -323,7 +322,8 @@ long drawQuad(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                                 ( long* )&poly4->x0, ( long* )&poly4->x1, ( long* )&poly4->x2, ( long* )&poly4->x3,
                                 &mesh->p,
                                 &mesh->OTz,
-                                Flag
+                                &Flag,
+                                &nclip
                             );
                 }
             } else {                        
@@ -331,12 +331,15 @@ long drawQuad(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                 if (mesh->isSprite){
                     // Find inverse rotation matrix so that sprite always faces camera
                     MATRIX rot, invRot;
-                    ReadRotMatrix(&rot);
+                    gte_ReadRotMatrix(&rot);
                     TransposeMatrix(&rot, &invRot);
-                    SetMulRotMatrix(&invRot);
+                    //~ SetMulRotMatrix(&invRot);
+                    gte_MulMatrix0(&rot, &invRot, &invRot);
+                    gte_SetRotMatrix(&invRot);
                 }
                 // Use regular vertex coords
-                nclip = RotAverageNclip4(
+                
+                gte_RotAverageNclip4(
                             &mesh->tmesh->v[ mesh->index[t].order.pad ],  
                             &mesh->tmesh->v[ mesh->index[t].order.vz],
                             &mesh->tmesh->v[ mesh->index[t].order.vx ],
@@ -344,7 +347,8 @@ long drawQuad(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                             (long*)&poly4->x0, (long*)&poly4->x1, (long*)&poly4->x2, (long*)&poly4->x3,
                             &mesh->p,
                             &mesh->OTz,
-                            Flag
+                            &Flag,
+                            &nclip
                         );
             }
             if (nclip > 0 && mesh->OTz > 0 && (mesh->p < 4096)) {
@@ -395,24 +399,27 @@ long drawTri(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri
                 } else { 
                 // No interpolation
                     // Use the pre-calculated vertices coordinates from the animation data
-                    nclip = RotAverageNclip3(
-                                &mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.vx ],
-                                &mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.vz ],
-                                &mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.vy ],
-                                ( long* ) &poly->x0, ( long* ) &poly->x1, ( long* ) &poly->x2,
-                                &mesh->p,
-                                &mesh->OTz,
-                                Flag
-                            );
+                    gte_RotAverageNclip3(
+                        &mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.vx ],
+                        &mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.vz ],
+                        &mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.vy ],
+                        ( long* ) &poly->x0, ( long* ) &poly->x1, ( long* ) &poly->x2,
+                        &mesh->p,
+                        &mesh->OTz,
+                        &Flag,
+                        &nclip
+                    );
                 }
             } else {
             // No animation
                 if (mesh->isSprite){
                     // Find inverse rotation matrix so that sprite always faces camera
                     MATRIX rot, invRot;
-                    ReadRotMatrix(&rot);
+                    gte_ReadRotMatrix(&rot);
                     TransposeMatrix(&rot, &invRot);
-                    SetMulRotMatrix(&invRot);
+                    //~ SetMulRotMatrix(&invRot);
+                    gte_MulMatrix0(&rot, &invRot, &invRot);
+                    gte_SetRotMatrix(&invRot);
                 }
                 // Use model's regular vertex coordinates
                 nclip = RotAverageNclip3(

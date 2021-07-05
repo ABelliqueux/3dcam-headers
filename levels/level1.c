@@ -1323,7 +1323,7 @@ VANIM level1_modelCylindre_anim = {
     0,
     0,
     1,
-    1,
+    0,
     {
         //Frame 0
         { 3,35,47 },

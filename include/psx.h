@@ -6,6 +6,8 @@
 #include <libgpu.h>
 #include <libapi.h>
 #include <libcd.h>
+#include <inline_n.h>
+#include <gtemac.h>
 #include "../include/defines.h"
 #include "../custom_types.h"
 

@@ -1,3 +1,4 @@
+#include "../include/psx.h"
 #include "../include/camera.h"
 #include "../include/math.h"
 
@@ -22,12 +23,12 @@ void getCameraZY( int * z, int * y, int actorZ, int actorY, int angleX, int dist
 void applyCamera( CAMERA * cam ) {
     VECTOR vec;                                         // Vector that holds the output values of the following instructions
     RotMatrix_gte(&cam->rot, &cam->mat);                // Convert rotation angle in psx units (360° == 4096) to rotation matrix)
-    ApplyMatrixLV(&cam->mat, &cam->pos, &vec);          // Multiply matrix by vector pos and output to vec
+    gte_ApplyMatrix(&cam->mat, &cam->pos, &vec);          // Multiply matrix by vector pos and output to vec
     TransMatrix(&cam->mat, &vec);                       // Apply transform vector
-    SetRotMatrix(&cam->mat);                            // Set Rotation matrix
-    SetTransMatrix(&cam->mat);                          // Set Transform matrix
+    gte_SetRotMatrix(&cam->mat);                            // Set Rotation matrix
+    gte_SetTransMatrix(&cam->mat);                          // Set Transform matrix
 };
-void setCameraPos( CAMERA * camera, VECTOR pos, SVECTOR rot ) {
+void setCameraPos( CAMERA * camera, SVECTOR pos, SVECTOR rot ) {
     camera->pos =  pos;
     camera->rot =  rot;
 };

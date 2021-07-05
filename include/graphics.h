@@ -18,6 +18,7 @@ long drawQuad(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
 void set4VertexLerPos(MESH * mesh, long t);
 void set4Prism(POLY_GT4 * poly4, MESH * mesh, DRAWENV * draw, char * db, int i);
 void set4Tex(POLY_GT4 * poly4, MESH * mesh, DRAWENV * draw, long t, int i);
+int set4Subdiv(MESH * mesh, POLY_GT4 * poly4, u_long * ot, long t, int i, char ** nextpri);
 long interpolateQuad(POLY_GT4 * poly4, MESH * mesh, long t, long * Flag);
 //2D drawing
 void drawBG(CAMANGLE * camPtr, char ** nextpri, u_long * otdisc, char * db);

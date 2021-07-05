@@ -30,3 +30,21 @@
     ((v)->vx << 12) >> 8,                                              \
     ((v)->vy << 12) >> 8,                                              \
     ((v)->vz << 12) >> 8
+
+// GTE Macros
+
+#define gte_RotAverageNclip4(r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12)   \
+                {   gte_ldv3(r1,r2,r3);                                \
+                    gte_rtpt();                                        \
+                    gte_stflg(r11);                                    \
+                    gte_nclip();                                       \
+                    gte_stopz(r12);                                    \
+                    gte_stsxy3(r5,r6,r7);                              \
+                                                                       \
+                    gte_ldv0(r4);                                      \
+                    gte_rtps();                                        \
+                    gte_stsxy(r8);                                     \
+                                                                       \
+                    gte_stdp(r9);                                      \
+                    gte_avsz4();                                       \
+                    gte_stotz(r10);  }
