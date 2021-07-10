@@ -25,7 +25,7 @@
 #include "../include/graphics.h"
 #include "../include/space.h"
 
-//~ #define USECD
+#define USECD
 
 // START OVERLAY
 extern u_long load_all_overlays_here;

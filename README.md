@@ -35,7 +35,6 @@ Real-time 3D / 8bpp background / 4bpp background
  * Up, Down, Left Right, L3 (Dualshock) : Move actor.
  * X      : "Jump" .
  * Select : Switch level.
- 
   
 ## Planned
 
@@ -44,16 +43,16 @@ Real-time 3D / 8bpp background / 4bpp background
 
 # Compiling
 
-You need to install [mkpsxiso](https://github.com/Lameguy64/mkpsxiso) and the [pcsx-redux emulator and Nugget+PsyQ SDK](https://github.com/ABelliqueux/nolibgs_hello_worlds#setting-up-the-sdk--modern-gcc--psyq-aka-nuggetpsyq) before
+You need to install [mkpsxiso](https://github.com/Lameguy64/mkpsxiso) and the [Nugget+PsyQ SDK](https://github.com/ABelliqueux/nolibgs_hello_worlds/tree/newtree#installation) before
 you can build the engine. Put `mkpsxiso` and `pcsx-redux` in your $PATH and you should be good to go.
 
-  1. Clone this repo in `(...)/pcsx-redux/src/mips/` as a new project :
+  1. Clone this repo in your nugget+PsyQ folder as a new project :
 ```bash
-git clone https://github.com/ABelliqueux/3dcam-headers my-project
+git clone https://github.com/ABelliqueux/3dcam-headers --recursive my-project
 ```
   2. Navigate to that folder in a terminal :
 ```bash
-cd /pcsx-redux/src/mips/my-project
+cd my-project
 ```
   3. Type `./isotest.sh`. This should compile the example, build an iso with `mkpsxiso` and launch it with `pcsx-redux`.
   On first launch, `pcsx-redux` will ask for a PSX bios. You can use your own or [the open source OpenBios](https://github.com/grumpycoders/pcsx-redux/tree/main/src/mips/openbios).  
@@ -73,7 +72,7 @@ First, comment out line 28 in `main.c`, so that the PSX won't look for the data 
 // #define USECD
 ```
 The address we have to load the data to is defined by the 'load_all_overlays_here' symbol in `main.map`.  
-The provided `ovly_upload_helper.sh` script takes care of finding that address depending on the ps-exe name.  
+The provided `ovly_upload_helper.sh` bash script takes care of finding that address depending on the ps-exe name.  
 Thus, to load `Overlay.lvl1` and `main.ps-exe` in the psx ram, use :  
 ```bash
 ./ovly_upload_helper.sh Overlay.lvl1 main.ps-exe /dev/ttyUSB0
