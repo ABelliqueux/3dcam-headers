@@ -54,7 +54,12 @@ git clone https://github.com/ABelliqueux/3dcam-headers --recursive my-project
 ```bash
 cd my-project
 ```
-  3. Type `./isotest.sh`. This should compile the example, build an iso with `mkpsxiso` and launch it with `pcsx-redux`.
+  3. Type `./isotest.sh`. This should compile the example, build an iso with `mkpsxiso` and launch it with `pcsx-redux`.  
+  If you'd rather do things manually or are using Windows, this script does 3 things:  
+    * `make` : compile the project  
+    * `mkpsxiso -y config/OverlayExample.xml` : create the bin/cue disk image  
+    * `pcsx-redux -run -iso OverlayExample.cue` : run the disk image in the [pcsx-redux](https://github.com/grumpycoders/pcsx-redux/) emulator.  
+  
   On first launch, `pcsx-redux` will ask for a PSX bios. You can use your own or [the open source OpenBios](https://github.com/grumpycoders/pcsx-redux/tree/main/src/mips/openbios).  
   A [prebuilt binary](http://psx.arthus.net/roms/bios/openbios.bin) is available here for convenience.  
   Set it in pcsx-redux ; `Configuration > Emulation`, then reboot the emulator ; `File > Reboot`. 
