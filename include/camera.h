@@ -17,14 +17,14 @@ typedef struct{
     int pan, panv;
     int tilt, tiltv;
     int rol;
-    SVECTOR pos;
-    SVECTOR rot;
+    SVECTOR * pos;
+    SVECTOR * rot;
     SVECTOR dvs;
-    MATRIX mat;
+    MATRIX * mat;
 } CAMERA;
 
 void getCameraXZ(int * x, int * z, int actorX, int actorZ, int angle, int distance);
 void getCameraXZY(int * x, int * z, int * y, int actorX, int actorZ, int actorY, int angle, int angleX, int distance);
 void getCameraZY( int * z, int * y, int actorZ, int actorY, int angleX, int distance);
 void applyCamera(CAMERA * cam);
-void setCameraPos(CAMERA * camera, SVECTOR pos, SVECTOR rot);
+void setCameraPos(CAMERA * camera, SVECTOR * pos, SVECTOR * rot);

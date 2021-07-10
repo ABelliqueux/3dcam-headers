@@ -6,14 +6,16 @@
 #include <libgpu.h>
 #include <libapi.h>
 #include <libcd.h>
+#include <string.h>
 #include <inline_n.h>
 #include <gtemac.h>
 #include "../include/defines.h"
 #include "../custom_types.h"
 
 // PSX setup
-void setLightEnv(DRAWENV draw[2], CVECTOR * BGc, VECTOR * BKc, MATRIX * cmat);
-void init(DISPENV disp[2], DRAWENV draw[2], short db, MATRIX * cmat, CVECTOR * BG, VECTOR * BK, VECTOR * FC );
+void setDCLightEnv(MATRIX * curLevelCMat, MATRIX * curLevelLgtMat, SVECTOR * curLevelLgtAng);
+void setLightEnv(DRAWENV draw[2], CVECTOR * BGc, VECTOR * BKc);
+void init(DISPENV disp[2], DRAWENV draw[2], short db, CVECTOR * BG, VECTOR * BK, VECTOR * FC );
 void ScrRst(void);
 void display(DISPENV * disp, DRAWENV * draw, u_long * otdisc, char * primbuff, char ** nextprim, char * db);
 

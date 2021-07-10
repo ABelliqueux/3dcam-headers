@@ -21,14 +21,14 @@ void getCameraZY( int * z, int * y, int actorZ, int actorY, int angleX, int dist
 };
 // @Will : you might want to use sin/cos to move the camera in a circle but you could do that by moving it along it’s tangent and then clamping the distance
 void applyCamera( CAMERA * cam ) {
-    VECTOR vec;                                         // Vector that holds the output values of the following instructions
-    RotMatrix_gte(&cam->rot, &cam->mat);                // Convert rotation angle in psx units (360° == 4096) to rotation matrix)
-    gte_ApplyMatrix(&cam->mat, &cam->pos, &vec);          // Multiply matrix by vector pos and output to vec
-    TransMatrix(&cam->mat, &vec);                       // Apply transform vector
-    gte_SetRotMatrix(&cam->mat);                            // Set Rotation matrix
-    gte_SetTransMatrix(&cam->mat);                          // Set Transform matrix
+    //~ VECTOR vec;                                         // Vector that holds the output values of the following instructions
+    RotMatrix_gte(dc_camRot, dc_camMat);                // Convert rotation angle in psx units (360° == 4096) to rotation matrix)
+    gte_ApplyMatrix(dc_camMat, dc_camPos, dc_wrklvector);          // Multiply matrix by vector pos and output to vec
+    TransMatrix(dc_camMat, dc_wrklvector);                       // Apply transform vector
+    gte_SetRotMatrix(dc_camMat);                            // Set Rotation matrix
+    gte_SetTransMatrix(dc_camMat);                          // Set Transform matrix
 };
-void setCameraPos( CAMERA * camera, SVECTOR pos, SVECTOR rot ) {
-    camera->pos =  pos;
-    camera->rot =  rot;
+void setCameraPos( CAMERA * camera, SVECTOR * pos, SVECTOR * rot ) {
+    copyVector(camera->pos, pos);
+    copyVector(camera->rot, rot);
 };

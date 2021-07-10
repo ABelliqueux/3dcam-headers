@@ -1,6 +1,13 @@
 #include "../include/psx.h"
 
-void setLightEnv(DRAWENV draw[2], CVECTOR * BGc, VECTOR * BKc, MATRIX * cmat){
+
+void setDCLightEnv(MATRIX * curLevelCMat, MATRIX * curLevelLgtMat, SVECTOR * curLevelLgtAng){
+    memcpy( dc_lvlcmatp, curLevelCMat, sizeof(MATRIX));
+    memcpy( dc_lvllgtmatp, curLevelLgtMat, sizeof(MATRIX));
+    memcpy( dc_lgtangp, curLevelLgtAng, sizeof(SVECTOR));
+};
+
+void setLightEnv(DRAWENV draw[2], CVECTOR * BGc, VECTOR * BKc){
     // Set Draw area color
     setRGB0(&draw[0], BGc->r, BGc->g, BGc->b);
     setRGB0(&draw[1], BGc->r, BGc->g, BGc->b);
@@ -9,10 +16,10 @@ void setLightEnv(DRAWENV draw[2], CVECTOR * BGc, VECTOR * BKc, MATRIX * cmat){
     // Set Ambient color
     SetBackColor( BKc->vx, BKc->vy, BKc->vz );
     // Set Light matrix
-    SetColorMatrix(cmat);
+    SetColorMatrix(dc_lvlcmatp);
 };
 
-void init(DISPENV disp[2], DRAWENV draw[2], short db, MATRIX * cmat, CVECTOR * BGc, VECTOR * BKc, VECTOR * FC) {
+void init(DISPENV disp[2], DRAWENV draw[2], short db, CVECTOR * BGc, VECTOR * BKc, VECTOR * FC) {
     ResetCallback();
     // Init pad
     //~ PadInit(0);
@@ -23,7 +30,9 @@ void init(DISPENV disp[2], DRAWENV draw[2], short db, MATRIX * cmat, CVECTOR * B
     // Initialize and setup the GTE
     InitGeom();
     SetGeomOffset( CENTERX, CENTERY );        // x, y offset
-    SetGeomScreen( FOV );            // Distance between eye and screen  - Camera FOV
+    SetGeomScreen( FOV );                     // Distance between eye and screen  - Camera FOV
+
+    SetDispMask(1);
     // Set the display and draw environments
     SetDefDispEnv(&disp[0], 0, 0         , SCREENXRES, SCREENYRES);
     SetDefDispEnv(&disp[1], 0, SCREENYRES, SCREENXRES, SCREENYRES);
@@ -36,7 +45,7 @@ void init(DISPENV disp[2], DRAWENV draw[2], short db, MATRIX * cmat, CVECTOR * B
         disp[1].screen.y += 8;
     }
     // Set Draw area color
-    setLightEnv(draw, BGc, BKc, cmat);
+    setLightEnv(draw, BGc, BKc);
     // Set Draw area clear flag
     draw[0].isbg = 1;
     draw[1].isbg = 1;
@@ -73,7 +82,7 @@ void display(DISPENV * disp, DRAWENV * draw, u_long * otdisc, char * primbuff, c
     ResetGraph(1);
     PutDispEnv(disp);
     PutDrawEnv(draw);
-    SetDispMask(1);
+    //~ SetDispMask(1);
     // Main OT
     DrawOTag(otdisc + OT2LEN - 1);
     *db = !*db;
@@ -118,6 +127,10 @@ void SwitchLevel( LEVEL * curLevel, LEVEL * loadLevel ){
     if (curLevel->camPtr->tim_data){
         LoadTexture(curLevel->camPtr->tim_data, curLevel->camPtr->BGtim);
     }
+    // TODO : per-level lgtang
+    SVECTOR lgtang = {0,0,0,0};
+    // Light environment
+    setDCLightEnv(curLevel->cmat, curLevel->lgtmat, &lgtang);
 };
 void LoadTexture(u_long * tim, TIM_IMAGE * tparam){     // This part is from Lameguy64's tutorial series : lameguy64.net/svn/pstutorials/chapter1/3-textures.html login/pw: annoyingmous
         OpenTIM(tim);                                   // Open the tim binary data, feed it the address of the data in memory

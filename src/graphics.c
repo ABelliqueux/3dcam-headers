@@ -1,41 +1,66 @@
 #include "../include/psx.h"
 #include "../include/graphics.h"
 #include "../include/math.h"
+#include "../include/CPUMAC.H"
+
+// Declare registers 16 19 23     
+//~ register ulong   ur0     asm("$16");
+//~ register ulong   ur1     asm("$19");
+//~ register ulong   ur2     asm("$20");
+//~ register ulong   ur3     asm("$23");
+//~ register ulong   ur4     asm("$21");
+//~ register ulong   ur5     asm("$22");
 
 void enlightMesh(LEVEL * curLvl, MESH * mesh, SVECTOR * lgtang){
     // Update light rotation on actor
-    MATRIX      rotlgt, rotmesh, light; 
+    //~ MATRIX      rotlgt, rotmesh, light; 
     // Find rotmat from actor angle
-    RotMatrix_gte(&mesh->rot, &rotmesh);     
-    RotMatrix_gte(lgtang, &rotlgt);
-    gte_MulMatrix0(&rotmesh, &rotlgt, &rotlgt);
-    gte_MulMatrix0(curLvl->lgtmat, &rotlgt, &light);
-    gte_SetLightMatrix(&light);
+    RotMatrix_gte(&mesh->rot, dc_wrkmatp);     
+    RotMatrix_gte(lgtang, dc_retmatp);
+    gte_MulMatrix0(dc_wrkmatp, dc_retmatp, dc_retmatp);
+    gte_MulMatrix0(curLvl->lgtmat, dc_retmatp, dc_retmatp);
+    gte_SetLightMatrix(dc_retmatp);
 };
 void transformMesh(CAMERA * camera, MESH * mesh){
-    MATRIX mat;
+    //~ MATRIX mat;
     // Find rotation matrix
-    RotMatrix_gte(&mesh->rot, &mat);            
+    RotMatrix_gte(&mesh->rot, dc_wrkmatp);
     // Find translation matrix
-    TransMatrix(&mat, &mesh->pos);
+    TransMatrix(dc_wrkmatp, &mesh->pos);
     // Compose matrix with cam
-    gte_CompMatrix(&camera->mat, &mat, &mat);  
+    gte_CompMatrix(dc_camMat, dc_wrkmatp, dc_wrkmatp);  
+    //gte_MulMatrix0(&camera->mat, &mat, &mat);
+    //~ gte_SetRotMatrix(&camera->mat);                              
+    //~ gte_ldclmv(&mat);                                    
+    //~ gte_rtir();                            
+    //~ gte_stclmv(&mat);                        
+    //~ gte_ldclmv((char*)&mat+2);               
+    //~ gte_rtir();                            
+    //~ gte_stclmv((char*)&mat+2);               
+    //~ gte_ldclmv((char*)&mat+4);               
+    //~ gte_rtir();                            
+    //~ gte_stclmv((char*)&mat+4);
+    //~ //
+    //~ gte_SetTransMatrix(&camera->mat);
+    //~ gte_ldlv0((char*)&mat+20);
+    //~ gte_rt();
+    //~ gte_stlvnl((char*)&mat+20);
     // Set default rotation and translation matrices
-    gte_SetRotMatrix(&mat);                             
-    gte_SetTransMatrix(&mat);                           
+    gte_SetRotMatrix(dc_wrkmatp);                          
+    gte_SetTransMatrix(dc_wrkmatp);                           
 //~ }
 };
-void drawPoly(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw) {
-    long nclip, t = 0;
+void drawPoly(MESH * mesh, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw) {
+    long t = 0;
     // mesh is POLY_GT3 ( triangle )
     for (int i = 0; i < (mesh->totalVerts) && (mesh->totalVerts - i) > 2;) {
         if (mesh->index[t].code == 4) {
-            t = drawTri(mesh, Flag, atime, camMode, nextpri, ot, db, draw, t, i);
+            t = drawTri(mesh, atime, camMode, nextpri, ot, db, draw, t, i);
             i += 3;
         }
         // If mesh is quad
         if (mesh->index[t].code == 8) {
-            t = drawQuad(mesh, Flag, atime, camMode, nextpri, ot, db, draw, t, i);
+            t = drawQuad(mesh, atime, camMode, nextpri, ot, db, draw, t, i);
             i += 4;
         }
     }
@@ -81,8 +106,8 @@ void set4VertexLerPos(MESH * mesh, long t){
     mesh->tmesh->v[ mesh->index[ t ].order.pad ].vy = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.pad ].vy << precision , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.pad ].vy  << precision, mesh->anim->cursor << precision) >> precision;
     mesh->anim->cursor += 2 * mesh->anim->dir;
 }
-long interpolateTri(POLY_GT3 * poly, MESH * mesh, long t, long * Flag){
-    long nclip = 0;
+long interpolateTri(POLY_GT3 * poly, MESH * mesh, long t){
+    long Flag, nclip = 0;
      // Ping pong 
      //~ //if (mesh->anim->cursor > 4096 || mesh->anim->cursor < 0){
      //~ //   mesh->anim->dir *= -1;
@@ -115,8 +140,8 @@ long interpolateTri(POLY_GT3 * poly, MESH * mesh, long t, long * Flag){
             );
     return nclip;
 };
-long interpolateQuad(POLY_GT4 * poly4, MESH * mesh, long t, long * Flag){
-    long nclip = 0;
+long interpolateQuad(POLY_GT4 * poly4, MESH * mesh, long t){
+    long Flag, nclip = 0;
     // ping pong
     //~ if (mesh->anim->cursor > 4096 || mesh->anim->cursor < 0){
        //~ mesh->anim->dir *= -1;
@@ -297,8 +322,8 @@ int set4Subdiv(MESH * mesh, POLY_GT4 * poly4, u_long * ot, long t, int i, char *
     //~ }
     return 0;
 };
-long drawQuad(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw, int t, int i) {
-    long nclip = 0;
+long drawQuad(MESH * mesh, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw, int t, int i) {
+    long Flag, nclip = 0;
     int subSkip = 0;
     // If mesh is quad
     POLY_GT4 * poly4; 
@@ -311,7 +336,7 @@ long drawQuad(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
             if (mesh->isAnim){
                 // with interpolation
                 if ( mesh->anim->interpolate ){
-                    interpolateQuad(poly4, mesh, t, Flag);
+                    interpolateQuad(poly4, mesh, t);
                 } else {
                     // No interpolation, use all vertices coordinates in anim data
                     gte_RotAverageNclip4(
@@ -338,7 +363,6 @@ long drawQuad(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
                     gte_SetRotMatrix(&invRot);
                 }
                 // Use regular vertex coords
-                
                 gte_RotAverageNclip4(
                             &mesh->tmesh->v[ mesh->index[t].order.pad ],  
                             &mesh->tmesh->v[ mesh->index[t].order.vz],
@@ -382,8 +406,8 @@ long drawQuad(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpr
         }
     //~ }
 };
-long drawTri(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw, int t, int i) {
-    long nclip = 0;
+long drawTri(MESH * mesh, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw, int t, int i) {
+    long Flag, nclip = 0;
     // mesh is POLY_GT3 ( triangle )
     POLY_GT3 * poly;                        
     // len member == # vertices, but here it's # of triangle... So, for each tri * 3 vertices ...
@@ -395,7 +419,7 @@ long drawTri(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri
             if (mesh->isAnim){
                 // If interpolation flag is set, use it
                 if(mesh->anim->interpolate){
-                    nclip = interpolateTri(poly, mesh, t, Flag);
+                    nclip = interpolateTri(poly, mesh, t);
                 } else { 
                 // No interpolation
                     // Use the pre-calculated vertices coordinates from the animation data
@@ -414,22 +438,24 @@ long drawTri(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri
             // No animation
                 if (mesh->isSprite){
                     // Find inverse rotation matrix so that sprite always faces camera
-                    MATRIX rot, invRot;
-                    gte_ReadRotMatrix(&rot);
-                    TransposeMatrix(&rot, &invRot);
+                    //~ MATRIX rot, invRot;
+                    // Use scratchpad dc_wrkmatp and dc_retmatp
+                    gte_ReadRotMatrix(dc_wrkmatp);
+                    TransposeMatrix(dc_wrkmatp, dc_retmatp);
                     //~ SetMulRotMatrix(&invRot);
-                    gte_MulMatrix0(&rot, &invRot, &invRot);
-                    gte_SetRotMatrix(&invRot);
+                    gte_MulMatrix0(dc_wrkmatp, dc_retmatp, dc_retmatp);
+                    gte_SetRotMatrix(dc_retmatp);
                 }
                 // Use model's regular vertex coordinates
-                nclip = RotAverageNclip3(
+                gte_RotAverageNclip3(
                             &mesh->tmesh->v[ mesh->index[t].order.vx ],  
                             &mesh->tmesh->v[ mesh->index[t].order.vz ],
                             &mesh->tmesh->v[ mesh->index[t].order.vy ],
                             ( long * ) &poly->x0, ( long * ) &poly->x1, ( long * ) &poly->x2,
                             &mesh->p,
                             &mesh->OTz,
-                            Flag
+                            &Flag,
+                            &nclip
                         );
             }
             // Do not draw invisible meshes 
@@ -454,7 +480,7 @@ long drawTri(MESH * mesh, long * Flag, int atime, int * camMode, char ** nextpri
                     set3Tex(poly, mesh, draw, t, i);
                 }
                 if ( (mesh->OTz > 0) /*&& (*mesh->OTz < OTLEN)*/ && (mesh->p < 4096) ) {
-                    AddPrim(&ot[ mesh->OTz-2 ], poly);
+                    AddPrim(&ot[ mesh->OTz-4 ], poly);
                 }
                 *nextpri += sizeof(POLY_GT3);
             }

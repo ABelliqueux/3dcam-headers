@@ -25,7 +25,7 @@
 #include "../include/graphics.h"
 #include "../include/space.h"
 
-#define USECD
+//~ #define USECD
 
 // START OVERLAY
 extern u_long load_all_overlays_here;
@@ -37,7 +37,7 @@ u_long overlaySize = 0;
 #include "../levels/level1.h"
 
 // Levels
-volatile u_char level = 1;
+u_char level = 1;
 u_short levelWas = 0;
 u_short levelHasChanged = 0;
 // Overlay
@@ -57,7 +57,7 @@ char            db  = 0;                        // Current buffer counter
 CVECTOR BGc = {128, 128, 128, 0};               // Default Far color - This can be set in each level.
 VECTOR BKc = {128, 128, 128, 0};                // Back color   
 VECTOR FC = FOG_COLOR;                     // Far (Fog) color   
-SVECTOR     lgtang = {0, 0, 0}; 
+SVECTOR lgtang = {0, 0, 0};
 MATRIX rotlgt, light;
 short vs;
 CAMERA camera = {0};
@@ -76,37 +76,24 @@ VECTOR angleCam  = {0,0,0,0};
 int dist      = 150; 
 int lerping    = 0;
 short curCamAngle = 0;
-// Inverted Cam coordinates for Forward Vector calc
-VECTOR InvCamPos = {0,0,0,0};
 // Actor's forward vector (used for dualshock)
 VECTOR fVecActor = {0,0,0,0};
 u_long triCount = 0;
-// Default level : Initialize everything to 0
-MATRIX cmat     = {0}, lgtmat   = {0};
-MESH   actorPtr = {0}, levelPtr = {0} , propPtr = {0}, meshes[] = {0};
-int    meshes_length = 0;
-NODE   curNode  = {0};
-CAMPATH camPath = {0};
-CAMANGLE camPtr = {0}, camAngles[] = {0};
-LEVEL curLvl = {
-    &BGc,
-    &BKc,
-    &cmat,
-    &lgtmat,
-    (MESH **)&meshes,
-    &meshes_length,
-    &actorPtr,
-    &levelPtr,
-    &propPtr,
-    &camPtr,
-    &camPath,
-    (CAMANGLE **)&camAngles,
-    &curNode
-};
+LEVEL curLvl = {0};
 LEVEL * loadLvl;
+// Callback variables
+u_short lastPad;
+int lerpValues[4096 >> 7];
+short cursor = 0;
+short angleCamTimer = 0;
+short forceApplied = 0;
 // Callback function is used for pads
 void callback();
 int main() {
+    // Set matrices pointers to scratchpad 
+    camera.mat = dc_camMat;
+    camera.pos = dc_camPos;
+    camera.rot = dc_camRot;
     // Load level file according to level, l.39
     if ( level == 0 ){
         overlayFile = "\\level0.bin;1";
@@ -130,8 +117,10 @@ int main() {
         LvlPtrSet( &curLvl, &level1);
     } 
     levelWas = level;
+    // Copy light matrices / vector to scratchpad
+    setDCLightEnv(curLvl.cmat, curLvl.lgtmat, &lgtang);
     // Init dislay, Gte..
-    init(disp, draw, db, curLvl.cmat, curLvl.BGc, curLvl.BKc, &FC);
+    init(disp, draw, db, curLvl.BGc, curLvl.BKc, &FC);
     // Init Pads
     InitPAD(controllers[0].pad, 34, controllers[1].pad, 34);
     StartPAD();
@@ -167,7 +156,7 @@ int main() {
             triCount += curLvl.meshes[k]->tmesh->len;
     }
     // Set camera starting pos
-    setCameraPos(&camera, curLvl.camPtr->campos->pos, curLvl.camPtr->campos->rot);
+    setCameraPos(&camera, &curLvl.camPtr->campos->pos, &curLvl.camPtr->campos->rot);
     // Find curCamAngle if using pre-calculated BGs
     if (camMode == 2) {                              
         if (curLvl.camPtr->tim_data){
@@ -176,7 +165,7 @@ int main() {
     }
     // Main loop
     while ( VSync(VSYNC) ) {
-        timeS = VSync(-1) / 60;
+        //~ timeS = VSync(-1) / 60;
         // Check if level has changed
         // TODO : Proper level system / loader
         if ( levelWas != level ){
@@ -186,11 +175,14 @@ int main() {
                     overlayFile = "\\level0.bin;1";
                     overlaySize = __lvl0_end;
                     loadLvl     = &level0;
+                    // Copy light matrices / vector to scratchpad
                     break;
                 case 1:
                     overlayFile = "\\level1.bin;1";
                     overlaySize = __lvl1_end;
                     loadLvl     = &level1;
+                    // Copy light matrices / vector to scratchpad
+
                     break;
                 default:
                     overlayFile = "\\level0.bin;1";
@@ -201,7 +193,7 @@ int main() {
               LoadLevelCD( overlayFile, &load_all_overlays_here );
             #endif
             SwitchLevel( &curLvl, loadLvl);
-            setLightEnv(draw, curLvl.BGc, curLvl.BKc, curLvl.cmat);
+            setLightEnv(draw, curLvl.BGc, curLvl.BKc);
             levelWas = level;
         }
         FntPrint("Ovl:%s\nLvl : %x\nLvl: %d %d \n%x", overlayFile, &level, level, levelWas, loadLvl);
@@ -228,9 +220,9 @@ int main() {
                 );
     // Camera modes
         if(camMode != 2) {
-            camera.rot.vy = camAngleToAct.vy;
+            camera.rot->vy = camAngleToAct.vy;
             // using csin/ccos, no need for theta
-            camera.rot.vx = camAngleToAct.vx;   
+            camera.rot->vx = camAngleToAct.vx;   
         }
         if(camMode < 4 ) {
             lerping = 0;
@@ -238,7 +230,7 @@ int main() {
         // Camera follows actor
         if(camMode == 0) {
             dist = 200;
-            setVector(&camera.pos, -(camera.x/ONE), -(camera.y/ONE), -(camera.z/ONE));
+            setVector(camera.pos, -(camera.x/ONE), -(camera.y/ONE), -(camera.z/ONE));
             angle.vy = -(curLvl.actorPtr->rot.vy / 2) + angleCam.vy;
             // Camera horizontal and vertical position
             getCameraZY(&camera.z, &camera.y, curLvl.actorPtr->pos.vz, curLvl.actorPtr->pos.vy, angle.vx, dist);
@@ -249,7 +241,7 @@ int main() {
             // Set distance between cam and actor
             dist = 150;
             // Set camera position
-            setVector(&camera.pos, -(camera.x/ONE), 100, -(camera.z/ONE));
+            setVector(camera.pos, -(camera.x/ONE), 100, -(camera.z/ONE));
             // Find new camera position
             getCameraXZ(&camera.x, &camera.z, curLvl.actorPtr->pos.vx, curLvl.actorPtr->pos.vz, angle.vy, dist);
             // Set rotation amount
@@ -260,7 +252,7 @@ int main() {
             // Using precalc sqrt
             dist = psqrt( (posToActor.vx * posToActor.vx ) + (posToActor.vz * posToActor.vz) );
             // Set camera position
-            setVector(&camera.pos, 190, 100, 180);
+            setVector(camera.pos, 190, 100, 180);
         }
         // Fixed Camera angle
         if (camMode == 2) {                              
@@ -293,7 +285,7 @@ int main() {
                     }
                 }
             }
-            setCameraPos(&camera, curLvl.camPtr->campos->pos, curLvl.camPtr->campos->rot);
+            setCameraPos(&camera, &curLvl.camPtr->campos->pos, &curLvl.camPtr->campos->rot);
         }
         // Flyby mode with LERP from camStart to camEnd
         if (camMode == 4) {                               
@@ -302,7 +294,7 @@ int main() {
                 // Lerping sequence has not begun
                 if (!lerping){
                     // Set cam start position ( first key pos )
-                    copyVector(&camera.pos, &curLvl.camPath->points[curLvl.camPath->cursor]);
+                    copyVector(camera.pos, &curLvl.camPath->points[curLvl.camPath->cursor]);
                     // Lerping sequence is starting
                     lerping = 1;
                     // Set cam pos index to 0
@@ -312,7 +304,7 @@ int main() {
                 dist = psqrt( (posToActor.vx * posToActor.vx ) + (posToActor.vz * posToActor.vz));
                 // Fixed point precision 2^12 == 4096
                 int precision = 12;
-                setVector( &camera.pos, 
+                setVector( camera.pos, 
                            lerpD(curLvl.camPath->points[curLvl.camPath->cursor].vx << precision, curLvl.camPath->points[curLvl.camPath->cursor+1].vx << precision, curLvl.camPath->pos << precision) >> precision,
                            lerpD(curLvl.camPath->points[curLvl.camPath->cursor].vy << precision, curLvl.camPath->points[curLvl.camPath->cursor+1].vy << precision, curLvl.camPath->pos << precision) >> precision,
                            lerpD(curLvl.camPath->points[curLvl.camPath->cursor].vz << precision, curLvl.camPath->points[curLvl.camPath->cursor+1].vz << precision, curLvl.camPath->pos << precision) >> precision
@@ -342,7 +334,7 @@ int main() {
             // Lerping sequence has not begun
                 if (!lerping){
                     // Set cam start position ( first key pos )
-                    copyVector(&camera.pos, &curLvl.camPath->points[curLvl.camPath->cursor]);
+                    copyVector(camera.pos, &curLvl.camPath->points[curLvl.camPath->cursor]);
                     // Lerping sequence is starting
                     lerping = 1;
                     // Set cam pos index to 0
@@ -352,17 +344,17 @@ int main() {
                 dist = psqrt( (posToActor.vx * posToActor.vx ) + (posToActor.vz * posToActor.vz));
                 // Fixed point precision 2^12 == 4096
                 short precision = 12;
-                setVector(  &camera.pos, 
+                setVector(  camera.pos, 
                             lerpD(curLvl.camPath->points[curLvl.camPath->cursor].vx << precision, curLvl.camPath->points[curLvl.camPath->cursor+1].vx << precision, curLvl.camPath->pos << precision) >> precision,
                             lerpD(curLvl.camPath->points[curLvl.camPath->cursor].vy << precision, curLvl.camPath->points[curLvl.camPath->cursor+1].vy << precision, curLvl.camPath->pos << precision) >> precision,
                             lerpD(curLvl.camPath->points[curLvl.camPath->cursor].vz << precision, curLvl.camPath->points[curLvl.camPath->cursor+1].vz << precision, curLvl.camPath->pos << precision) >> precision
                 );
                 // Ony move cam if position is between first curLvl.camPath->vx and last curLvl.camPath->vx
-                if ( camAngleToAct.vy < -50 && camera.pos.vx > curLvl.camPath->points[curLvl.camPath->len - 1].vx ) {  
+                if ( camAngleToAct.vy < -50 && camera.pos->vx > curLvl.camPath->points[curLvl.camPath->len - 1].vx ) {  
                     // Clamp curLvl.camPath position to cameraSpeed
                     curLvl.camPath->pos += dist < cameraSpeed ? 0 : cameraSpeed ;
                 }
-                if ( camAngleToAct.vy > 50 && camera.pos.vx > curLvl.camPath->points[curLvl.camPath->cursor].vx ) {  
+                if ( camAngleToAct.vy > 50 && camera.pos->vx > curLvl.camPath->points[curLvl.camPath->cursor].vx ) {  
                     curLvl.camPath->pos -= dist < cameraSpeed ? 0 : cameraSpeed;
                 }
                 // If camera has reached next key pos, reset pos index, move cursor to next key pos
@@ -416,16 +408,20 @@ int main() {
                         if ( curLvl.meshes[k]->isProp ){
                             checkBodyCol( curLvl.meshes[k]->body , curLvl.meshes[k]->node->plane->body );
                         }
-                        // Get col between actor and props
-                        col = getExtCollision( *curLvl.meshes[k]->body, *curLvl.propPtr->body );
-                        if (col.vx && col.vz ) {
-                            setVector( &curLvl.propPtr->body->velocity,
-                                       curLvl.meshes[k]->body->velocity.vx,
-                                       0,
-                                       curLvl.meshes[k]->body->velocity.vz
-                                      );
-                            // If prop is spherical, make it roll
-                            applyAngMom(curLvl);
+                        // Only evaluate collision if actor is on same plane as prop
+                        if ( curLvl.curNode == curLvl.propPtr->node ){
+                            // Get col between actor and props
+                            col = getExtCollision( *curLvl.meshes[k]->body, *curLvl.propPtr->body );
+                            if (col.vx && col.vz ) {
+                                setVector( &curLvl.propPtr->body->velocity,
+                                           curLvl.meshes[k]->body->velocity.vx,
+                                           0,
+                                           curLvl.meshes[k]->body->velocity.vz
+                                          );
+                                // If prop is spherical, make it roll
+                                applyAngMom(curLvl);
+                            }
+                            
                         }
                         // Synchronize mesh to body position
                         copyVector(&curLvl.meshes[k]->pos, &curLvl.meshes[k]->body->position);
@@ -439,59 +435,60 @@ int main() {
         }
     // Camera setup 
         // Get position of cam relative to actor
-        addVector2(&curLvl.actorPtr->pos, &camera.pos, &posToActor);
+        addVector2(&curLvl.actorPtr->pos, camera.pos, &posToActor);
             
     // Polygon drawing
         if (curLvl.curNode){
-            static long Flag;
             if ( (camMode == 2) && (curLvl.camPtr->tim_data ) ) {
                 drawBG(curLvl.camPtr, &nextpri, otdisc[db], &db);
                 // Loop on camAngles
                 for ( int mesh = 0 ; mesh < curLvl.camAngles[ curCamAngle ]->index; mesh ++ ) {
-                    enlightMesh(&curLvl, curLvl.camAngles[curCamAngle]->objects[mesh], &lgtang);
+                    enlightMesh(&curLvl, curLvl.camAngles[curCamAngle]->objects[mesh], dc_lgtangp);
                     transformMesh(&camera, curLvl.camAngles[curCamAngle]->objects[mesh]);
-                    drawPoly(curLvl.camAngles[curCamAngle]->objects[mesh], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
+                    drawPoly(curLvl.camAngles[curCamAngle]->objects[mesh], atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
                 }
             }
             else {
                 // Draw current node's plane
-                drawPoly( curLvl.curNode->plane, &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
+                drawPoly( curLvl.curNode->plane, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
                 // Draw surrounding planes 
                 for ( int sibling = 0; sibling < curLvl.curNode->siblings->index; sibling++ ) {
-                    drawPoly(curLvl.curNode->siblings->list[ sibling ]->plane, &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
+                    drawPoly(curLvl.curNode->siblings->list[ sibling ]->plane, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
                 }
                 // Draw adjacent planes's children
                 for ( int sibling = 0; sibling < curLvl.curNode->siblings->index; sibling++ ) {
                     for ( int object = 0; object < curLvl.curNode->siblings->list[ sibling ]->objects->index; object++ ) {
                         long t = 0;
-                        enlightMesh(&curLvl, curLvl.curNode->siblings->list[ sibling ]->objects->list[ object ], &lgtang);
+                        enlightMesh(&curLvl, curLvl.curNode->siblings->list[ sibling ]->objects->list[ object ], dc_lgtangp);
                         transformMesh(&camera, curLvl.curNode->siblings->list[ sibling ]->objects->list[ object ]);
-                        drawPoly( curLvl.curNode->siblings->list[ sibling ]->objects->list[ object ], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
+                        drawPoly( curLvl.curNode->siblings->list[ sibling ]->objects->list[ object ], atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
                     }
                 }
                 // Draw current plane children
                 for ( int object = 0; object < curLvl.curNode->objects->index; object++ ) {
-                    enlightMesh(&curLvl, curLvl.curNode->objects->list[ object ], &lgtang);
+                    enlightMesh(&curLvl, curLvl.curNode->objects->list[ object ], dc_lgtangp);
                     transformMesh(&camera, curLvl.curNode->objects->list[ object ]);
-                    drawPoly( curLvl.curNode->objects->list[ object ], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
+                    drawPoly( curLvl.curNode->objects->list[ object ], atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
                 }
                 // Draw rigidbodies
                 for ( int object = 0; object < curLvl.curNode->rigidbodies->index; object++ ) {
-                    enlightMesh(&curLvl, curLvl.curNode->rigidbodies->list[ object ], &lgtang);
+                    enlightMesh(&curLvl, curLvl.curNode->rigidbodies->list[ object ], dc_lgtangp);
                     transformMesh(&camera, curLvl.curNode->rigidbodies->list[ object ]);
-                    drawPoly( curLvl.curNode->rigidbodies->list[ object ], &Flag, atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
+                    drawPoly( curLvl.curNode->rigidbodies->list[ object ], atime, &camMode, &nextpri, ot[db], &db, &draw[db]);
                 }
             }    
         }
-        // Update global light matrix
-        RotMatrix_gte(&lgtang, &rotlgt);  
-        MulMatrix0(curLvl.lgtmat, &rotlgt, &light);
-        SetLightMatrix(&light);
+        // Update global light matrix - use scratchpad 
+        RotMatrix_gte(dc_lgtangp, dc_lgtmatp);
+        gte_MulMatrix0(dc_lvllgtmatp, dc_lgtmatp, dc_lgtmatp);
+        gte_SetLightMatrix(dc_lgtmatp);
         // Set camera
         applyCamera(&camera);
         // Add secondary OT to main OT
         AddPrims(otdisc[db], ot[db] + OTLEN - 1, ot[db]);
-        FntPrint("Time    : %d", timeS);
+        FntPrint("Time    : %d\n", time);
+        FntPrint("#Tri    : %d\n", triCount);
+        FntPrint("# : %d %d\n", sizeof(VECTOR), sizeof(CAMERA) );
         FntFlush(-1);
         display( &disp[db], &draw[db], otdisc[db], primbuff[db], &nextpri, &db);
     }
@@ -504,12 +501,13 @@ void callback() {
     read_controller( &theControllers[1], &controllers[1].pad[0], 1 );
     u_char PADL = ~theControllers[0].button1;
     u_char PADR = ~theControllers[0].button2;
-    static u_short lastPad;
-    static short forceApplied = 0;
+    //~ static u_short lastPad;
+    //~ static int lerpValues[4096 >> 7];
+    //~ static short cursor = 0;
+    //~ static short angleCamTimer = 0;
+    //~ static short forceApplied = 0;
     int div = 32;
-    static int lerpValues[4096 >> 7];
-    static short cursor = 0;
-    static short angleCamTimer = 0;
+
     if( !lerpValues[0] ) {
         for ( long long i = 0; i < div ; i++ ){
             lerpValues[(div-1)-i] = lerp(-24, -264, easeIn(i));
@@ -530,7 +528,7 @@ void callback() {
                     camMode ++;
                     lerping = 0;
             } else {
-                setCameraPos(&camera, curLvl.camPtr->campos->pos, curLvl.camPtr->campos->rot);
+                setCameraPos(&camera, &curLvl.camPtr->campos->pos, &curLvl.camPtr->campos->rot);
                 curLvl.camPath->cursor = 0;
                 camMode = 0;
                 lerping = 0;
@@ -552,10 +550,10 @@ void callback() {
         //pressed = 0;
     //~ }
     if ( PADR & PadShldL2 ) {
-        lgtang.vy += 32;
+        dc_lgtangp->vy += 32;
     }
     if ( PADR & PadShldL1 ) {
-        lgtang.vz += 32;
+        dc_lgtangp->vz += 32;
     }
     if ( PADR & PadUp && !timer ){
         if (curLvl.actorPtr->isPrism){
@@ -589,14 +587,14 @@ void callback() {
     if (theControllers[0].type == 0x73){
         // Analog stick L up
         if ( theControllers[0].analog3 >= 0 && theControllers[0].analog3 < 108 ) {
-            curLvl.actorPtr->body->gForce.vz = getVectorTo(fVecActor, curLvl.actorPtr->pos).vz *  (128 - theControllers[0].analog3 ) >> 15 ;
-            curLvl.actorPtr->body->gForce.vx = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vx * (128 - theControllers[0].analog3 ) >> 15 ;
+            curLvl.actorPtr->body->gForce.vz = getVectorTo(fVecActor, curLvl.actorPtr->pos).vz *  (128 - theControllers[0].analog3 ) >> 14 ;
+            curLvl.actorPtr->body->gForce.vx = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vx * (128 - theControllers[0].analog3 ) >> 14 ;
             lastPad = PADL;
         }
         // Analog stick L down
         if ( theControllers[0].analog3 > 168 && theControllers[0].analog3 <= 255 ) {
-            curLvl.actorPtr->body->gForce.vz = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vz *  ( theControllers[0].analog3 - 128 ) >> 15 ;
-            curLvl.actorPtr->body->gForce.vx = getVectorTo(fVecActor, curLvl.actorPtr->pos).vx * ( theControllers[0].analog3 - 128 ) >> 15 ;
+            curLvl.actorPtr->body->gForce.vz = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vz *  ( theControllers[0].analog3 - 128 ) >> 14 ;
+            curLvl.actorPtr->body->gForce.vx = getVectorTo(fVecActor, curLvl.actorPtr->pos).vx * ( theControllers[0].analog3 - 128 ) >> 14 ;
             lastPad = PADL;
         }
         // Analog stick L dead zone
@@ -614,8 +612,8 @@ void callback() {
         }
     }
     if ( PADL & PadUp ) {
-        curLvl.actorPtr->body->gForce.vz = getVectorTo(fVecActor, curLvl.actorPtr->pos).vz >> 8 ;
-        curLvl.actorPtr->body->gForce.vx = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vx >> 8 ;
+        curLvl.actorPtr->body->gForce.vz = getVectorTo(fVecActor, curLvl.actorPtr->pos).vz >> 7 ;
+        curLvl.actorPtr->body->gForce.vx = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vx >> 7;
         lastPad = PADL;
     }
     if ( !(PADL & PadUp) && lastPad & PadUp) {
@@ -624,8 +622,8 @@ void callback() {
         lastPad = PADL;
     }
     if ( PADL & PadDown ) {
-        curLvl.actorPtr->body->gForce.vz = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vz >> 8 ;
-        curLvl.actorPtr->body->gForce.vx = getVectorTo(fVecActor, curLvl.actorPtr->pos).vx >> 8 ;
+        curLvl.actorPtr->body->gForce.vz = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vz >> 7 ;
+        curLvl.actorPtr->body->gForce.vx = getVectorTo(fVecActor, curLvl.actorPtr->pos).vx >> 7 ;
         lastPad = PADL;
     }
     if ( !( PADL & PadDown ) && lastPad & PadDown) {
