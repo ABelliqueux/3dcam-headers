@@ -3,14 +3,11 @@
 #include "../include/math.h"
 #include "../include/CPUMAC.H"
 
-// Declare registers 16 19 23     
-//~ register ulong   ur0     asm("$16");
-//~ register ulong   ur1     asm("$19");
-//~ register ulong   ur2     asm("$20");
-//~ register ulong   ur3     asm("$23");
-//~ register ulong   ur4     asm("$21");
-//~ register ulong   ur5     asm("$22");
-
+void updateLight(void){
+    RotMatrix_gte(dc_lgtangp, dc_lgtmatp);
+    gte_MulMatrix0(dc_lvllgtmatp, dc_lgtmatp, dc_lgtmatp);
+    gte_SetLightMatrix(dc_lgtmatp); 
+}
 void enlightMesh(LEVEL * curLvl, MESH * mesh, SVECTOR * lgtang){
     // Update light rotation on actor
     //~ MATRIX      rotlgt, rotmesh, light; 
@@ -29,23 +26,6 @@ void transformMesh(CAMERA * camera, MESH * mesh){
     TransMatrix(dc_wrkmatp, &mesh->pos);
     // Compose matrix with cam
     gte_CompMatrix(dc_camMat, dc_wrkmatp, dc_wrkmatp);  
-    //gte_MulMatrix0(&camera->mat, &mat, &mat);
-    //~ gte_SetRotMatrix(&camera->mat);                              
-    //~ gte_ldclmv(&mat);                                    
-    //~ gte_rtir();                            
-    //~ gte_stclmv(&mat);                        
-    //~ gte_ldclmv((char*)&mat+2);               
-    //~ gte_rtir();                            
-    //~ gte_stclmv((char*)&mat+2);               
-    //~ gte_ldclmv((char*)&mat+4);               
-    //~ gte_rtir();                            
-    //~ gte_stclmv((char*)&mat+4);
-    //~ //
-    //~ gte_SetTransMatrix(&camera->mat);
-    //~ gte_ldlv0((char*)&mat+20);
-    //~ gte_rt();
-    //~ gte_stlvnl((char*)&mat+20);
-    // Set default rotation and translation matrices
     gte_SetRotMatrix(dc_wrkmatp);                          
     gte_SetTransMatrix(dc_wrkmatp);                           
 //~ }
@@ -544,4 +524,45 @@ void drawBG(CAMANGLE * camPtr, char ** nextpri, u_long * otdisc, char * db) {
     );
     addPrim( otdisc[ OT2LEN-1 ], tpage );
     *nextpri += sizeof( DR_TPAGE ); 
+};
+void renderScene(LEVEL * curLvl, CAMERA * camera, int * camMode, char ** nextpri,  u_long * ot, u_long * otdisc, char * db, DRAWENV * draw, short curCamAngle, int atime){
+    if ( (*camMode == 2) && (curLvl->camPtr->tim_data ) ) {
+        drawBG(curLvl->camPtr, nextpri, otdisc, db);
+        // Loop on camAngles
+        for ( int mesh = 0 ; mesh < curLvl->camAngles[ curCamAngle ]->index; mesh ++ ) {
+            enlightMesh(curLvl, curLvl->camAngles[curCamAngle]->objects[mesh], dc_lgtangp);
+            transformMesh(camera, curLvl->camAngles[curCamAngle]->objects[mesh]);
+            drawPoly(curLvl->camAngles[curCamAngle]->objects[mesh], atime, camMode, nextpri, ot, db, draw);
+        }
+    }
+    else {
+        // Draw current node's plane
+        drawPoly( curLvl->curNode->plane, atime, camMode, nextpri, &ot[*db], db, &draw[*db]);
+        // Draw surrounding planes 
+        for ( int sibling = 0; sibling < curLvl->curNode->siblings->index; sibling++ ) {
+            drawPoly(curLvl->curNode->siblings->list[ sibling ]->plane, atime, camMode, nextpri, &ot[*db], db, &draw[*db]);
+        }
+        // Draw adjacent planes's children
+        for ( int sibling = 0; sibling < curLvl->curNode->siblings->index; sibling++ ) {
+            for ( int object = 0; object < curLvl->curNode->siblings->list[ sibling ]->objects->index; object++ ) {
+                long t = 0;
+                enlightMesh(curLvl, curLvl->curNode->siblings->list[ sibling ]->objects->list[ object ], dc_lgtangp);
+                transformMesh(camera, curLvl->curNode->siblings->list[ sibling ]->objects->list[ object ]);
+                drawPoly( curLvl->curNode->siblings->list[ sibling ]->objects->list[ object ], atime, camMode, nextpri, &ot[*db], db, &draw[*db]);
+            }
+        }
+        // Draw current plane children
+        for ( int object = 0; object < curLvl->curNode->objects->index; object++ ) {
+            enlightMesh(curLvl, curLvl->curNode->objects->list[ object ], dc_lgtangp);
+            transformMesh(camera, curLvl->curNode->objects->list[ object ]);
+            drawPoly( curLvl->curNode->objects->list[ object ], atime, camMode, nextpri, &ot[*db], db, &draw[*db]);
+        }
+        // Draw rigidbodies
+        for ( int object = 0; object < curLvl->curNode->rigidbodies->index; object++ ) {
+            enlightMesh(curLvl, curLvl->curNode->rigidbodies->list[ object ], dc_lgtangp);
+            transformMesh(camera, curLvl->curNode->rigidbodies->list[ object ]);
+            drawPoly( curLvl->curNode->rigidbodies->list[ object ], atime, camMode, nextpri, &ot[*db], db, &draw[*db]);
+        }
+    }
+    updateLight();
 };

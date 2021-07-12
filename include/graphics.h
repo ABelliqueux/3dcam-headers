@@ -4,6 +4,7 @@
 #include "../include/defines.h"
 
 // Drawing
+void updateLight(void);
 void transformMesh(CAMERA * camera, MESH * meshes);
 void enlightMesh(LEVEL * curLvl, MESH * actorPtr, SVECTOR * lgtang);
 void drawPoly(MESH * mesh, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw);
@@ -22,3 +23,5 @@ int set4Subdiv(MESH * mesh, POLY_GT4 * poly4, u_long * ot, long t, int i, char *
 long interpolateQuad(POLY_GT4 * poly4, MESH * mesh, long t);
 //2D drawing
 void drawBG(CAMANGLE * camPtr, char ** nextpri, u_long * otdisc, char * db);
+// Rendering
+void renderScene(LEVEL * curLvl, CAMERA * camera, int * camMode, char ** nextpri,  u_long * ot, u_long * otdisc,  char * db, DRAWENV * draw, short curCamAngle, int atime);

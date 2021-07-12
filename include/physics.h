@@ -1,6 +1,7 @@
 #pragma once
 #include <sys/types.h>
 #include <libgte.h>
+#include <libetc.h>
 #include <libgpu.h>
 #include "../include/defines.h"
 #include "../include/macros.h"
@@ -14,4 +15,4 @@ void checkBodyCol(BODY * one, BODY * two);
 void applyAngMom(LEVEL curLvl );
 void   ResolveCollision( BODY * one, BODY * two );
 VECTOR angularMom(BODY body);
-void applyAcceleration(BODY * actor);
+void applyAcceleration(BODY * actor, ulong oldTime);

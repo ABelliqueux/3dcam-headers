@@ -31,7 +31,6 @@ void init(DISPENV disp[2], DRAWENV draw[2], short db, CVECTOR * BGc, VECTOR * BK
     InitGeom();
     SetGeomOffset( CENTERX, CENTERY );        // x, y offset
     SetGeomScreen( FOV );                     // Distance between eye and screen  - Camera FOV
-
     SetDispMask(1);
     // Set the display and draw environments
     SetDefDispEnv(&disp[0], 0, 0         , SCREENXRES, SCREENYRES);

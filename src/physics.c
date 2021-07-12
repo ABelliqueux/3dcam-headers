@@ -126,17 +126,19 @@ void applyAngMom(LEVEL curLvl ){
         }
     }
 };
-void applyAcceleration(BODY * actor){
-    short dt = 1;
+void applyAcceleration(BODY * actor, ulong oldTime){
+    short dt = VSync(-1) - oldTime ;
+    //~ short dt = 3;
+    if (dt < 1) { dt = 1; }
     VECTOR acceleration = {actor->invMass * actor->gForce.vx ,  (actor->invMass * actor->gForce.vy) + (GRAVITY * ONE), actor->invMass * actor->gForce.vz};
     //~ FntPrint("acc: %d %d %d\n", acceleration.vx, acceleration.vy, acceleration.vz );
-    actor->velocity.vx += (acceleration.vx * dt) >> 12;
-    actor->velocity.vy += (acceleration.vy * dt) >> 12;
-    actor->velocity.vz += (acceleration.vz * dt) >> 12;
+    actor->velocity.vx += (acceleration.vx * (ONE / dt) ) >> 24;
+    actor->velocity.vy += (acceleration.vy * (ONE / dt) ) >> 24;
+    actor->velocity.vz += (acceleration.vz * (ONE / dt) ) >> 24;
     //~ FntPrint("acc: %d %d %d\n", acceleration.vx / ONE, acceleration.vy / ONE, acceleration.vz / ONE );
-    actor->position.vx += (actor->velocity.vx * dt);
-    actor->position.vy += (actor->velocity.vy * dt);
-    actor->position.vz += (actor->velocity.vz * dt);
+    actor->position.vx += (actor->velocity.vx * (ONE / dt) ) >> 12;
+    actor->position.vy += (actor->velocity.vy * (ONE / dt) ) >> 12;
+    actor->position.vz += (actor->velocity.vz * (ONE / dt) ) >> 12;
     //~ FntPrint("vel: %d %d %d\n", actor->velocity.vx, actor->velocity.vy, actor->velocity.vz );
 };
 //~ // https://gamedevelopment.tutsplus.com/tutorials/how-to-create-a-custom-2d-physics-engine-the-basics-and-impulse-resolution--gamedev-6331
