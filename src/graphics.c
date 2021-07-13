@@ -163,23 +163,22 @@ void set3Prism(POLY_GT3 * poly, MESH * mesh, DRAWENV * draw, char * db, int i){
     //~ if (fixed_BGS){
     //~     ( (POLY_GT3 *) poly )->tpage = getTPage( 0, 0, 320, 0 );
     //~ }
-    ( (POLY_GT3 *) poly )->tpage = getTPage( 2, 0,
-                                             draw[*db].clip.x,
-                                             draw[*db].clip.y
-                                   );
+    setTPage( poly, 2, 0, 0, !(*db)<<8);
+    //~ SetShadeTex( poly, 1 );
+     
     // Use projected coordinates (results from RotAverage...) as UV coords and clamp them to 0-255,0-224 -> 240 - 16
     setUV3( poly,  
-            (poly->x0 < 0 ? 0 : poly->x0 > 255 ? 255 : poly->x0),
-            (poly->y0 < 0 ? 0 : poly->y0 > 224 ? 224 : poly->y0), 
-            (poly->x1 < 0 ? 0 : poly->x1 > 255 ? 255 : poly->x1), 
-            (poly->y1 < 0 ? 0 : poly->y1 > 224 ? 224 : poly->y1), 
-            (poly->x2 < 0 ? 0 : poly->x2 > 255 ? 255 : poly->x2), 
-            (poly->y2 < 0 ? 0 : poly->y2 > 224 ? 224 : poly->y2)
+            (poly->x0 < 0 ? 0 : (poly->x0 + 4)  > 255 ? 255 : (poly->x0 + 4) ),
+            (poly->y0 < 0 ? 0 : (poly->y0 + 4)  > 224 ? 224 : (poly->y0 + 4) ), 
+            (poly->x1 < 0 ? 0 : (poly->x1 + 4)  > 255 ? 255 : (poly->x1 + 4) ), 
+            (poly->y1 < 0 ? 0 : (poly->y1 + 4)  > 224 ? 224 : (poly->y1 + 4) ), 
+            (poly->x2 < 0 ? 0 : (poly->x2 + 4)  > 255 ? 255 :( poly->x2 + 4) ), 
+            (poly->y2 < 0 ? 0 :( poly->y2 + 4)  > 224 ? 224 : (poly->y2 + 4) )
             );
     
-    setRGB0(poly, mesh->tmesh->c[i].r,   mesh->tmesh->c[i].g, mesh->tmesh->c[i].b);
-    setRGB1(poly, mesh->tmesh->c[i+2].r, mesh->tmesh->c[i+2].g, mesh->tmesh->c[i+2].b);
-    setRGB2(poly, mesh->tmesh->c[i+1].r, mesh->tmesh->c[i+1].g, mesh->tmesh->c[i+1].b);
+    //~ setRGB0(poly, mesh->tmesh->c[i].r,   mesh->tmesh->c[i].g, mesh->tmesh->c[i].b);
+    //~ setRGB1(poly, mesh->tmesh->c[i+2].r, mesh->tmesh->c[i+2].g, mesh->tmesh->c[i+2].b);
+    //~ setRGB2(poly, mesh->tmesh->c[i+1].r, mesh->tmesh->c[i+1].g, mesh->tmesh->c[i+1].b);
 };
 void set4Prism(POLY_GT4 * poly4, MESH * mesh, DRAWENV * draw, char * db, int i){
     ( (POLY_GT4 *) poly4)->tpage = getTPage( 2, 0,

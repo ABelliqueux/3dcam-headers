@@ -25,7 +25,7 @@
 #include "../include/graphics.h"
 #include "../include/space.h"
 
-//~ #define USECD
+#define USECD
 
 // START OVERLAY
 extern u_long load_all_overlays_here;
@@ -74,7 +74,7 @@ int camMode = ACTOR;                // Cam mode, see defines.h, l.6
 VECTOR angle     = {250,0,0,0};
 VECTOR angleCam  = {0,0,0,0};
 VECTOR posToActor    = {0, 0, 0, 0};      // position of camera relative to actor    
-VECTOR camAngleToAct = {0, 0, 0, 0};      // rotation angles for the camera to point at actor
+VECTOR * camAngleToAct;      // rotation angles for the camera to point at actor
 int dist      = 150; 
 int lerping    = 0;
 short curCamAngle = 0;
@@ -93,6 +93,7 @@ short forceApplied = 0;
 void callback();
 // variable FPS 
 ulong oldTime = 0;
+int dt = 0;
 // Physics/collisions
 short physics = 1;
 VECTOR col = {0};
@@ -107,6 +108,7 @@ int main() {
     camera.mat = dc_camMat;
     camera.pos = dc_camPos;
     camera.rot = dc_camRot;
+    camAngleToAct = dc_actorRot;
     // Load level file according to level, l.39
     if ( level == 0 ){
         overlayFile = "\\level0.bin;1";
@@ -164,10 +166,13 @@ int main() {
             curCamAngle = 1;
         }
     }
+    oldTime = GetRCnt(RCntCNT1);
     // Main loop
     while ( VSync(VSYNC) ) {
-        oldTime = VSync(-1);
-        //~ timeS = VSync(-1) / 60;
+        
+        dt = GetRCnt(RCntCNT1) - oldTime;
+        oldTime = GetRCnt(RCntCNT1);
+        
         // Check if level has changed
         // TODO : Proper level system / loader
         if ( levelWas != level ){
@@ -198,14 +203,14 @@ int main() {
             setLightEnv(draw, curLvl.BGc, curLvl.BKc);
             levelWas = level;
         }
-        FntPrint("Ovl:%s\nLvl : %x\nLvl: %d %d \n%x", overlayFile, &level, level, levelWas, loadLvl);
+        //~ FntPrint("Ovl:%s\nLvl : %x\nLvl: %d %d \n%x", overlayFile, &level, level, levelWas, loadLvl);
         // atime is used for animations timing
         timediv = 1;
         // If timediv is > 1, animation time will be slower 
         if (time % timediv == 0){
             atime ++;
         }
-    // Spatial partitioning
+        // Spatial partitioning
         if (curLvl.curNode){
             for ( int msh = 0; msh < curLvl.curNode->siblings->index; msh ++ ) {
                 // Actor
@@ -228,7 +233,7 @@ int main() {
             // if(time%1 == 0){
              for ( int k = 0; k < *curLvl.meshes_length; k ++ ) {
                  if ( curLvl.meshes[k]->isRigidBody == 1 ) {
-                    applyAcceleration( curLvl.meshes[k]->body , oldTime);
+                    applyAcceleration( curLvl.meshes[k]->body);
                     // Get col between actor and level
                     if ( curLvl.meshes[k]->isActor ){
                         checkBodyCol( curLvl.meshes[k]->body , curLvl.levelPtr->body );
@@ -264,19 +269,22 @@ int main() {
     // Clear Secondary OT
         ClearOTagR(ot[db], OTLEN);
     // Set camera according to mode
-        setCameraMode(&curLvl, &camera, &camAngleToAct, &posToActor, &angle, &angleCam, curCamAngle, camMode, &lerping);
+        setCameraMode(&curLvl, &camera, &posToActor, &angle, &angleCam, curCamAngle, camMode, &lerping);
     // Render scene
         renderScene(&curLvl, &camera, &camMode, &nextpri, ot[db], otdisc[db], &db, &draw[db], curCamAngle, atime);
     // Set camera
         // Get position of cam relative to actor
         addVector2(&curLvl.actorPtr->pos, camera.pos, &posToActor);
         // Angle between camera and actor
-        // using atantable (faster)
-        camAngleToAct.vy = (patan(-posToActor.vx, -posToActor.vz) / 16) - 3076 ;
-        camAngleToAct.vx = (patan(dist, posToActor.vy) >> 4 ) - 256;
-        camera.rot->vy = camAngleToAct.vy;
-        // using csin/ccos, no need for theta
-        camera.rot->vx = camAngleToAct.vx;   
+        applyVector( dc_actorRot,
+                     (patan(dist, posToActor.vy) >> 4 ) - 256,
+                     (patan(-posToActor.vx, -posToActor.vz) / 16) - 3076,
+                     0,
+                     =
+                   );
+        // Point camera at actor unless camMode == FIXED
+        if (camMode!=2){ copyVector(dc_camRot, dc_actorRot); }
+        // 
         applyCamera(&camera);
         
     // Find Actor's forward vector
@@ -290,9 +298,8 @@ int main() {
         AddPrims(otdisc[db], ot[db] + OTLEN - 1, ot[db]);
         
         FntPrint("\nTime    : %d\n", time);
-        //~ FntPrint("Ticks   : %d %d \n", oldTime, VSync(-1)-oldTime);
-        FntPrint("cam   : %d \n", camMode);
         FntPrint("#Tri    : %d\n", triCount);
+        FntPrint("#RCnt    : %d %d\n", oldTime, dt);
         FntFlush(-1);
         display( &disp[db], &draw[db], otdisc[db], primbuff[db], &nextpri, &db);
     }
@@ -390,29 +397,29 @@ void callback() {
     }
     if (theControllers[0].type == 0x73){
         // Analog stick L up
-        if ( theControllers[0].analog3 >= 0 && theControllers[0].analog3 < 108 ) {
+        if ( theControllers[0].analog3 >= 0 && theControllers[0].analog3 < (128 - DS_DZ/2)) {
             curLvl.actorPtr->body->gForce.vz = getVectorTo(fVecActor, curLvl.actorPtr->pos).vz *  (128 - theControllers[0].analog3 ) >> 14 ;
             curLvl.actorPtr->body->gForce.vx = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vx * (128 - theControllers[0].analog3 ) >> 14 ;
             lastPad = PADL;
         }
         // Analog stick L down
-        if ( theControllers[0].analog3 > 168 && theControllers[0].analog3 <= 255 ) {
+        if ( theControllers[0].analog3 > (128 + DS_DZ/2) && theControllers[0].analog3 <= 255 ) {
             curLvl.actorPtr->body->gForce.vz = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vz *  ( theControllers[0].analog3 - 128 ) >> 14 ;
             curLvl.actorPtr->body->gForce.vx = getVectorTo(fVecActor, curLvl.actorPtr->pos).vx * ( theControllers[0].analog3 - 128 ) >> 14 ;
             lastPad = PADL;
         }
         // Analog stick L dead zone
-        if ( theControllers[0].analog3 > 108 && theControllers[0].analog3 < 148 ) {
+        if ( theControllers[0].analog3 > (128 - DS_DZ/2) && theControllers[0].analog3 < (128 + DS_DZ/2) ) {
             curLvl.actorPtr->body->gForce.vz = 0;
             curLvl.actorPtr->body->gForce.vx = 0;
         }
         // Analog stick L left
-        if ( theControllers[0].analog2 >= 0 && theControllers[0].analog2 < 108 ) {
-            curLvl.actorPtr->rot.vy -= ( 40 * ( 128 - theControllers[0].analog2 ) ) >> 7 ;
+        if ( theControllers[0].analog2 >= 0 && theControllers[0].analog2 < (128 - DS_DZ/2) ) {
+            curLvl.actorPtr->rot.vy -= ( 64 * ( 128 - theControllers[0].analog2 ) ) >> 7 ;
         }
         // Analog stick L right
-        if ( theControllers[0].analog2 > 148 && theControllers[0].analog2 <= 255 ) {
-            curLvl.actorPtr->rot.vy += ( 40 * ( theControllers[0].analog2 - 128 ) ) >> 7 ;
+        if ( theControllers[0].analog2 > (128 + DS_DZ/2) && theControllers[0].analog2 <= 255 ) {
+            curLvl.actorPtr->rot.vy += ( 64 * ( theControllers[0].analog2 - 128 ) ) >> 7 ;
         }
     }
     if ( PADL & PadUp ) {
@@ -436,11 +443,11 @@ void callback() {
         lastPad = PADL;
     }
     if ( PADL & PadLeft ) {
-        curLvl.actorPtr->rot.vy -= 32;
+        curLvl.actorPtr->rot.vy -= 64;
         lastPad = PADL;
     }
     if ( PADL & PadRight ) {
-        curLvl.actorPtr->rot.vy += 32;
+        curLvl.actorPtr->rot.vy += 64;
         lastPad = PADL;
     }
     if ( PADL & PadSelect && !timer ) {
@@ -460,19 +467,19 @@ void callback() {
     if( theControllers[0].type == 0x73 && camMode == 0){
         // Cam control - horizontal
         if ( theControllers[0].analog0 >= 0 && theControllers[0].analog0 < (128 - DS_DZ/2) ) {
-            angleCam.vy -= ( 16 * ( 128 - theControllers[0].analog0 ) ) >> 7 ;
+            angleCam.vy += ( 16 * ( 128 - theControllers[0].analog0 ) ) >> 7 ;
             angleCamTimer = 120;
         }
         if ( theControllers[0].analog0 > (128 + DS_DZ/2)  && theControllers[0].analog0 <= 255 ) {
-            angleCam.vy += ( 16 * ( theControllers[0].analog0 - 128 ) ) >> 7 ;
+            angleCam.vy -= ( 16 * ( theControllers[0].analog0 - 128 ) ) >> 7 ;
             angleCamTimer = 120;
         }
         if ( theControllers[0].analog0 >= 0 && theControllers[0].analog0 < (128 - DS_DZ/2) ) {
-            angleCam.vy -= ( 16 * ( 128 - theControllers[0].analog0 ) ) >> 7 ;
+            angleCam.vy += ( 16 * ( 128 - theControllers[0].analog0 ) ) >> 7 ;
             angleCamTimer = 120;
         }
         if ( theControllers[0].analog0 > (128 + DS_DZ/2) && theControllers[0].analog0 <= 255) {
-            angleCam.vy += ( 16 * ( theControllers[0].analog0 - 128 ) ) >> 7 ;
+            angleCam.vy -= ( 16 * ( theControllers[0].analog0 - 128 ) ) >> 7 ;
             angleCamTimer = 120;
         }
         // Timer to lerp cam back behind actor

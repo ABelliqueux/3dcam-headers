@@ -1,5 +1,5 @@
 #define VMODE       0 // 0 == NTSC, 1 == PAL
-#define VSYNC       1
+#define VSYNC       0
 #define SCREENXRES 320
 #define SCREENYRES 240
 #define CENTERX     SCREENXRES/2
@@ -45,7 +45,8 @@ asm(\
 #define  dc_wrklvector   ((VECTOR*)  getScratchAddr(34))
 #define  dc_camMat   ((MATRIX*)  getScratchAddr(38))
 #define  dc_camRot   ((SVECTOR*)  getScratchAddr(46))
-#define  dc_camPos   ((SVECTOR*)  getScratchAddr(54))
+#define  dc_camPos   ((SVECTOR*)  getScratchAddr(48))
+#define  dc_actorRot   ((VECTOR*)  getScratchAddr(50))
 
 //~ #define  dc_sxytbl  ((DVECTOR*) getScratchAddr(15)) // 6 DVEC == 12
 //~ #define  dc_verts   ((SVECTOR*) getScratchAddr(27)) // store verts here

@@ -15,4 +15,4 @@ void checkBodyCol(BODY * one, BODY * two);
 void applyAngMom(LEVEL curLvl );
 void   ResolveCollision( BODY * one, BODY * two );
 VECTOR angularMom(BODY body);
-void applyAcceleration(BODY * actor, ulong oldTime);
+void applyAcceleration(BODY * actor);

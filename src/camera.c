@@ -31,14 +31,14 @@ void applyCamera( CAMERA * cam ) {
     gte_SetTransMatrix(dc_camMat);                          // Set Transform matrix
 };
 void setCameraPos( CAMERA * camera, SVECTOR * pos, SVECTOR * rot ) {
-    copyVector(camera->pos, pos);
-    copyVector(camera->rot, rot);
+    copyVector(dc_camPos, pos);
+    copyVector(dc_camRot, rot);
 };
-void setCameraMode(LEVEL * curLvl, CAMERA * camera, VECTOR * camAngleToAct, VECTOR * posToActor, VECTOR * angle, VECTOR * angleCam, short curCamAngle, int camMode, int * lerping){
+void setCameraMode(LEVEL * curLvl, CAMERA * camera, VECTOR * posToActor, VECTOR * angle, VECTOR * angleCam, short curCamAngle, int camMode, int * lerping){
    int dist = 0;
    short cameraSpeed = 40;
 
-   //~ if(camMode != 2) {
+    //~ if(camMode != 2) {
     //~ camera->rot->vy = camAngleToAct->vy;
     //~ // using csin/ccos, no need for theta
     //~ camera->rot->vx = camAngleToAct->vx;   
@@ -50,7 +50,7 @@ void setCameraMode(LEVEL * curLvl, CAMERA * camera, VECTOR * camAngleToAct, VECT
         // Camera follows actor
         case 0 :
             dist = 200;
-            setVector(camera->pos, -(camera->x/ONE), -(camera->y/ONE), -(camera->z/ONE));
+            setVector(dc_camPos, -(camera->x/ONE), -(camera->y/ONE), -(camera->z/ONE));
             angle->vy = -(curLvl->actorPtr->rot.vy / 2) + angleCam->vy;
             // Camera horizontal and vertical position
             getCameraZY(&camera->z, &camera->y, curLvl->actorPtr->pos.vz, curLvl->actorPtr->pos.vy, angle->vx, dist);
@@ -62,7 +62,7 @@ void setCameraMode(LEVEL * curLvl, CAMERA * camera, VECTOR * camAngleToAct, VECT
             // Set distance between cam and actor
             dist = 150;
             // Set camera position
-            setVector(camera->pos, -(camera->x/ONE), 100, -(camera->z/ONE));
+            setVector(dc_camPos, -(camera->x/ONE), 100, -(camera->z/ONE));
             // Find new camera position
             getCameraXZ(&camera->x, &camera->z, curLvl->actorPtr->pos.vx, curLvl->actorPtr->pos.vz, angle->vy, dist);
             // Set rotation amount
@@ -70,7 +70,7 @@ void setCameraMode(LEVEL * curLvl, CAMERA * camera, VECTOR * camAngleToAct, VECT
             break;
             
          // Fixed Camera angle
-        case 2 :                          
+        case 2 :
             // If BG images exist
             if (curLvl->camPtr->tim_data){
                 checkLineW( &curLvl->camAngles[ curCamAngle ]->fw.v3, &curLvl->camAngles[ curCamAngle ]->fw.v2, curLvl->actorPtr);
@@ -109,7 +109,7 @@ void setCameraMode(LEVEL * curLvl, CAMERA * camera, VECTOR * camAngleToAct, VECT
             // Using precalc sqrt
             dist = psqrt( (posToActor->vx * posToActor->vx ) + (posToActor->vz * posToActor->vz) );
             // Set camera position
-            setVector(camera->pos, 190, 100, 180);
+            setVector(dc_camPos, 190, 100, 180);
             break;
         // Flyby mode with LERP from camStart to camEnd
         case 4 :                        
@@ -158,7 +158,7 @@ void setCameraMode(LEVEL * curLvl, CAMERA * camera, VECTOR * camAngleToAct, VECT
             // Lerping sequence has not begun
                 if (!lerping){
                     // Set cam start position ( first key pos )
-                    copyVector(camera->pos, &curLvl->camPath->points[curLvl->camPath->cursor]);
+                    copyVector(dc_camPos, &curLvl->camPath->points[curLvl->camPath->cursor]);
                     // Lerping sequence is starting
                     *lerping = 1;
                     // Set cam pos index to 0
@@ -174,11 +174,11 @@ void setCameraMode(LEVEL * curLvl, CAMERA * camera, VECTOR * camAngleToAct, VECT
                             lerpD(curLvl->camPath->points[curLvl->camPath->cursor].vz << precision, curLvl->camPath->points[curLvl->camPath->cursor+1].vz << precision, curLvl->camPath->pos << precision) >> precision
                 );
                 // Ony move cam if position is between first curLvl->camPath->vx and last curLvl->camPath->vx
-                if ( camAngleToAct->vy < -50 && camera->pos->vx > curLvl->camPath->points[curLvl->camPath->len - 1].vx ) {  
+                if ( dc_actorRot->vy < -50 && dc_camPos->vx > curLvl->camPath->points[curLvl->camPath->len - 1].vx ) {  
                     // Clamp curLvl->camPath position to cameraSpeed
                     curLvl->camPath->pos += dist < cameraSpeed ? 0 : cameraSpeed ;
                 }
-                if ( camAngleToAct->vy > 50 && camera->pos->vx > curLvl->camPath->points[curLvl->camPath->cursor].vx ) {  
+                if ( dc_actorRot->vy > 50 && dc_camPos->vx > curLvl->camPath->points[curLvl->camPath->cursor].vx ) {  
                     curLvl->camPath->pos -= dist < cameraSpeed ? 0 : cameraSpeed;
                 }
                 // If camera has reached next key pos, reset pos index, move cursor to next key pos
