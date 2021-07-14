@@ -101,6 +101,8 @@ void LvlPtrSet(LEVEL * curLevel, LEVEL * level){
     curLevel->camPath  = level->camPath;
     curLevel->camAngles = level->camAngles;
     curLevel->curNode   = level->curNode; // Blank
+    
+    //~ curLevel->actorPtr->body = level->actorPtr->body;
     // Move these to drawPoly()
     //~ curLevel->meshPlan  = level->meshPlan;
     //~ FntPrint("%x %x", curLevel->meshes, level->meshes);
@@ -130,6 +132,18 @@ void SwitchLevel( LEVEL * curLevel, LEVEL * loadLevel ){
     SVECTOR lgtang = {0,0,0,0};
     // Light environment
     setDCLightEnv(curLevel->cmat, curLevel->lgtmat, &lgtang);
+    // Reset physics
+    // TODO : put in a function
+    copyVector(&curLevel->actorPtr->body->position, &loadLevel->actorPtr->body->position );
+    copyVector(&curLevel->actorPtr->pos, &curLevel->actorPtr->body->position);
+    copyVector(&curLevel->propPtr->body->position, &loadLevel->propPtr->body->position );
+    copyVector(&curLevel->propPtr->pos, &curLevel->propPtr->body->position);
+    applyVector( &curLevel->actorPtr->body->position, 0, 100, 0, -=);
+    applyVector( &curLevel->actorPtr->body->velocity, 0, 0, 0, =);
+    applyVector( &curLevel->actorPtr->body->gForce, 0, 0, 0, =);
+    applyVector( &curLevel->propPtr->body->position, 0, 100, 0, -=);
+    applyVector( &curLevel->propPtr->body->velocity, 0, 0, 0, =);
+    applyVector( &curLevel->propPtr->body->gForce, 0, 0, 0, =);
 };
 void LoadTexture(u_long * tim, TIM_IMAGE * tparam){     // This part is from Lameguy64's tutorial series : lameguy64.net/svn/pstutorials/chapter1/3-textures.html login/pw: annoyingmous
         OpenTIM(tim);                                   // Open the tim binary data, feed it the address of the data in memory

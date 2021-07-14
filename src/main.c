@@ -83,12 +83,7 @@ VECTOR fVecActor = {0,0,0,0};
 u_long triCount = 0;
 LEVEL curLvl = {0};
 LEVEL * loadLvl;
-// Callback variables
-u_short lastPad;
-int lerpValues[4096 >> 7];
-short cursor = 0;
-short angleCamTimer = 0;
-short forceApplied = 0;
+VECTOR lvlStartPos = {0};
 // Callback function is used for pads
 void callback();
 // variable FPS 
@@ -158,8 +153,11 @@ int main() {
     for (int k = 0; k < *curLvl.meshes_length; k++){
             triCount += curLvl.meshes[k]->tmesh->len;
     }
+    // Save actor starting pos
+    copyVector(&lvlStartPos, &curLvl.actorPtr->body->position);
     // Set camera starting pos
     setCameraPos(&camera, &curLvl.camPtr->campos->pos, &curLvl.camPtr->campos->rot);
+
     // Find curCamAngle if using pre-calculated BGs
     if (camMode == 2) {                              
         if (curLvl.camPtr->tim_data){
@@ -210,7 +208,7 @@ int main() {
         if (time % timediv == 0){
             atime ++;
         }
-        // Spatial partitioning
+    // Spatial partitioning
         if (curLvl.curNode){
             for ( int msh = 0; msh < curLvl.curNode->siblings->index; msh ++ ) {
                 // Actor
@@ -233,7 +231,7 @@ int main() {
             // if(time%1 == 0){
              for ( int k = 0; k < *curLvl.meshes_length; k ++ ) {
                  if ( curLvl.meshes[k]->isRigidBody == 1 ) {
-                    applyAcceleration( curLvl.meshes[k]->body);
+                    applyAcceleration( curLvl.meshes[k]->body, dt);
                     // Get col between actor and level
                     if ( curLvl.meshes[k]->isActor ){
                         checkBodyCol( curLvl.meshes[k]->body , curLvl.levelPtr->body );
@@ -268,6 +266,10 @@ int main() {
         ClearOTagR(otdisc[db], OT2LEN);
     // Clear Secondary OT
         ClearOTagR(ot[db], OTLEN);
+        
+        if(curLvl.actorPtr->pos.vy >= 200){
+            copyVector(&curLvl.actorPtr->body->position, &lvlStartPos );
+        }
     // Set camera according to mode
         setCameraMode(&curLvl, &camera, &posToActor, &angle, &angleCam, curCamAngle, camMode, &lerping);
     // Render scene
@@ -297,8 +299,8 @@ int main() {
     // Add secondary OT to main OT
         AddPrims(otdisc[db], ot[db] + OTLEN - 1, ot[db]);
         
-        FntPrint("\nTime    : %d\n", time);
-        FntPrint("#Tri    : %d\n", triCount);
+        //~ FntPrint("\nTime   : %d\n", time);
+        FntPrint("#Tri     : %d\n", triCount);
         FntPrint("#RCnt    : %d %d\n", oldTime, dt);
         FntFlush(-1);
         display( &disp[db], &draw[db], otdisc[db], primbuff[db], &nextpri, &db);
@@ -310,12 +312,13 @@ void callback() {
     read_controller( &theControllers[0], &controllers[0].pad[0], 0 );  // Read controllers
     // Pad 2
     read_controller( &theControllers[1], &controllers[1].pad[0], 1 );
-    u_char PADL = ~theControllers[0].button1;
-    u_char PADR = ~theControllers[0].button2;
-    //~ static u_short lastPad;
-    //~ static int lerpValues[4096 >> 7];
-    //~ static short cursor = 0;
-    //~ static short angleCamTimer = 0;
+    
+    u_short PAD = ~*((u_short*)(&theControllers[0].button1));
+
+    static u_short lastPad;
+    static int lerpValues[4096 >> 7];
+    static short cursor = 0;
+    static short angleCamTimer = 0;
     //~ static short forceApplied = 0;
     int div = 32;
 
@@ -327,13 +330,16 @@ void callback() {
     if( timer ) {
         timer--;
     }    
+    if (!timer){
+        curLvl.actorPtr->body->gForce.vy = 0;
+    }
     if( cursor ) {
         cursor--;
     }
     if (angleCam.vy > 2048 || angleCam.vy < -2048) {
         angleCam.vy = 0;
     }
-    if ( PADR & PadShldR1 && !timer ) {
+    if ( PAD & PadShldR1 && !timer ) {
         if (!curLvl.camPtr->tim_data){
             if(camMode < 5){ 
                     camMode ++;
@@ -354,59 +360,59 @@ void callback() {
                 LoadTexture(curLvl.camPtr->tim_data, curLvl.camPtr->BGtim);
             } 
         }
-        lastPad = PADR;
+        lastPad = PAD;
         timer = 10;
     }
-    //~ if ( !(PADR & PadShldR1) && lastPad & PadShldR1 ) {
+    //~ if ( !(PAD & PadShldR1) && lastPad & PadShldR1 ) {
         //pressed = 0;
     //~ }
-    if ( PADR & PadShldL2 ) {
+    if ( PAD & PadShldL2 ) {
         dc_lgtangp->vy += 32;
     }
-    if ( PADR & PadShldL1 ) {
+    if ( PAD & PadShldL1 ) {
         dc_lgtangp->vz += 32;
     }
-    if ( PADR & PadUp && !timer ){
+    if ( PAD & Tri && !timer ){
         if (curLvl.actorPtr->isPrism){
             curLvl.actorPtr->isPrism = 0;
         } else {
             curLvl.actorPtr->isPrism = 1;
         }
         timer = 10;
-        lastPad = PADR;
+        lastPad = PAD;
     }
-    if ( PADR & PadDown && !timer ){
-        if (curLvl.actorPtr->body->gForce.vy >= 0 && curLvl.actorPtr->body->position.vy >= curLvl.actorPtr->body->min.vy  ){
-                forceApplied -= 150;
+    if ( PAD & Cross && !timer ){
+        if (curLvl.actorPtr->body->gForce.vy == 0 && (curLvl.actorPtr->body->position.vy - curLvl.actorPtr->body->min.vy) == curLvl.levelPtr->body->min.vy ){
+            // Use delta to find jump force
+            curLvl.actorPtr->body->gForce.vy = - ((200/((ONE/(dt<1?1:dt))<1?1:(ONE/(dt<1?1:dt))))*14);
         }
-        cursor = div - 15;
-        timer = 30;
-        lastPad = PADR;
+        //~ cursor = div - 15;
+        timer = 10;
+        lastPad = PAD;
     }
-    if ( !(PADR & PadDown) && lastPad & PadDown ) {
-        //~ lastPad = pad;
+    if ( !(PAD & Cross) && lastPad & Cross ) {
+        //~ curLvl.actorPtr->body->gForce.vy = 0;
+        lastPad = PAD;
     }
-    if ( PADR & PadLeft && !timer ) {
+    if ( PAD & PadLeft && !timer ) {
         if (curLvl.actorPtr->anim->interpolate){
             curLvl.actorPtr->anim->interpolate = 0;
         } else {
             curLvl.actorPtr->anim->interpolate = 1;
         }
         timer = 10;
-        lastPad = PADR;
+        lastPad = PAD;
     }
     if (theControllers[0].type == 0x73){
         // Analog stick L up
         if ( theControllers[0].analog3 >= 0 && theControllers[0].analog3 < (128 - DS_DZ/2)) {
-            curLvl.actorPtr->body->gForce.vz = getVectorTo(fVecActor, curLvl.actorPtr->pos).vz *  (128 - theControllers[0].analog3 ) >> 14 ;
-            curLvl.actorPtr->body->gForce.vx = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vx * (128 - theControllers[0].analog3 ) >> 14 ;
-            lastPad = PADL;
+            curLvl.actorPtr->body->gForce.vz = getVectorTo(fVecActor, curLvl.actorPtr->pos).vz *  (128 - theControllers[0].analog3 ) >> 13 ;
+            curLvl.actorPtr->body->gForce.vx = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vx * (128 - theControllers[0].analog3 ) >> 13 ;
         }
         // Analog stick L down
         if ( theControllers[0].analog3 > (128 + DS_DZ/2) && theControllers[0].analog3 <= 255 ) {
-            curLvl.actorPtr->body->gForce.vz = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vz *  ( theControllers[0].analog3 - 128 ) >> 14 ;
-            curLvl.actorPtr->body->gForce.vx = getVectorTo(fVecActor, curLvl.actorPtr->pos).vx * ( theControllers[0].analog3 - 128 ) >> 14 ;
-            lastPad = PADL;
+            curLvl.actorPtr->body->gForce.vz = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vz *  ( theControllers[0].analog3 - 128 ) >> 13 ;
+            curLvl.actorPtr->body->gForce.vx = getVectorTo(fVecActor, curLvl.actorPtr->pos).vx * ( theControllers[0].analog3 - 128 ) >> 13 ;
         }
         // Analog stick L dead zone
         if ( theControllers[0].analog3 > (128 - DS_DZ/2) && theControllers[0].analog3 < (128 + DS_DZ/2) ) {
@@ -415,42 +421,42 @@ void callback() {
         }
         // Analog stick L left
         if ( theControllers[0].analog2 >= 0 && theControllers[0].analog2 < (128 - DS_DZ/2) ) {
-            curLvl.actorPtr->rot.vy -= ( 64 * ( 128 - theControllers[0].analog2 ) ) >> 7 ;
+            curLvl.actorPtr->rot.vy -= ( 64 * ( 128 - theControllers[0].analog2 ) ) >> 8 ;
         }
         // Analog stick L right
         if ( theControllers[0].analog2 > (128 + DS_DZ/2) && theControllers[0].analog2 <= 255 ) {
-            curLvl.actorPtr->rot.vy += ( 64 * ( theControllers[0].analog2 - 128 ) ) >> 7 ;
+            curLvl.actorPtr->rot.vy += ( 64 * ( theControllers[0].analog2 - 128 ) ) >> 8 ;
         }
     }
-    if ( PADL & PadUp ) {
-        curLvl.actorPtr->body->gForce.vz = getVectorTo(fVecActor, curLvl.actorPtr->pos).vz >> 7 ;
-        curLvl.actorPtr->body->gForce.vx = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vx >> 7;
-        lastPad = PADL;
+    if ( PAD & PadUp ) {
+        curLvl.actorPtr->body->gForce.vz = getVectorTo(fVecActor, curLvl.actorPtr->pos).vz >> 6 ;
+        curLvl.actorPtr->body->gForce.vx = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vx >> 6;
+        lastPad = PAD;
     }
-    if ( !(PADL & PadUp) && lastPad & PadUp) {
+    if ( !(PAD & PadUp) && lastPad & PadUp) {
         curLvl.actorPtr->body->gForce.vz = 0;
         curLvl.actorPtr->body->gForce.vx = 0;
-        lastPad = PADL;
+        lastPad = PAD;
     }
-    if ( PADL & PadDown ) {
-        curLvl.actorPtr->body->gForce.vz = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vz >> 7 ;
-        curLvl.actorPtr->body->gForce.vx = getVectorTo(fVecActor, curLvl.actorPtr->pos).vx >> 7 ;
-        lastPad = PADL;
+    if ( PAD & PadDown ) {
+        curLvl.actorPtr->body->gForce.vz = -getVectorTo(fVecActor, curLvl.actorPtr->pos).vz >> 6 ;
+        curLvl.actorPtr->body->gForce.vx = getVectorTo(fVecActor, curLvl.actorPtr->pos).vx >> 6 ;
+        lastPad = PAD;
     }
-    if ( !( PADL & PadDown ) && lastPad & PadDown) {
+    if ( !( PAD & PadDown ) && lastPad & PadDown) {
         curLvl.actorPtr->body->gForce.vz = 0;
         curLvl.actorPtr->body->gForce.vx = 0;
-        lastPad = PADL;
+        lastPad = PAD;
     }
-    if ( PADL & PadLeft ) {
+    if ( PAD & PadLeft ) {
         curLvl.actorPtr->rot.vy -= 64;
-        lastPad = PADL;
+        lastPad = PAD;
     }
-    if ( PADL & PadRight ) {
+    if ( PAD & PadRight ) {
         curLvl.actorPtr->rot.vy += 64;
-        lastPad = PADL;
+        lastPad = PAD;
     }
-    if ( PADL & PadSelect && !timer ) {
+    if ( PAD & PadSelect && !timer ) {
         //~ if (!levelHasChanged){
         #ifndef USECD
             printf("load:%p:%08x:%s", &load_all_overlays_here, &level, overlayFile);
@@ -462,24 +468,24 @@ void callback() {
         #endif
         //~ }
         timer = 30;
-        lastPad = PADL;
+        lastPad = PAD;
     }
     if( theControllers[0].type == 0x73 && camMode == 0){
         // Cam control - horizontal
         if ( theControllers[0].analog0 >= 0 && theControllers[0].analog0 < (128 - DS_DZ/2) ) {
-            angleCam.vy += ( 16 * ( 128 - theControllers[0].analog0 ) ) >> 7 ;
+            angleCam.vy += ( 16 * ( 128 - theControllers[0].analog0 ) ) >> 8 ;
             angleCamTimer = 120;
         }
         if ( theControllers[0].analog0 > (128 + DS_DZ/2)  && theControllers[0].analog0 <= 255 ) {
-            angleCam.vy -= ( 16 * ( theControllers[0].analog0 - 128 ) ) >> 7 ;
+            angleCam.vy -= ( 16 * ( theControllers[0].analog0 - 128 ) ) >> 8 ;
             angleCamTimer = 120;
         }
         if ( theControllers[0].analog0 >= 0 && theControllers[0].analog0 < (128 - DS_DZ/2) ) {
-            angleCam.vy += ( 16 * ( 128 - theControllers[0].analog0 ) ) >> 7 ;
+            angleCam.vy += ( 16 * ( 128 - theControllers[0].analog0 ) ) >> 8 ;
             angleCamTimer = 120;
         }
         if ( theControllers[0].analog0 > (128 + DS_DZ/2) && theControllers[0].analog0 <= 255) {
-            angleCam.vy -= ( 16 * ( theControllers[0].analog0 - 128 ) ) >> 7 ;
+            angleCam.vy -= ( 16 * ( theControllers[0].analog0 - 128 ) ) >> 8 ;
             angleCamTimer = 120;
         }
         // Timer to lerp cam back behind actor
@@ -500,5 +506,7 @@ void callback() {
             //~ theControllers[0].analog2,  // L3 hor : left : 0 7F right: 7F FF : dz 69 81 68 - 8E 
             //~ theControllers[0].analog3 ); // L3 vert : up : 0 7F down : 7F FF : dz 74 8D
     if ( cursor ) {
-        curLvl.actorPtr->body->position.vy = lerpValues[cursor];}
+        //~ curLvl.actorPtr->body->gForce.vy = 0;
+        //~ curLvl.actorPtr->body->position.vy = lerpValues[cursor];
+    }
 };

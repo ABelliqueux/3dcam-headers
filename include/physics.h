@@ -4,6 +4,7 @@
 #include <libetc.h>
 #include <libgpu.h>
 #include "../include/defines.h"
+#include "../include/math.h"
 #include "../include/macros.h"
 #include "../custom_types.h"
 
@@ -15,4 +16,5 @@ void checkBodyCol(BODY * one, BODY * two);
 void applyAngMom(LEVEL curLvl );
 void   ResolveCollision( BODY * one, BODY * two );
 VECTOR angularMom(BODY body);
-void applyAcceleration(BODY * actor);
+void applyAcceleration(BODY * actor, int dt);
+u_int jump(BODY * actor, int dt);

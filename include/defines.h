@@ -1,5 +1,5 @@
 #define VMODE       0 // 0 == NTSC, 1 == PAL
-#define VSYNC       0
+#define VSYNC       1
 #define SCREENXRES 320
 #define SCREENYRES 240
 #define CENTERX     SCREENXRES/2
@@ -74,11 +74,17 @@ asm(\
 #define PadRight  ( 1 << 5 )
 #define PadDown   ( 1 << 6 )
 #define PadLeft   ( 1 << 7 )
+
+#define Tri       ( 1 << 12 )
+#define Circ      ( 1 << 13 )
+#define Cross     ( 1 << 14 )
+#define Squar     ( 1 << 15 )
+// Joysticks
 #define PadR3    ( 1 << 2 )
 #define PadL3    ( 1 << 1 )
 
 // Triggers applied on PADR
-#define PadShldL1    ( 1 << 2 )
-#define PadShldL2    ( 1 )
-#define PadShldR1    ( 1 << 3 )
-#define PadShldR2    ( 1 << 1 )
+#define PadShldL1    ( 1 << 10 )
+#define PadShldL2    ( 1 << 8)
+#define PadShldR1    ( 1 << 11 )
+#define PadShldR2    ( 1 << 9 )

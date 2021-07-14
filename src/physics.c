@@ -107,10 +107,12 @@ VECTOR getExtCollision(BODY one, BODY two){
 void checkBodyCol(BODY * one, BODY * two){
     VECTOR colInt, colExt;
     colInt = getIntCollision( *one , *two );
-    colExt = getExtCollision( *one , *two );
+    //~ colExt = getExtCollision( *one , *two );
     if ( colInt.vy ) {
         if ( !colInt.vx && !colInt.vz ) {
             one->position.vy =  one->min.vy;
+            one->velocity.vy = 0;
+            two->velocity.vy = 0;
         }
     }
 };
@@ -126,19 +128,40 @@ void applyAngMom(LEVEL curLvl ){
         }
     }
 };
-void applyAcceleration(BODY * actor){
-    //~ short dt = VSync(-1) - oldTime ;
-    short dt = 1;
-    //~ if (dt < 1) { dt = 1; }
+//~ void applyAcceleration(BODY * actor, int dt){
+    //~ dt = 1;
+    //~ VECTOR acceleration = {actor->invMass * actor->gForce.vx ,  (actor->invMass * actor->gForce.vy) + (GRAVITY * ONE), actor->invMass * actor->gForce.vz};
+    //FntPrint("acc: %d %d %d\n", acceleration.vx, acceleration.vy, acceleration.vz );
+    //~ actor->velocity.vx += (acceleration.vx * dt) >> 12;
+    //~ actor->velocity.vy += (acceleration.vy * dt) >> 12;
+    //~ actor->velocity.vz += (acceleration.vz * dt) >> 12;
+    //FntPrint("acc: %d %d %d\n", acceleration.vx / ONE, acceleration.vy / ONE, acceleration.vz / ONE );
+    //~ actor->position.vx += (actor->velocity.vx * dt);
+    //~ actor->position.vy += (actor->velocity.vy * dt);
+    //~ actor->position.vz += (actor->velocity.vz * dt);
+    //FntPrint("vel: %d %d %d\n", actor->velocity.vx, actor->velocity.vy, actor->velocity.vz );
+//~ };
+
+void applyAcceleration(BODY * actor, int dt){
+    // Make sure no div by 0 occurs
+    if (dt < 1) { dt = 1; }
+    int dtfx = ONE/dt;
+    if (dtfx < 1) { dtfx = 1; }
     VECTOR acceleration = {actor->invMass * actor->gForce.vx , (actor->invMass * actor->gForce.vy) + (GRAVITY * ONE), actor->invMass * actor->gForce.vz};
-    //~ FntPrint("acc: %d %d %d\n", acceleration.vx, acceleration.vy, acceleration.vz );
-    actor->velocity.vx += (acceleration.vx * dt) >> 12;
-    actor->velocity.vy += (acceleration.vy * dt) >> 12;
-    actor->velocity.vz += (acceleration.vz * dt) >> 12;
-    //~ FntPrint("acc: %d %d %d\n", acceleration.vx / ONE, acceleration.vy / ONE, acceleration.vz / ONE );
-    actor->position.vx += (actor->velocity.vx * dt);
-    actor->position.vy += (actor->velocity.vy * dt);
-    actor->position.vz += (actor->velocity.vz * dt);
+    //~ FntPrint("acc: %d %d %d %d\n", acceleration.vx, acceleration.vy, acceleration.vz , delta);
+    //~ actor->velocity.vx += (acceleration.vx * dt) >> 12;
+    //~ actor->velocity.vy += (acceleration.vy * dt) >> 12;
+    //~ actor->velocity.vz += (acceleration.vz * dt) >> 12;
+    actor->velocity.vx += (acceleration.vx / dtfx) / 256;
+    actor->velocity.vy += (acceleration.vy / dtfx) / 256;
+    actor->velocity.vz += (acceleration.vz / dtfx) / 256;
+    //~ FntPrint("acc: %d %d %d\n", (acceleration.vx / (ONE/dt)) , (acceleration.vy / (ONE/dt)), (acceleration.vz / (ONE/dt)) );
+    //~ actor->position.vx += (actor->velocity.vx * dt);
+    //~ actor->position.vy += (actor->velocity.vy * dt);
+    //~ actor->position.vz += (actor->velocity.vz * dt);
+    actor->position.vx += (actor->velocity.vx );
+    actor->position.vy += (actor->velocity.vy );
+    actor->position.vz += (actor->velocity.vz );
     //~ FntPrint("vel: %d %d %d\n", actor->velocity.vx, actor->velocity.vy, actor->velocity.vz );
 };
 //~ // https://gamedevelopment.tutsplus.com/tutorials/how-to-create-a-custom-2d-physics-engine-the-basics-and-impulse-resolution--gamedev-6331
@@ -192,4 +215,16 @@ VECTOR angularMom(BODY body){
     w.vz = (r * body.mass * body.velocity.vz) >> 2; 
     //~ FntPrint("v: %d, r:%d, w:%d\n", body.velocity.vz * r, r * r, w.vz);
     return w;
+};
+u_int jump(BODY * actor, int dt){
+    // https://medium.com/@brazmogu/physics-for-game-dev-a-platformer-physics-cheatsheet-f34b09064558
+    // y = -0.5gt² + v't
+    // vt = sqrt( (vel.vx)² + (vel.vz)² + (vel.vy - 9,81t)²  )
+    //~ long long velocity = patan(actor->velocity.vx, actor->velocity.vy);
+    //~ int y = (GRAVITY/2 * dt) + (velocity * dt );
+    u_int vt = psqrt(  (actor->velocity.vx * actor->velocity.vx) + 
+                       (actor->velocity.vz * actor->velocity.vz) + 
+                       ( (actor->velocity.vy - (GRAVITY * dt)) * (actor->velocity.vy - (GRAVITY * dt)) )
+                    );
+    return vt;
 };
