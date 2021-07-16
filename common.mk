@@ -1,10 +1,12 @@
 # If you change this to exe, you'll have to rename the file ./thirdparty/nugget/ps-exe.ld too.
 TYPE = ps-exe
-SRCS += ./thirdparty/nugget/common/crt0/crt0.s
 
-# Check subfolder and current folder for psyq libs
-CPPFLAGS += -I../thirdparty/nugget/psyq/include -I./thirdparty/nugget/psyq/include -I./psyq-4_7-converted/include -I../psyq-4_7-converted/include -I./psyq-4.7-converted-full/include -I../psyq-4.7-converted-full/include -I./psyq/include -I../psyq/include 
-LDFLAGS += -L../thirdparty/nugget/psyq/lib -L./thirdparty/nugget/psyq/lib -L./psyq-4_7-converted/lib -L../psyq-4_7-converted/lib -L./psyq-4.7-converted-full/lib -L../psyq-4.7-converted-full/lib -L./psyq/lib -L../psyq/lib
+THISDIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+
+SRCS += $(THISDIR)thirdparty/nugget/common/crt0/crt0.s
+
+CPPFLAGS += -I$(THISDIR)thirdparty/nugget/psyq/include -I$(THISDIR)psyq-4_7-converted/include -I$(THISDIR)psyq-4.7-converted-full/include -I$(THISDIR)psyq/include 
+LDFLAGS += -L$(THISDIR)thirdparty/nugget/psyq/lib -L$(THISDIR)psyq-4_7-converted/lib -L$(THISDIR)psyq-4.7-converted-full/lib -L$(THISDIR)psyq/lib
 LDFLAGS += -Wl,--start-group
 LDFLAGS += -lapi
 LDFLAGS += -lc
@@ -29,8 +31,6 @@ LDFLAGS += -lspu
 LDFLAGS += -ltap
 LDFLAGS += -lcd
 LDFLAGS += -Wl,--end-group
-
-THISDIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 include $(THISDIR)/thirdparty/nugget/common.mk
 
