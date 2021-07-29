@@ -153,7 +153,7 @@ long interpolateQuad(POLY_GT4 * poly4, MESH * mesh, long t){
             );
     return nclip;
 };
-void set3Prism(POLY_GT3 * poly, MESH * mesh, DRAWENV * draw, char * db, int i){
+void set3Prism(POLY_GT3 * poly, MESH * mesh, DRAWENV * draw, char * db, int i, int t){
     // Transparency effect :
     // Use current DRAWENV clip as TPAGE instead of regular textures
     //
@@ -163,44 +163,77 @@ void set3Prism(POLY_GT3 * poly, MESH * mesh, DRAWENV * draw, char * db, int i){
     //~ if (fixed_BGS){
     //~     ( (POLY_GT3 *) poly )->tpage = getTPage( 0, 0, 320, 0 );
     //~ }
+    // Use Drawenv's Tpages 0,0 and 0,256 
     setTPage( poly, 2, 0, 0, !(*db)<<8);
-    //~ SetShadeTex( poly, 1 );
-     
     // Use projected coordinates (results from RotAverage...) as UV coords and clamp them to 0-255,0-224 -> 240 - 16
-    setUV3( poly,  
-            (poly->x0 < 0 ? 0 : (poly->x0 + 4)  > 255 ? 255 : (poly->x0 + 4) ),
-            (poly->y0 < 0 ? 0 : (poly->y0 + 4)  > 224 ? 224 : (poly->y0 + 4) ), 
-            (poly->x1 < 0 ? 0 : (poly->x1 + 4)  > 255 ? 255 : (poly->x1 + 4) ), 
-            (poly->y1 < 0 ? 0 : (poly->y1 + 4)  > 224 ? 224 : (poly->y1 + 4) ), 
-            (poly->x2 < 0 ? 0 : (poly->x2 + 4)  > 255 ? 255 :( poly->x2 + 4) ), 
-            (poly->y2 < 0 ? 0 :( poly->y2 + 4)  > 224 ? 224 : (poly->y2 + 4) )
+    // ( 256 * 4096 ) / 320 ) =>   3277
+    // ( 240 * 4096 ) / 256 ) =>   3840
+    setUV3( poly,
+            (poly->x0 * 3277) >> 12,
+            ((poly->y0 * 3840) >> 12) - (!(*db) << 4), 
+            (poly->x1 * 3277) >> 12,
+            ((poly->y1 * 3840) >> 12) - (!(*db) << 4),
+            (poly->x2 * 3277) >> 12,
+            ((poly->y2 * 3840) >> 12) - (!(*db) << 4)
             );
-    
-    //~ setRGB0(poly, mesh->tmesh->c[i].r,   mesh->tmesh->c[i].g, mesh->tmesh->c[i].b);
-    //~ setRGB1(poly, mesh->tmesh->c[i+2].r, mesh->tmesh->c[i+2].g, mesh->tmesh->c[i+2].b);
-    //~ setRGB2(poly, mesh->tmesh->c[i+1].r, mesh->tmesh->c[i+1].g, mesh->tmesh->c[i+1].b);
+    // Add color tint
+    CVECTOR prismCol = {0,70,255, 0};
+    // work color vectors
+    CVECTOR outCol, outCol1, outCol2;
+    // Find local color from normal and prismCol
+    gte_NormalColorDpq3( &mesh->tmesh->n[ mesh->index[t].order.vx ],
+                         &mesh->tmesh->n[ mesh->index[t].order.vz ], 
+                         &mesh->tmesh->n[ mesh->index[t].order.vy ],
+                         &prismCol,
+                         mesh->p,
+                         &outCol, 
+                         &outCol1, 
+                         &outCol2                           
+                        );
+    // Set col
+    setRGB0(poly, outCol.r, outCol.g  , outCol.b);
+    setRGB1(poly, outCol1.r, outCol1.g, outCol1.b);
+    setRGB2(poly, outCol2.r, outCol2.g, outCol2.b);
 };
-void set4Prism(POLY_GT4 * poly4, MESH * mesh, DRAWENV * draw, char * db, int i){
-    ( (POLY_GT4 *) poly4)->tpage = getTPage( 2, 0,
-                                             draw[*db].clip.x,
-                                             draw[*db].clip.y
-                                   );
+void set4Prism(POLY_GT4 * poly4, MESH * mesh, DRAWENV * draw, char * db, int i, int t){
+    // Use Drawenv's Tpages 0,0 and 0,256 
+    setTPage( poly4, 2, 0, 0, !(*db)<<8);
     // Use projected coordinates
     setUV4( poly4, 
-            (poly4->x0 < 0? 0 : poly4->x0 > 255? 255 : poly4->x0), 
-            (poly4->y0 < 0? 0 : poly4->y0 > 224? 224 : poly4->y0), 
-            (poly4->x1 < 0? 0 : poly4->x1 > 255? 255 : poly4->x1), 
-            (poly4->y1 < 0? 0 : poly4->y1 > 224? 224 : poly4->y1), 
-            (poly4->x2 < 0? 0 : poly4->x2 > 255? 255 : poly4->x2), 
-            (poly4->y2 < 0? 0 : poly4->y2 > 224? 224 : poly4->y2),
-            (poly4->x3 < 0? 0 : poly4->x3 > 255? 255 : poly4->x3), 
-            (poly4->y3 < 0? 0 : poly4->y3 > 224? 224 : poly4->y3)
+            (poly4->x0 * 3277) >> 12,
+            // Remove 16 pix offset when using tpage 0,256
+            ((poly4->y0 * 3840) >> 12) - (!(*db) << 4), 
+            (poly4->x1 * 3277) >> 12,
+            ((poly4->y1 * 3840) >> 12) - (!(*db) << 4),
+            (poly4->x2 * 3277) >> 12,
+            ((poly4->y2 * 3840) >> 12) - (!(*db) << 4),
+            (poly4->x3 * 3277) >> 12,
+            ((poly4->y3 * 3840) >> 12) - (!(*db) << 4)
     );
-    
-    setRGB0(poly4, mesh->tmesh->c[i+3].r, mesh->tmesh->c[i+3].g, mesh->tmesh->c[i+3].b);
-    setRGB1(poly4, mesh->tmesh->c[i+2].r, mesh->tmesh->c[i+2].g, mesh->tmesh->c[i+2].b);
-    setRGB2(poly4, mesh->tmesh->c[i+0].r, mesh->tmesh->c[i+0].g, mesh->tmesh->c[i+0].b);
-    setRGB3(poly4, mesh->tmesh->c[i+1].r, mesh->tmesh->c[i+1].g, mesh->tmesh->c[i+1].b);
+    // Add color tint
+    CVECTOR prismCol = {0,70,255, 0};
+    // work color vectors
+    CVECTOR outCol, outCol1, outCol2, outCol3;
+    // Find local color from normal and prismCol
+    gte_NormalColorDpq3( &mesh->tmesh->n[ mesh->index[t].order.pad ],
+                         &mesh->tmesh->n[ mesh->index[t].order.vz ], 
+                         &mesh->tmesh->n[ mesh->index[t].order.vx ],
+                         &prismCol,
+                         mesh->p,
+                         &outCol, 
+                         &outCol1, 
+                         &outCol2                           
+                        );
+    gte_NormalColorDpq( &mesh->tmesh->n[ mesh->index[t].order.vy ],
+                        &prismCol,
+                        mesh->p,
+                        &outCol3
+                        );
+    // Set col
+    setRGB0(poly4, outCol.r, outCol.g  , outCol.b);
+    setRGB1(poly4, outCol1.r, outCol1.g, outCol1.b);
+    setRGB2(poly4, outCol2.r, outCol2.g, outCol2.b);
+    setRGB3(poly4, outCol3.r, outCol3.g, outCol3.b);
 };
 void set3Tex(POLY_GT3 * poly, MESH * mesh, DRAWENV * draw, long t, int i){
     CVECTOR outCol  = { 0,0,0,0 };
@@ -371,7 +404,7 @@ long drawQuad(MESH * mesh, int atime, int * camMode, char ** nextpri, u_long * o
                 }
                 // Transparency effect
                 if (mesh->isPrism){ 
-                    set4Prism(poly4, mesh, draw, db, i);
+                    set4Prism(poly4, mesh, draw, db, i, t);
                 } else {
                     set4Tex(poly4, mesh, draw, t, i);
                 }
@@ -454,7 +487,7 @@ long drawTri(MESH * mesh, int atime, int * camMode, char ** nextpri, u_long * ot
                 }
                 // If isPrism flag is set, use it
                 if ( mesh->isPrism ) { 
-                    set3Prism(poly, mesh, draw, db, i);
+                    set3Prism(poly, mesh, draw, db, i, t);
                 } else {
                     set3Tex(poly, mesh, draw, t, i);
                 }

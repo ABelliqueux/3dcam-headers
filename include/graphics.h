@@ -11,13 +11,13 @@ void drawPoly(MESH * mesh, int atime, int * camMode, char ** nextpri, u_long * o
 // Tri drawing
 long drawTri(MESH * mesh, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw, int t, int i);
 void set3VertexLerPos(MESH * mesh, long t);
-void set3Prism(POLY_GT3 * poly, MESH * mesh, DRAWENV * draw, char * db, int i);
+void set3Prism(POLY_GT3 * poly, MESH * mesh, DRAWENV * draw, char * db, int i, int t);
 void set3Tex(POLY_GT3 * poly, MESH * mesh, DRAWENV * draw, long t, int i);
 long interpolateTri(POLY_GT3 * poly, MESH * mesh, long t);
 //Quad drawing
 long drawQuad(MESH * mesh, int atime, int * camMode, char ** nextpri, u_long * ot, char * db, DRAWENV * draw, int t, int i);
 void set4VertexLerPos(MESH * mesh, long t);
-void set4Prism(POLY_GT4 * poly4, MESH * mesh, DRAWENV * draw, char * db, int i);
+void set4Prism(POLY_GT4 * poly4, MESH * mesh, DRAWENV * draw, char * db, int i, int t);
 void set4Tex(POLY_GT4 * poly4, MESH * mesh, DRAWENV * draw, long t, int i);
 int set4Subdiv(MESH * mesh, POLY_GT4 * poly4, u_long * ot, long t, int i, char ** nextpri);
 long interpolateQuad(POLY_GT4 * poly4, MESH * mesh, long t);
