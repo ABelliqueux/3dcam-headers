@@ -83,7 +83,14 @@ VECTOR fVecActor = {0,0,0,0};
 u_long triCount = 0;
 LEVEL curLvl = {0};
 LEVEL * loadLvl;
-VECTOR lvlStartPos = {0};
+// Actor start position
+VECTOR actorStartPos = {0};
+VECTOR actorStartRot = {0};
+NODE * actorStartNode;
+// Prop start position
+VECTOR propStartPos = {0};
+VECTOR propStartRot = {0};
+NODE * propStartNode;
 // Callback function is used for pads
 void callback();
 // variable FPS 
@@ -154,7 +161,13 @@ int main() {
             triCount += curLvl.meshes[k]->tmesh->len;
     }
     // Save actor starting pos
-    copyVector(&lvlStartPos, &curLvl.actorPtr->body->position);
+    copyVector(&actorStartPos, &curLvl.actorPtr->body->position);
+    copyVector(&actorStartRot, &curLvl.actorPtr->rot);
+    actorStartNode = curLvl.curNode;
+    // Save prop starting pos
+    copyVector(&propStartPos, &curLvl.propPtr->body->position);
+    copyVector(&propStartRot, &curLvl.propPtr->rot);
+    propStartNode = curLvl.propPtr->node;
     // Set camera starting pos
     setCameraPos(&camera, &curLvl.camPtr->campos->pos, &curLvl.camPtr->campos->rot);
 
@@ -198,6 +211,15 @@ int main() {
               LoadLevelCD( overlayFile, &load_all_overlays_here );
             #endif
             SwitchLevel( &curLvl, loadLvl);
+            // Save actor starting pos
+            copyVector(&actorStartPos, &curLvl.actorPtr->body->position);
+            copyVector(&actorStartRot, &curLvl.actorPtr->rot);
+            actorStartNode = curLvl.curNode;
+            // Save prop starting pos
+            copyVector(&propStartPos, &curLvl.propPtr->body->position);
+            copyVector(&propStartRot, &curLvl.propPtr->rot);
+            propStartNode = curLvl.propPtr->node;
+            // Set level lighting
             setLightEnv(draw, curLvl.BGc, curLvl.BKc);
             levelWas = level;
         }
@@ -208,18 +230,35 @@ int main() {
         if (time % timediv == 0){
             atime ++;
         }
+        // Reset player pos
+        if(curLvl.actorPtr->pos.vy >= 200){
+            copyVector(&curLvl.actorPtr->body->position, &actorStartPos );
+            copyVector(&curLvl.actorPtr->rot, &actorStartRot );
+            curLvl.curNode = actorStartNode;
+            curLvl.levelPtr = curLvl.curNode->plane;
+        }        
+        if(curLvl.propPtr->pos.vy >= 200){
+            copyVector(&curLvl.propPtr->body->position, &propStartPos );
+            copyVector(&curLvl.propPtr->rot, &propStartRot );
+            curLvl.propPtr->node = propStartNode;
+        }
     // Spatial partitioning
         if (curLvl.curNode){
             for ( int msh = 0; msh < curLvl.curNode->siblings->index; msh ++ ) {
-                // Actor
+                // Set Actor node
+                // If actor is out of plane's X,Z coordinates...
                 if ( !getIntCollision( *curLvl.actorPtr->body , *curLvl.curNode->siblings->list[msh]->plane->body).vx &&
                      !getIntCollision( *curLvl.actorPtr->body , *curLvl.curNode->siblings->list[msh]->plane->body).vz )
                 {
+                    // if current node is not already pointing to a sibling 
                     if ( curLvl.curNode != curLvl.curNode->siblings->list[msh] ) {
+                        // make it point to siblings
                         curLvl.curNode = curLvl.curNode->siblings->list[msh];
+                        // set current plane
                         curLvl.levelPtr = curLvl.curNode->plane;
                     }
                 }
+                // Set Prop node
                 if ( !getIntCollision( *curLvl.propPtr->body , *curLvl.curNode->plane->body).vx &&
                      !getIntCollision( *curLvl.propPtr->body , *curLvl.curNode->plane->body).vz ) {
                     curLvl.propPtr->node = curLvl.curNode;
@@ -266,10 +305,6 @@ int main() {
         ClearOTagR(otdisc[db], OT2LEN);
     // Clear Secondary OT
         ClearOTagR(ot[db], OTLEN);
-        
-        if(curLvl.actorPtr->pos.vy >= 200){
-            copyVector(&curLvl.actorPtr->body->position, &lvlStartPos );
-        }
     // Set camera according to mode
         setCameraMode(&curLvl, &camera, &posToActor, &angle, &angleCam, curCamAngle, camMode, &lerping);
     // Render scene

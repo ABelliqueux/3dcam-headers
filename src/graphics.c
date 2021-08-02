@@ -165,6 +165,7 @@ void set3Prism(POLY_GT3 * poly, MESH * mesh, DRAWENV * draw, char * db, int i, i
     //~ }
     // Use Drawenv's Tpages 0,0 and 0,256 
     setTPage( poly, 2, 0, 0, !(*db)<<8);
+    //~ setShadeTex(poly, 1);
     // Use projected coordinates (results from RotAverage...) as UV coords and clamp them to 0-255,0-224 -> 240 - 16
     // ( 256 * 4096 ) / 320 ) =>   3277
     // ( 240 * 4096 ) / 256 ) =>   3840
@@ -177,7 +178,7 @@ void set3Prism(POLY_GT3 * poly, MESH * mesh, DRAWENV * draw, char * db, int i, i
             ((poly->y2 * 3840) >> 12) - (!(*db) << 4)
             );
     // Add color tint
-    CVECTOR prismCol = {0,70,255, 0};
+    CVECTOR prismCol = {0x40,0x40,0xff,0x0};
     // work color vectors
     CVECTOR outCol, outCol1, outCol2;
     // Find local color from normal and prismCol
