@@ -59,6 +59,7 @@ typedef struct MESH {
 	short       isAnim;
 	short       isActor;
 	short       isLevel;
+	short       isWall;
 	short       isBG;
 	short       isSprite;
 	long        p;
@@ -75,7 +76,7 @@ typedef struct QUAD {
 	} QUAD;
 
 typedef struct CAMPOS {
-	VECTOR  pos;
+	SVECTOR  pos;
 	SVECTOR rot;
 	} CAMPOS;
 

@@ -34,15 +34,10 @@ void setCameraPos( CAMERA * camera, SVECTOR * pos, SVECTOR * rot ) {
     copyVector(dc_camPos, pos);
     copyVector(dc_camRot, rot);
 };
-void setCameraMode(LEVEL * curLvl, CAMERA * camera, VECTOR * posToActor, VECTOR * angle, VECTOR * angleCam, short curCamAngle, int camMode, int * lerping){
+void setCameraMode(LEVEL * curLvl, CAMERA * camera, VECTOR * posToActor, VECTOR * angle, VECTOR * angleCam, short *curCamAngle, int camMode, int * lerping){
    int dist = 0;
    short cameraSpeed = 40;
 
-    //~ if(camMode != 2) {
-    //~ camera->rot->vy = camAngleToAct->vy;
-    //~ // using csin/ccos, no need for theta
-    //~ camera->rot->vx = camAngleToAct->vx;   
-    //~ }
     if(camMode < 4 ) {
         *lerping = 0;
     }
@@ -73,32 +68,33 @@ void setCameraMode(LEVEL * curLvl, CAMERA * camera, VECTOR * posToActor, VECTOR 
         case 2 :
             // If BG images exist
             if (curLvl->camPtr->tim_data){
-                checkLineW( &curLvl->camAngles[ curCamAngle ]->fw.v3, &curLvl->camAngles[ curCamAngle ]->fw.v2, curLvl->actorPtr);
-                if ( curLvl->camAngles[ curCamAngle ]->fw.v0.vx ) {
+                // Check which side of the line the actor is on (World space)
+                checkLineW( &curLvl->camAngles[ *curCamAngle ]->fw.v3, &curLvl->camAngles[ *curCamAngle ]->fw.v2, curLvl->actorPtr);
+                if ( curLvl->camAngles[ *curCamAngle ]->fw.v0.vx ) {
                     // If actor in camAngle->fw area of screen
-                    if ( checkLineW( &curLvl->camAngles[ curCamAngle ]->fw.v3, &curLvl->camAngles[ curCamAngle ]->fw.v2, curLvl->actorPtr) == -1  && 
-                         ( checkLineW( &curLvl->camAngles[ curCamAngle ]->bw.v2, &curLvl->camAngles[ curCamAngle ]->bw.v3, curLvl->actorPtr) >= 0 
-                           ) 
+                    if ( checkLineW( &curLvl->camAngles[ *curCamAngle ]->fw.v3, &curLvl->camAngles[ *curCamAngle ]->fw.v2, curLvl->actorPtr) == -1  && 
+                         ( checkLineW( &curLvl->camAngles[ *curCamAngle ]->bw.v2, &curLvl->camAngles[ *curCamAngle ]->bw.v3, curLvl->actorPtr) >= 0 ) 
                        ) { 
-                        if (curCamAngle < 5) {
-                            curCamAngle++;
-                            curLvl->camPtr = curLvl->camAngles[ curCamAngle ];
+                        if (*curCamAngle < 5) {
+                            (*curCamAngle)++;
+                            curLvl->camPtr = curLvl->camAngles[ *curCamAngle ];
                             LoadTexture(curLvl->camPtr->tim_data, curLvl->camPtr->BGtim);
                         }
                     }
                 }
-                if ( curLvl->camAngles[ curCamAngle ]->bw.v0.vx ) {
+                if ( curLvl->camAngles[ *curCamAngle ]->bw.v0.vx ) {
                     // If actor in camAngle->bw area of screen
-                    if ( checkLineW( &curLvl->camAngles[ curCamAngle ]->fw.v3, &curLvl->camAngles[ curCamAngle ]->fw.v2, curLvl->actorPtr) >= 0  && 
-                         checkLineW( &curLvl->camAngles[ curCamAngle ]->bw.v2, &curLvl->camAngles[ curCamAngle ]->bw.v3, curLvl->actorPtr) == -1 
+                    if ( checkLineW( &curLvl->camAngles[ *curCamAngle ]->fw.v3, &curLvl->camAngles[ *curCamAngle ]->fw.v2, curLvl->actorPtr) >= 0  && 
+                         checkLineW( &curLvl->camAngles[ *curCamAngle ]->bw.v2, &curLvl->camAngles[ *curCamAngle ]->bw.v3, curLvl->actorPtr) == -1 
                        ) {
-                        if (curCamAngle > 0) {
-                            curCamAngle--;
-                            curLvl->camPtr = curLvl->camAngles[ curCamAngle ];
+                        if (*curCamAngle > 0) {
+                            (*curCamAngle)--;
+                            curLvl->camPtr = curLvl->camAngles[ *curCamAngle ];
                             LoadTexture(curLvl->camPtr->tim_data, curLvl->camPtr->BGtim);
                         }
                     }
                 }
+                // Find screen space coordinates
                 worldToScreen( &curLvl->actorPtr->pos, &curLvl->actorPtr->pos2D );
             }
             setCameraPos(camera, &curLvl->camPtr->campos->pos, &curLvl->camPtr->campos->rot);

@@ -29,4 +29,4 @@ void getCameraZY( int * z, int * y, int actorZ, int actorY, int angleX, int dist
 void applyCamera(CAMERA * cam);
 void setCameraPos(CAMERA * camera, SVECTOR * pos, SVECTOR * rot);
 
-void setCameraMode(LEVEL * curLvl, CAMERA * camera, VECTOR * posToActor, VECTOR * angle, VECTOR * angleCam, short curCamAngle, int camMode, int * lerping);
+void setCameraMode(LEVEL * curLvl, CAMERA * camera, VECTOR * posToActor, VECTOR * angle, VECTOR * angleCam, short *curCamAngle, int camMode, int * lerping);

@@ -35,7 +35,7 @@ LDFLAGS += -ltap
 LDFLAGS += -lcd
 LDFLAGS += -Wl,--end-group
 
-include $(THISDIR)/thirdparty/nugget/common.mk
+include $(THISDIR)thirdparty/nugget/common.mk
 
 # convert TIM file to bin
 %.o: %.tim

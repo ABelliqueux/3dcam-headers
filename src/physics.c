@@ -108,9 +108,12 @@ void checkBodyCol(BODY * one, BODY * two){
     VECTOR colInt, colExt;
     colInt = getIntCollision( *one , *two );
     //~ colExt = getExtCollision( *one , *two );
+    // If collisiton on Y axis, 
     if ( colInt.vy ) {
+        // and above plane
         if ( !colInt.vx && !colInt.vz ) {
-            one->position.vy =  one->min.vy;
+            // collide
+            one->position.vy =  two->max.vy - one->max.vy ;
             one->velocity.vy = 0;
             two->velocity.vy = 0;
         }

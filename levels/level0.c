@@ -90,8 +90,8 @@ BODY level0_modelCube_body = {
     {0, 0, 0, 0},
     0,-236,23, 0,
     0,-1024,0, 0,
-    1,
-    ONE/1,
+    5,
+    ONE/5,
     -33,-32,-33, 0,
     33,32,33, 0,
     0,
@@ -122,6 +122,7 @@ MESH level0_meshCube = {
     0, // isAnim
     1, // isActor
     0, // isLevel
+    0, // isWall
     0, // isBG
     0,// isSprite
     0,
@@ -914,6 +915,7 @@ MESH level0_meshPlane = {
     {0},
     {0,0,0, 0},
     {0,0,0, 0},
+    0, // isWall
     0, // isProp
     0, // isRigidBody
     0, // isStaticBody

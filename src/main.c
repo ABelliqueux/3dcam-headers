@@ -152,8 +152,11 @@ int main() {
             LoadTexture(curLvl.meshes[k]->tim_data, curLvl.meshes[k]->tim);
         }
     }
-    // Load current BG if exists
+    // Load current BG if exists, and set cam mode accordingly
     if (curLvl.camPtr->tim_data){
+        // Switch to proper cam mode and angle
+        camMode = FIXED;
+        curCamAngle = 1;
         LoadTexture(curLvl.camPtr->tim_data, curLvl.camPtr->BGtim);
     }
     // Polycount
@@ -170,13 +173,7 @@ int main() {
     propStartNode = curLvl.propPtr->node;
     // Set camera starting pos
     setCameraPos(&camera, &curLvl.camPtr->campos->pos, &curLvl.camPtr->campos->rot);
-
-    // Find curCamAngle if using pre-calculated BGs
-    if (camMode == 2) {                              
-        if (curLvl.camPtr->tim_data){
-            curCamAngle = 1;
-        }
-    }
+    // Time counter
     oldTime = GetRCnt(RCntCNT1);
     // Main loop
     while ( VSync(VSYNC) ) {
@@ -230,7 +227,8 @@ int main() {
         if (time % timediv == 0){
             atime ++;
         }
-        // Reset player pos
+        // TODO : put in a function
+        // Reset player/prop pos
         if(curLvl.actorPtr->pos.vy >= 200){
             copyVector(&curLvl.actorPtr->body->position, &actorStartPos );
             copyVector(&curLvl.actorPtr->rot, &actorStartRot );
@@ -267,13 +265,24 @@ int main() {
         }
     // Physics
         if ( physics ) {
-            // if(time%1 == 0){
              for ( int k = 0; k < *curLvl.meshes_length; k ++ ) {
                  if ( curLvl.meshes[k]->isRigidBody == 1 ) {
                     applyAcceleration( curLvl.meshes[k]->body, dt);
-                    // Get col between actor and level
                     if ( curLvl.meshes[k]->isActor ){
+                        // Get col between actor and level
                         checkBodyCol( curLvl.meshes[k]->body , curLvl.levelPtr->body );
+                        // Get col between actor and current node's walls
+                        // Loop on current node's objects
+                        for (short obj=0; obj < curLvl.curNode->objects->index; obj++){
+                            // If isWall, check collision
+                            if ( curLvl.curNode->objects->list[obj]->isWall ){
+                                if( getExtCollision( *curLvl.meshes[k]->body, *curLvl.curNode->objects->list[obj]->body ).vz &&
+                                    getExtCollision( *curLvl.meshes[k]->body, *curLvl.curNode->objects->list[obj]->body ).vx) {
+                                    curLvl.meshes[k]->body->position.vz = curLvl.meshes[k]->body->position.vz - curLvl.meshes[k]->body->velocity.vz ;
+                                    curLvl.meshes[k]->body->position.vx = curLvl.meshes[k]->body->position.vx - curLvl.meshes[k]->body->velocity.vx ;
+                                }
+                            }
+                        }
                     }
                     // Get col between props and level
                     if ( curLvl.meshes[k]->isProp ){
@@ -306,7 +315,7 @@ int main() {
     // Clear Secondary OT
         ClearOTagR(ot[db], OTLEN);
     // Set camera according to mode
-        setCameraMode(&curLvl, &camera, &posToActor, &angle, &angleCam, curCamAngle, camMode, &lerping);
+        setCameraMode(&curLvl, &camera, &posToActor, &angle, &angleCam, &curCamAngle, camMode, &lerping);
     // Render scene
         renderScene(&curLvl, &camera, &camMode, &nextpri, ot[db], otdisc[db], &db, &draw[db], curCamAngle, atime);
     // Set camera
@@ -320,7 +329,7 @@ int main() {
                      =
                    );
         // Point camera at actor unless camMode == FIXED
-        if (camMode!=2){ copyVector(dc_camRot, dc_actorRot); }
+        if (camMode != FIXED){ copyVector(dc_camRot, dc_actorRot); }
         // 
         applyCamera(&camera);
         
@@ -335,8 +344,9 @@ int main() {
         AddPrims(otdisc[db], ot[db] + OTLEN - 1, ot[db]);
         
         //~ FntPrint("\nTime   : %d\n", time);
-        FntPrint("#Tri     : %d\n", triCount);
+        FntPrint("\n#Tri     : %d\n", triCount);
         FntPrint("#RCnt    : %d %d\n", oldTime, dt);
+        FntPrint("CamAngle : %d\n", curCamAngle);
         FntFlush(-1);
         display( &disp[db], &draw[db], otdisc[db], primbuff[db], &nextpri, &db);
     }
@@ -375,6 +385,7 @@ void callback() {
         angleCam.vy = 0;
     }
     if ( PAD & PadShldR1 && !timer ) {
+        // Change camera angle switching mode if using pre-calculated BGs
         if (!curLvl.camPtr->tim_data){
             if(camMode < 5){ 
                     camMode ++;
@@ -505,7 +516,7 @@ void callback() {
         timer = 30;
         lastPad = PAD;
     }
-    if( theControllers[0].type == 0x73 && camMode == 0){
+    if( theControllers[0].type == 0x73 && camMode == ACTOR){
         // Cam control - horizontal
         if ( theControllers[0].analog0 >= 0 && theControllers[0].analog0 < (128 - DS_DZ/2) ) {
             angleCam.vy += ( 16 * ( 128 - theControllers[0].analog0 ) ) >> 8 ;
