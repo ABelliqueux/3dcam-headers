@@ -24,6 +24,7 @@
 #include "../include/physics.h"
 #include "../include/graphics.h"
 #include "../include/space.h"
+#include "../include/sound.h"
 
 #define USECD
 
@@ -105,6 +106,28 @@ VECTOR col = {0};
 short timediv = 1;
 // Animation time, see l.206
 int atime = 0;
+// Sound
+// SPU attributes
+SpuCommonAttr spuSettings;
+// Declare an array of XA_TRACK
+XA_TRACK XATrack[XA_TRACKS];
+// Name of file to load
+static char * loadXA = "\\INTER8.XA;1";
+// ADPCM Filter
+CdlFILTER filter;
+// Position of file on CD
+CdlLOC loc;
+// XA settings
+u_char param[4];
+// Start and end position of XA data, in sectors
+//~ static int StartPos, EndPos;
+// Current pos in file
+static int CurPos = -1;
+// Playback status : 0 not playing, 1 playing
+//~ static int gPlaying = 0;
+// Current XA channel 
+static char channel = 0;
+
 int main() {
     // Set matrices pointers to scratchpad 
     camera.mat = dc_camMat;
@@ -175,8 +198,18 @@ int main() {
     setCameraPos(&camera, &curLvl.camPtr->campos->pos, &curLvl.camPtr->campos->rot);
     // Time counter
     oldTime = GetRCnt(RCntCNT1);
+    // Sound
+    setSPUsettings(&spuSettings);
+    #ifdef USECD
+        loadXAfile(loadXA, XATrack);
+    #endif
+    prepareXAplayback(&filter, &channel);
+    CurPos = XATrack[0].start;
     // Main loop
     while ( VSync(VSYNC) ) {
+        
+        // Sound playback
+        playXAtrack(&CurPos, XATrack, &filter, &loc, &channel);
         
         dt = GetRCnt(RCntCNT1) - oldTime;
         oldTime = GetRCnt(RCntCNT1);
@@ -265,11 +298,28 @@ int main() {
         }
     // Physics
         if ( physics ) {
+             u_char canMove = 1;
              for ( int k = 0; k < *curLvl.meshes_length; k ++ ) {
                  if ( curLvl.meshes[k]->isRigidBody == 1 ) {
                     applyAcceleration( curLvl.meshes[k]->body, dt);
+                     // Get col between props and level
+                    if ( curLvl.meshes[k]->isProp ){
+                        checkBodyCol( curLvl.meshes[k]->body , curLvl.meshes[k]->node->plane->body );
+                        for (short obj=0; obj < curLvl.curNode->objects->index; obj++){
+                            // If isWall, check collision
+                            if ( curLvl.curNode->objects->list[obj]->isWall ){
+                                if( getExtCollision( *curLvl.meshes[k]->body, *curLvl.curNode->objects->list[obj]->body ).vz &&
+                                    getExtCollision( *curLvl.meshes[k]->body, *curLvl.curNode->objects->list[obj]->body ).vx) {
+                                    curLvl.meshes[k]->body->position.vz = curLvl.meshes[k]->body->position.vz - curLvl.meshes[k]->body->velocity.vz ;
+                                    curLvl.meshes[k]->body->position.vx = curLvl.meshes[k]->body->position.vx - curLvl.meshes[k]->body->velocity.vx ;
+                                    canMove = 0;
+                                }
+                            }
+                        }
+                    }
+                    // Get col between actor and level
                     if ( curLvl.meshes[k]->isActor ){
-                        // Get col between actor and level
+                        // Check col
                         checkBodyCol( curLvl.meshes[k]->body , curLvl.levelPtr->body );
                         // Get col between actor and current node's walls
                         // Loop on current node's objects
@@ -284,15 +334,12 @@ int main() {
                             }
                         }
                     }
-                    // Get col between props and level
-                    if ( curLvl.meshes[k]->isProp ){
-                        checkBodyCol( curLvl.meshes[k]->body , curLvl.meshes[k]->node->plane->body );
-                    }
+                   
                     // Only evaluate collision if actor is on same plane as prop
                     if ( curLvl.curNode == curLvl.propPtr->node ){
                         // Get col between actor and props
                         col = getExtCollision( *curLvl.meshes[k]->body, *curLvl.propPtr->body );
-                        if (col.vx && col.vz ) {
+                        if (col.vx && col.vz && canMove == 1 ) {
                             setVector( &curLvl.propPtr->body->velocity,
                                        curLvl.meshes[k]->body->velocity.vx,
                                        0,

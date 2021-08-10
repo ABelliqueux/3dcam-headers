@@ -9,6 +9,7 @@ src/physics.c \
 src/graphics.c \
 src/psx.c \
 src/space.c \
+src/sound.c \
 levels/level0.c \
 levels/level1.c \
 TIM/home.tim \

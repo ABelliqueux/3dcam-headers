@@ -25,6 +25,8 @@ void init(DISPENV disp[2], DRAWENV draw[2], short db, CVECTOR * BGc, VECTOR * BK
     //~ PadInit(0);
     //~ InitPAD(controllers[0].pad, 34, controllers[1].pad, 34);
     //~ StartPAD();
+    // Init SPU
+    SpuInit();
     // Reset the GPU
     ResetGraph( 0 );
     // Initialize and setup the GTE

@@ -6,6 +6,7 @@
 #include <libgpu.h>
 #include <libapi.h>
 #include <libcd.h>
+#include <libspu.h>
 #include <string.h>
 #include <inline_n.h>
 #include <gtemac.h>
