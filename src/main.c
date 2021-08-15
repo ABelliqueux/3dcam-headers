@@ -16,7 +16,6 @@
  *                   eye        */
 // Blender debug mode
 // bpy. app. debug = True 
-#define _WCHAR_T
 #include "../include/psx.h"
 #include "../include/pad.h"
 #include "../include/math.h"
@@ -95,8 +94,9 @@ NODE * propStartNode;
 // Callback function is used for pads
 void callback();
 // variable FPS 
-ulong oldTime = 0;
-int dt = 0;
+long oldTime = 0;
+long XATime = 0;
+long dt = 0;
 // Physics/collisions
 short physics = 1;
 VECTOR col = {0};
@@ -107,26 +107,73 @@ short timediv = 1;
 // Animation time, see l.206
 int atime = 0;
 // Sound
-// SPU attributes
-SpuCommonAttr spuSettings;
-// Declare an array of XA_TRACK
-XA_TRACK XATrack[XA_TRACKS];
-// Name of file to load
+// VAG playback
+// Memory management table ; allow MALLOC_MAX calls to SpuMalloc() - libref47.pdf p.1044
+char spu_malloc_rec[SPU_MALLOC_RECSIZ * (2 + MALLOC_MAX + 1)]; 
+// SPU settings
+SpuCommonAttr spuSettings;          // structure for changing common voice attributes
+SpuVoiceAttr  voiceAttributes ;          // structure for changing individual voice attributes                       
+// extern VAG files
+extern u_char _binary_VAG_0_come_vag_start;
+extern u_char _binary_VAG_1_cuek_vag_start;
+extern u_char _binary_VAG_2_erro_vag_start;
+extern u_char _binary_VAG_3_hehe_vag_start;
+extern u_char _binary_VAG_4_m4a1_vag_start;
+extern u_char _binary_VAG_5_punc_vag_start;
+extern u_char _binary_VAG_7_wron_vag_start;
+extern u_char _binary_VAG_8_yooo_vag_start;
+// soundBank
+VAGsound VAGBank[VAG_NBR] = {
+      { &_binary_VAG_0_come_vag_start,
+        SPU_00CH, 0 },  
+      { &_binary_VAG_1_cuek_vag_start,
+        SPU_01CH, 0 },   
+      { &_binary_VAG_2_erro_vag_start,
+        SPU_02CH, 0 },   
+      { &_binary_VAG_3_hehe_vag_start,
+        SPU_03CH, 0 },   
+      { &_binary_VAG_4_m4a1_vag_start,
+        SPU_04CH, 0 },  
+      { &_binary_VAG_5_punc_vag_start,
+        SPU_05CH, 0 },   
+      { &_binary_VAG_7_wron_vag_start,
+        SPU_06CH, 0 },   
+      { &_binary_VAG_8_yooo_vag_start,
+        SPU_07CH, 0 }
+};
+// XA playback
+XAbank XABank = {
+        8,
+        0,
+        {
+            //channel 0
+            {   0,  698464,   1,     0,     0,   ((698464/2336)-1) * XA_CHANNELS, -1 }, 
+            {   1,  366752,   1,     1 ,    0,   ((366752/2336)-1) * XA_CHANNELS, -1 }, 
+            //~ // channel 5
+            //~ // id   size   file  channel start end cursor
+            //~ {   0,  18688,   0,     5,     0,   56,  -1 }, 
+            //~ {   1,  44384,   0,     5 ,   144,  288, -1 }, 
+            //~ // channel 6                 
+            //~ {   2,  32704,   0,     6 ,   0,   104, -1  }, 
+            //~ {   3,  56064,   0,     6 ,   196, 380, -1  }, 
+            //~ {   4,  53728,   0,     6 ,   468, 644, -1  }, 
+            //~ // channel 7                               
+            //~ {   5,  84096,   0,     7 ,   0,   260, -1  }, 
+            //~ {   6,  16352,   0,     7 ,   368, 440, -1  }, 
+            //~ // channel 8                               
+            //~ {  7,  114464,   0,     8 ,   0,   384, -1  }
+        }
+};
+// XA file to load
 static char * loadXA = "\\INTER8.XA;1";
-// ADPCM Filter
+// File informations : pos, size, name
+CdlFILE XAPos = {0};
+// CD filter
 CdlFILTER filter;
-// Position of file on CD
-CdlLOC loc;
-// XA settings
-u_char param[4];
-// Start and end position of XA data, in sectors
-//~ static int StartPos, EndPos;
-// Current pos in file
-static int CurPos = -1;
-// Playback status : 0 not playing, 1 playing
-//~ static int gPlaying = 0;
-// Current XA channel 
-static char channel = 0;
+// File position in m/s/f
+CdlLOC  loc;
+// Keep track of XA Sample currently playing
+int sample = -1;
 
 int main() {
     // Set matrices pointers to scratchpad 
@@ -147,7 +194,12 @@ int main() {
     // Load overlay from cd
     #ifdef USECD
         CdInit();
+        // Load level
         LoadLevelCD(overlayFile, &load_all_overlays_here);
+        // Load XA file
+        CdSearchFile( &XAPos, loadXA);
+        // Set cd head to start of file
+        XABank.offset = CdPosToInt(&XAPos.pos);
     #endif
     // TODO : Add switch case to get the correct pointers
     // Get needed pointers from level file
@@ -199,21 +251,42 @@ int main() {
     // Time counter
     oldTime = GetRCnt(RCntCNT1);
     // Sound
-    setSPUsettings(&spuSettings);
-    #ifdef USECD
-        loadXAfile(loadXA, XATrack);
-    #endif
-    prepareXAplayback(&filter, &channel);
-    CurPos = XATrack[0].start;
+    SpuInit();
+    // Init sound settings
+    initSnd(&spuSettings, spu_malloc_rec);
+    //~ spuCDsetup(&spuSettings);
+    XAsetup();
+    for (u_short vag = 0; vag < VAG_NBR; vag++ ){
+        VAGBank[vag].spu_address = setSPUtransfer(&voiceAttributes, &VAGBank[vag]);
+    }
+    sample = 0;
+    setXAsample(&XABank.samples[sample], &filter);
     // Main loop
     while ( VSync(VSYNC) ) {
-        
-        // Sound playback
-        playXAtrack(&CurPos, XATrack, &filter, &loc, &channel);
-        
         dt = GetRCnt(RCntCNT1) - oldTime;
         oldTime = GetRCnt(RCntCNT1);
-        
+        // XA playback
+         // if sample is set
+        if (sample != -1 ){
+            // TODO : Fix XA playback with VSYNC = 1
+            // Begin XA file playback...
+            // if sample's cursor is 0
+            if (XABank.samples[sample].cursor == 0){
+                // Convert sector number to CD position in min/second/frame and set CdlLOC accordingly.
+                CdIntToPos( XABank.samples[sample].start + XABank.offset , &loc);
+                // Send CDROM read command
+                CdControlF(CdlReadS, (u_char *)&loc);
+                XATime = VSync(-1);
+                // Set playing flag
+            }
+            // if sample's cursor is close to sample's end position, stop playback
+            if ((XABank.samples[sample].cursor += XA_CDSPEED) >= XABank.samples[sample].end - XABank.samples[sample].start  ){
+                //~ CdControlF(CdlStop,0);
+                XABank.samples[sample].cursor = -1;
+                //~ sample = !sample;
+                setXAsample(&XABank.samples[sample], &filter);
+            }
+        }
         // Check if level has changed
         // TODO : Proper level system / loader
         if ( levelWas != level ){
@@ -252,6 +325,14 @@ int main() {
             // Set level lighting
             setLightEnv(draw, curLvl.BGc, curLvl.BKc);
             levelWas = level;
+            // Change XA track
+            XAsetup();
+            sample = !sample;
+            XABank.samples[sample].cursor = -1;
+            setXAsample(&XABank.samples[sample], &filter);
+            CdIntToPos( XABank.samples[sample].start + XABank.offset , &loc);
+            // Send CDROM read command
+            CdControlF(CdlReadS, (u_char *)&loc);
         }
         //~ FntPrint("Ovl:%s\nLvl : %x\nLvl: %d %d \n%x", overlayFile, &level, level, levelWas, loadLvl);
         // atime is used for animations timing
@@ -263,12 +344,14 @@ int main() {
         // TODO : put in a function
         // Reset player/prop pos
         if(curLvl.actorPtr->pos.vy >= 200){
+            playSFX(&voiceAttributes, &VAGBank[6]);
             copyVector(&curLvl.actorPtr->body->position, &actorStartPos );
             copyVector(&curLvl.actorPtr->rot, &actorStartRot );
             curLvl.curNode = actorStartNode;
             curLvl.levelPtr = curLvl.curNode->plane;
         }        
         if(curLvl.propPtr->pos.vy >= 200){
+            playSFX(&voiceAttributes, &VAGBank[3]);
             copyVector(&curLvl.propPtr->body->position, &propStartPos );
             copyVector(&curLvl.propPtr->rot, &propStartRot );
             curLvl.propPtr->node = propStartNode;
@@ -392,7 +475,7 @@ int main() {
         
         //~ FntPrint("\nTime   : %d\n", time);
         FntPrint("\n#Tri     : %d\n", triCount);
-        FntPrint("#RCnt    : %d %d\n", oldTime, dt);
+        FntPrint("#RCnt    : %d %d %d\n", VSync(-1), XA_CDSPEED, dt);
         FntPrint("CamAngle : %d\n", curCamAngle);
         FntFlush(-1);
         display( &disp[db], &draw[db], otdisc[db], primbuff[db], &nextpri, &db);
@@ -431,7 +514,7 @@ void callback() {
     if (angleCam.vy > 2048 || angleCam.vy < -2048) {
         angleCam.vy = 0;
     }
-    if ( PAD & PadShldR1 && !timer ) {
+    if ( PAD & PadShldR1 && !(lastPad & PadShldR1) ) {
         // Change camera angle switching mode if using pre-calculated BGs
         if (!curLvl.camPtr->tim_data){
             if(camMode < 5){ 
@@ -454,46 +537,67 @@ void callback() {
             } 
         }
         lastPad = PAD;
-        timer = 10;
     }
-    //~ if ( !(PAD & PadShldR1) && lastPad & PadShldR1 ) {
-        //pressed = 0;
-    //~ }
+    if ( !(PAD & PadShldR1) && lastPad & PadShldR1 ) {
+        lastPad = PAD;
+    }
     if ( PAD & PadShldL2 ) {
         dc_lgtangp->vy += 32;
     }
     if ( PAD & PadShldL1 ) {
         dc_lgtangp->vz += 32;
     }
-    if ( PAD & Tri && !timer ){
+    if ( PAD & Triangle && !( lastPad & Triangle ) ){
         if (curLvl.actorPtr->isPrism){
             curLvl.actorPtr->isPrism = 0;
         } else {
             curLvl.actorPtr->isPrism = 1;
         }
-        timer = 10;
+        playSFX(&voiceAttributes, &VAGBank[0]);
+        //~ timer = 10;
         lastPad = PAD;
     }
-    if ( PAD & Cross && !timer ){
+    if ( !(PAD & Triangle) && lastPad & Triangle ) {
+        lastPad = PAD;
+    }
+    if ( PAD & Square && !( lastPad & Square ) ){
+        playSFX(&voiceAttributes, &VAGBank[7]);
+        //~ sample = 0;
+        //~ setXAsample(&XABank.samples[sample], &filter);
+        lastPad = PAD;
+    }
+    if ( !(PAD & Square) && lastPad & Square ) {
+        lastPad = PAD;
+    }
+    if ( PAD & Cross && !(lastPad & Cross) ){
         if (curLvl.actorPtr->body->gForce.vy == 0 && (curLvl.actorPtr->body->position.vy - curLvl.actorPtr->body->min.vy) == curLvl.levelPtr->body->min.vy ){
             // Use delta to find jump force
-            curLvl.actorPtr->body->gForce.vy = - ((200/((ONE/(dt<1?1:dt))<1?1:(ONE/(dt<1?1:dt))))*14);
+            //~ curLvl.actorPtr->body->gForce.vy = - ((200/((ONE/(dt<1?1:dt))<1?1:(ONE/(dt<1?1:dt))))*14);
+            curLvl.actorPtr->body->gForce.vy = -200;
         }
-        //~ cursor = div - 15;
         timer = 10;
+        playSFX(&voiceAttributes, &VAGBank[4]);
         lastPad = PAD;
     }
     if ( !(PAD & Cross) && lastPad & Cross ) {
-        //~ curLvl.actorPtr->body->gForce.vy = 0;
         lastPad = PAD;
     }
-    if ( PAD & PadLeft && !timer ) {
+    if ( PAD & Circle && !(PAD & lastPad) ){
+        playSFX(&voiceAttributes, &VAGBank[5]);
+        lastPad = PAD;
+    }
+    if ( !(PAD & Circle) && lastPad & Circle ) {
+        lastPad = PAD;
+    }
+    if ( PAD & PadLeft && !(lastPad & PadLeft) ) {
         if (curLvl.actorPtr->anim->interpolate){
             curLvl.actorPtr->anim->interpolate = 0;
         } else {
             curLvl.actorPtr->anim->interpolate = 1;
         }
-        timer = 10;
+        lastPad = PAD;
+    }
+    if ( !(PAD & PadLeft) && lastPad & PadLeft ) {
         lastPad = PAD;
     }
     if (theControllers[0].type == 0x73){
@@ -549,7 +653,7 @@ void callback() {
         curLvl.actorPtr->rot.vy += 64;
         lastPad = PAD;
     }
-    if ( PAD & PadSelect && !timer ) {
+    if ( PAD & PadSelect && !(lastPad & PadSelect) ) {
         //~ if (!levelHasChanged){
         #ifndef USECD
             printf("load:%p:%08x:%s", &load_all_overlays_here, &level, overlayFile);
@@ -561,6 +665,9 @@ void callback() {
         #endif
         //~ }
         timer = 30;
+        lastPad = PAD;
+    }
+    if ( !(PAD & PadSelect) && lastPad & PadSelect ) {
         lastPad = PAD;
     }
     if( theControllers[0].type == 0x73 && camMode == ACTOR){

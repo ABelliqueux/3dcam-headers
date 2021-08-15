@@ -46,3 +46,6 @@
         gte_stdp(r9);                                                  \
         gte_avsz4();                                                   \
         gte_stotz(r10);  }
+
+// convert Little endian to Big endian
+#define SWAP_ENDIAN32(x) (((x)>>24) | (((x)>>8) & 0xFF00) | (((x)<<8) & 0x00FF0000) | ((x)<<24))

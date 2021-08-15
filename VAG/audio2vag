@@ -1,0 +1,18 @@
+#!/bin/bash
+if [ $# -eq 0 ]
+  then
+    echo "Audio to VAG conversion helper script
+You need to have ffmpeg and wav2vag in your path environment.
+
+Usage: 
+        ./audio2wav input.ext freq
+        
+where freq can be 44100, 22050, 11025, 5512
+"
+else
+
+ffmpeg -i $1 -f s16le -ac 1 -ar $2 tmp.dat -y
+wav2vag tmp.dat ${1%.***}.vag -sraw16 -freq=$2
+rm tmp.dat
+
+fi

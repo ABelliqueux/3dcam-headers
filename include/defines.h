@@ -1,5 +1,5 @@
 #define VMODE       0 // 0 == NTSC, 1 == PAL
-#define VSYNC       1
+#define VSYNC       0
 #define SCREENXRES 320
 #define SCREENYRES 240
 #define CENTERX     SCREENXRES/2
@@ -9,6 +9,15 @@
 #define CLEAR_COLOR_R 0
 #define CLEAR_COLOR_G 0
 #define CLEAR_COLOR_B 0
+
+// Sound
+// CDDA / XA volume
+#define MVOL_L 0x3fff
+#define MVOL_R 0x3fff
+#define CDVOL_L 0x7fff
+#define CDVOL_R 0x7fff
+#define VOICEVOL_L 0x3fff
+#define VOICEVOL_R 0x3fff
 
 // Debug Font
 #define FNT_VRAM_X 960
@@ -75,10 +84,10 @@ asm(\
 #define PadDown   ( 1 << 6 )
 #define PadLeft   ( 1 << 7 )
 
-#define Tri       ( 1 << 12 )
-#define Circ      ( 1 << 13 )
+#define Triangle       ( 1 << 12 )
+#define Circle      ( 1 << 13 )
 #define Cross     ( 1 << 14 )
-#define Squar     ( 1 << 15 )
+#define Square     ( 1 << 15 )
 // Joysticks
 #define PadR3    ( 1 << 2 )
 #define PadL3    ( 1 << 1 )

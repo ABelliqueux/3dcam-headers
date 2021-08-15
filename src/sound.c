@@ -1,82 +1,108 @@
 #include "../include/sound.h"
 #include "../include/space.h"
 
-void setSPUsettings(SpuCommonAttr * spuSettings){
-    // Set master & CD volume to max
-    spuSettings->mask = (SPU_COMMON_MVOLL | SPU_COMMON_MVOLR | SPU_COMMON_CDVOLL | SPU_COMMON_CDVOLR | SPU_COMMON_CDMIX);
-    spuSettings->mvol.left  = 0x6000;
-    spuSettings->mvol.right = 0x6000;
-    spuSettings->cd.volume.left = 0x6000;
-    spuSettings->cd.volume.right = 0x6000;
+// VAG playback
+void initSnd(SpuCommonAttr * spuSettings, char * spu_malloc_rec){
+    
+    SpuInitMalloc(MALLOC_MAX, spu_malloc_rec);                      // Maximum number of blocks, mem. management table address.
+    spuSettings->mask = (SPU_COMMON_MVOLL | SPU_COMMON_MVOLR | SPU_COMMON_CDVOLL | SPU_COMMON_CDVOLR | SPU_COMMON_CDMIX );  // Mask which attributes to set
+    spuSettings->mvol.left  = MVOL_L;                           // Master volume left
+    spuSettings->mvol.right = MVOL_R;                           // see libref47.pdf, p.1058
+    spuSettings->cd.volume.left = CDVOL_L;
+    spuSettings->cd.volume.right = CDVOL_R;
     // Enable CD input ON
     spuSettings->cd.mix = SPU_ON;
-    // Apply settings
-    SpuSetCommonAttr(spuSettings);
+    
+    SpuSetCommonAttr(spuSettings);                           
     // Set transfer mode 
     SpuSetTransferMode(SPU_TRANSFER_BY_DMA);
+    SpuSetIRQ(SPU_OFF);
+    // Mute all voices
+    SpuSetKey(SpuOff, SPU_ALLCH);
 }
-
-int resetXAsettings(void){
-    // Reset parameters
-    u_char param = CdlModeSpeed;
-    // Set CD mode
-    return CdControlB(CdlSetmode, &param, 0);
+u_long sendVAGtoSPU(unsigned int VAG_data_size, u_char *VAG_data){
+    u_long transferred;
+    SpuSetTransferMode(SpuTransByDMA);                              // DMA transfer; can do other processing during transfer
+    transferred = SpuWrite (VAG_data + sizeof(VAGhdr), VAG_data_size);     // transfer VAG_data_size bytes from VAG_data  address to sound buffer
+    SpuIsTransferCompleted (SPU_TRANSFER_WAIT);                     // Checks whether transfer is completed and waits for completion
+    return transferred;
 }
-int prepareXAplayback(CdlFILTER * filter, char * channel){
-    u_char param = CdlModeSpeed|CdlModeRT|CdlModeSF|CdlModeSize1;
+void setVoiceAttr(SpuVoiceAttr * voiceAttributes, u_int pitch, long channel, u_long soundAddr ){
+    voiceAttributes->mask=                                   //~ Attributes (bit string, 1 bit per attribute)
+    (
+      SPU_VOICE_VOLL |
+      SPU_VOICE_VOLR |
+      SPU_VOICE_PITCH |
+      SPU_VOICE_WDSA |
+      SPU_VOICE_ADSR_AMODE |
+      SPU_VOICE_ADSR_SMODE |
+      SPU_VOICE_ADSR_RMODE |
+      SPU_VOICE_ADSR_AR |
+      SPU_VOICE_ADSR_DR |
+      SPU_VOICE_ADSR_SR |
+      SPU_VOICE_ADSR_RR |
+      SPU_VOICE_ADSR_SL
+    );
+    voiceAttributes->voice        = channel;                 //~ Voice (low 24 bits are a bit string, 1 bit per voice )
+    voiceAttributes->volume.left  = 0x0;                  //~ Volume 
+    voiceAttributes->volume.right = 0x0;                  //~ Volume
+    voiceAttributes->pitch        = pitch;                   //~ Interval (set pitch)
+    voiceAttributes->addr         = soundAddr;               //~ Waveform data start address
+    voiceAttributes->a_mode       = SPU_VOICE_LINEARIncN;    //~ Attack rate mode  = Linear Increase - see libref47.pdf p.1091
+    voiceAttributes->s_mode       = SPU_VOICE_LINEARIncN;    //~ Sustain rate mode = Linear Increase
+    voiceAttributes->r_mode       = SPU_VOICE_LINEARDecN;    //~ Release rate mode = Linear Decrease
+    voiceAttributes->ar           = 0x0;                     //~ Attack rate
+    voiceAttributes->dr           = 0x0;                     //~ Decay rate
+    voiceAttributes->rr           = 0x0;                     //~ Release rate
+    voiceAttributes->sr           = 0x0;                     //~ Sustain rate
+    voiceAttributes->sl           = 0xf;                     //~ Sustain level
+    SpuSetVoiceAttr(voiceAttributes);                      // set attributes
+}
+u_long setSPUtransfer(SpuVoiceAttr * voiceAttributes, VAGsound * sound){
+    // Return spu_address
+    u_long transferred, spu_address;
+    u_int pitch;
+    const VAGhdr * VAGheader = (VAGhdr *) sound->VAGfile;
+    pitch = (SWAP_ENDIAN32(VAGheader->samplingFrequency) << 12) / 44100L; 
+    spu_address = SpuMalloc(SWAP_ENDIAN32(VAGheader->dataSize));                // Allocate an area of dataSize bytes in the sound buffer. 
+    SpuSetTransferStartAddr(spu_address);                                       // Sets a starting address in the sound buffer
+    transferred = sendVAGtoSPU(SWAP_ENDIAN32(VAGheader->dataSize), sound->VAGfile);
+    setVoiceAttr(voiceAttributes, pitch, sound->spu_channel, spu_address); 
+    // Return 1 if ok, size transferred else.
+    //~ if (transferred == SWAP_ENDIAN32(VAGheader->dataSize)){
+        //~ return 1;
+        //~ }
+    //~ return transferred;
+    return spu_address;
+}
+void playSFX(SpuVoiceAttr * voiceAttributes, VAGsound *  sound){
+    // Set voice volume to max
+    voiceAttributes->mask= ( SPU_VOICE_VOLL | SPU_VOICE_VOLR );
+    voiceAttributes->voice        = sound->spu_channel;
+    // Range 0 - 3fff
+    voiceAttributes->volume.left  = VOICEVOL_L;
+    voiceAttributes->volume.right = VOICEVOL_R;
+    SpuSetVoiceAttr(voiceAttributes);
+    // Play voice
+    SpuSetKey(SpuOn, sound->spu_channel);
+}
+void XAsetup(void){   
+    u_char param[4];
+    // ORing the parameters we need to set ; drive speed,  ADPCM play, Subheader filter, sector size
+    // If using CdlModeSpeed(Double speed), you need to load an XA file that has 8 channels.
+    // In single speed, a 4 channels XA is to be used.
+    param[0] = CdlModeSpeed|CdlModeRT|CdlModeSF|CdlModeSize1;
+    // Issue primitive command to CD-ROM system (Blocking-type)
     // Set the parameters above
-    CdControlB(CdlSetmode, &param, 0);
+    CdControlB(CdlSetmode, param, 0);
     // Pause at current pos
     CdControlF(CdlPause,0);
-    // Set filter 
-    // Use file 1, channel 0
-    filter->file = 1;
-    filter->chan = *channel;
-    return CdControlF(CdlSetfilter, (u_char *)filter);
 }
-void loadXAfile( char * XAfile, XA_TRACK * XATrack){
-    CdlFILE XAPos;
-    CdSearchFile( &XAPos, XAfile);
-    XATrack[0].start = CdPosToInt(&XAPos.pos);
-    XATrack[0].end = XATrack[0].start + (XAPos.size/CD_SECTOR_SIZE) - 1;
-}
-
-u_char startXAPlayback(int * sectorPos, CdlLOC * loc){
-    // Convert sector number to CD position in min/second/frame and set CdlLOC accordingly.
-    CdIntToPos( *sectorPos, loc);
-    // Send CDROM read command
-    CdControlF(CdlReadS, (u_char *)loc);
-    return 1;
-}
-int stopXAPlayback(void){
-    // stop CD
-    return CdControlF(CdlStop,0);
-}
-int setXAchannel(CdlFILTER * filter, char * channel){
-    filter->chan = *channel;
+void setXAsample(XAsound * sound, CdlFILTER * filter){
+    filter->chan = sound->channel;
+    filter->file = sound->file;
     // Set filter
-    return CdControlF(CdlSetfilter, (u_char *)filter);
-}
-int playXAtrack(int * CurPos, XA_TRACK * XATrack, CdlFILTER * filter, CdlLOC * loc, char * channel){
-    static int gPlaying = 0;
-    // Sound playback
-    // Begin XA file playback
-    if (gPlaying == 0 && *CurPos == XATrack[0].start){
-        gPlaying = startXAPlayback(&XATrack[0].start, loc);
-    }
-    // When endPos is reached, set playing flag to 0
-    if ((*CurPos += XA_SECTOR_OFFSET) >= XATrack[0].end){
-        gPlaying = 0;
-    }
-    // If XA file end is reached, stop playback
-    if ( gPlaying == 0 && *CurPos >= XATrack[0].end ){
-        // Stop CD playback
-        stopXAPlayback();
-        // Optional
-        //~ resetXAsettings();
-        // Switch to next channel and start play back
-        *channel = !*channel;
-        setXAchannel(filter, channel);
-        *CurPos = XATrack[0].start;
-    }
+    CdControlF(CdlSetfilter, (u_char *)filter);
+    // Reset sample's cursor
+    sound->cursor = 0;
 }

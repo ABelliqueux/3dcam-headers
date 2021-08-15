@@ -61,7 +61,7 @@ cd my-project
     * `pcsx-redux -run -iso OverlayExample.cue` : run the disk image in the [pcsx-redux](https://github.com/grumpycoders/pcsx-redux/) emulator.  
   
   On first launch, `pcsx-redux` will ask for a PSX bios. You can use your own or [the open source OpenBios](https://github.com/grumpycoders/pcsx-redux/tree/main/src/mips/openbios).  
-  A [prebuilt binary](http://psx.arthus.net/roms/bios/openbios.bin) is available here for convenience.  
+  A [prebuilt binary](https://psx.arthus.net/roms/bios/openbios.bin) is available here for convenience.  
   Set it in pcsx-redux ; `Configuration > Emulation`, then reboot the emulator ; `File > Reboot`. 
   
   4. Install the [blender extension](https://github.com/ABelliqueux/blender_io_export_psx_mesh) to create your own levels.
@@ -85,6 +85,33 @@ Thus, to load `Overlay.lvl1` and `main.ps-exe` in the psx ram, use :
 
 # Credits
 
-PSX code based on [example](http://psx.arthus.net/code/primdraw.7z) by [Lameguy64](https://github.com/Lameguy64)  
+## Sound credits
+
+### XA files :
+
+Lobby Time by Kevin MacLeod
+Link: https://incompetech.filmmusic.io/song/3986-lobby-time
+License: https://filmmusic.io/standard-license
+
+Pixelland by Kevin MacLeod
+Link: https://incompetech.filmmusic.io/song/4222-pixelland
+License: https://filmmusic.io/standard-license
+
+### VAG files
+
+All the sound effects come from https://www.myinstants.com and are :  
+
+```
+comedy_pop_finger_in_mouth_001(1).mp3
+cuek.swf.mp3
+erro.mp3
+m4a1_single-kibblesbob-8540445.mp3
+punch.mp3
+wrong-answer-sound-effect.mp3
+yooooooooooooooooooooooooo_4.mp3
+hehehehhehehehhehehheheehehe.mp3
+```
+
+PSX code based on [example](https://psx.arthus.net/code/primdraw.7z) by [Lameguy64](https://github.com/Lameguy64)  
 An incredible amount of help from the good fellows at the [psxdev discord](https://discord.com/invite/EnaNgrqJ?utm_source=Discord%20Widget&utm_medium=Connect),  
 Including but not limited to @NicolasNoble, @Lameguy64, @Impiaa, @paul, @sickle, @danhans42...
