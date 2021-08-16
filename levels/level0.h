@@ -39,4 +39,3 @@ extern NODE * level0_curNode;
 extern NODE level0_nodePlane;
 extern VAGbank VAGBank0;
 extern XAbank XABank0;
-//~ extern char * loadXA0;

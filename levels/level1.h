@@ -178,4 +178,3 @@ extern NODE level1_nodegnd_002;
 extern NODE level1_nodegnd;
 extern VAGbank VAGBank1;
 extern XAbank XABank1;
-//~ extern char * loadXA1;

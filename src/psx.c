@@ -1,4 +1,5 @@
 #include "../include/psx.h"
+#include "../include/sound.h"
 
 
 void setDCLightEnv(MATRIX * curLevelCMat, MATRIX * curLevelLgtMat, SVECTOR * curLevelLgtAng){
@@ -103,8 +104,8 @@ void LvlPtrSet(LEVEL * curLevel, LEVEL * level){
     curLevel->camPath  = level->camPath;
     curLevel->camAngles = level->camAngles;
     curLevel->curNode   = level->curNode; // Blank
-    curLevel->VAG   = level->VAG; // Blank
-    curLevel->XA   = level->XA; // Blank
+    curLevel->VAG   = level->VAG;
+    curLevel->XA   = level->XA;
     
     //~ curLevel->actorPtr->body = level->actorPtr->body;
     // Move these to drawPoly()
@@ -121,6 +122,8 @@ int LoadLevelCD(const char*const LevelName, u_long * LoadAddress){
 void SwitchLevel( LEVEL * curLevel, LEVEL * loadLevel ){
     //~ ScrRst();
     LvlPtrSet( curLevel, loadLevel);
+    // XA
+    getXAoffset(curLevel);
     // Reload textures
     for (int k = 0; k < *curLevel->meshes_length ; k++){
         // Check data exists
@@ -148,6 +151,7 @@ void SwitchLevel( LEVEL * curLevel, LEVEL * loadLevel ){
     applyVector( &curLevel->propPtr->body->position, 0, 100, 0, -=);
     applyVector( &curLevel->propPtr->body->velocity, 0, 0, 0, =);
     applyVector( &curLevel->propPtr->body->gForce, 0, 0, 0, =);
+    
 };
 void LoadTexture(u_long * tim, TIM_IMAGE * tparam){     // This part is from Lameguy64's tutorial series : lameguy64.net/svn/pstutorials/chapter1/3-textures.html login/pw: annoyingmous
         OpenTIM(tim);                                   // Open the tim binary data, feed it the address of the data in memory

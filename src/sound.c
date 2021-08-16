@@ -73,7 +73,6 @@ u_long setSPUtransfer(SpuVoiceAttr * voiceAttributes, VAGsound * sound){
         //~ return 1;
         //~ }
     //~ return transferred;
-    FntPrint("Tr: %", transferred);
     return spu_address;
 }
 void playSFX(SpuVoiceAttr * voiceAttributes, VAGsound *  sound){
@@ -99,6 +98,13 @@ void XAsetup(void){
     // Pause at current pos
     CdControlF(CdlPause,0);
 }
+void getXAoffset(LEVEL * level){
+        CdlFILE XAPos = {0};
+        // Load XA file
+        CdSearchFile(&XAPos, level->XA->name);
+        // Set cd head to start of file
+        level->XA->offset = CdPosToInt(&XAPos.pos);
+};
 void setXAsample(XAsound * sound, CdlFILTER * filter){
     filter->chan = sound->channel;
     filter->file = sound->file;

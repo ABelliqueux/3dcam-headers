@@ -112,44 +112,7 @@ int atime = 0;
 char spu_malloc_rec[SPU_MALLOC_RECSIZ * (2 + MALLOC_MAX + 1)]; 
 // SPU settings
 SpuCommonAttr spuSettings;          // structure for changing common voice attributes
-SpuVoiceAttr  voiceAttributes ;          // structure for changing individual voice attributes                       
-// extern VAG files
-//~ extern u_char _binary_VAG_0_come_vag_start;
-//~ extern u_char _binary_VAG_1_cuek_vag_start;
-//~ extern u_char _binary_VAG_2_erro_vag_start;
-//~ extern u_char _binary_VAG_3_hehe_vag_start;
-//~ extern u_char _binary_VAG_4_m4a1_vag_start;
-//~ extern u_char _binary_VAG_5_punc_vag_start;
-//~ extern u_char _binary_VAG_7_wron_vag_start;
-//~ extern u_char _binary_VAG_8_yooo_vag_start;
-// soundBank
-//~ VAGbank VAGBank = {
-    //~ 8,
-    //~ {
-        //~ { &_binary_VAG_0_come_vag_start, SPU_00CH, 0 },  
-        //~ { &_binary_VAG_1_cuek_vag_start, SPU_01CH, 0 },   
-        //~ { &_binary_VAG_2_erro_vag_start, SPU_02CH, 0 },   
-        //~ { &_binary_VAG_3_hehe_vag_start, SPU_03CH, 0 },   
-        //~ { &_binary_VAG_4_m4a1_vag_start, SPU_04CH, 0 },  
-        //~ { &_binary_VAG_5_punc_vag_start, SPU_05CH, 0 },   
-        //~ { &_binary_VAG_7_wron_vag_start, SPU_06CH, 0 },   
-        //~ { &_binary_VAG_8_yooo_vag_start, SPU_07CH, 0 }
-    //~ }
-//~ };
-// XA playback
-//~ XAbank XABank = {
-        //~ 8,
-        //~ 0,
-        //~ {
-            //~ //channel 0
-            //~ {   0,  698464,   1,     0,     0,   ((698464/2336)-1) * XA_CHANNELS, -1 }, 
-            //~ {   1,  366752,   1,     1 ,    0,   ((366752/2336)-1) * XA_CHANNELS, -1 }, 
-        //~ }
-//~ };
-//~ // XA file to load
-//~ static char * loadXA = "\\INTER8.XA;1";
-// File informations : pos, size, name
-CdlFILE XAPos = {0};
+SpuVoiceAttr  voiceAttributes ;          // structure for changing individual voice attributes
 // CD filter
 CdlFILTER filter;
 // File position in m/s/f
@@ -178,10 +141,6 @@ int main() {
         CdInit();
         // Load level
         LoadLevelCD(overlayFile, &load_all_overlays_here);
-        // Load XA file
-        CdSearchFile( &XAPos, curLvl.XA->name);
-        // Set cd head to start of file
-        curLvl.XA->offset = CdPosToInt(&XAPos.pos);
     #endif
     // TODO : Add switch case to get the correct pointers
     // Get needed pointers from level file
@@ -190,6 +149,13 @@ int main() {
     } else if ( level == 1) {
         LvlPtrSet( &curLvl, &level1);
     } 
+    #ifdef USECD
+        getXAoffset(&curLvl);
+        //~ // Load XA file
+        //~ CdSearchFile(&XAPos, curLvl.XA->name);
+        //~ // Set cd head to start of file
+        //~ curLvl.XA->offset = CdPosToInt(&XAPos.pos);
+    #endif
     levelWas = level;
     // Copy light matrices / vector to scratchpad
     setDCLightEnv(curLvl.cmat, curLvl.lgtmat, &lgtang);
@@ -256,7 +222,7 @@ int main() {
             // if sample's cursor is 0
             if (curLvl.XA->samples[sample].cursor == 0){
                 // Convert sector number to CD position in min/second/frame and set CdlLOC accordingly.
-                CdIntToPos( curLvl.XA->samples[sample].start + curLvl.XA->offset , &loc);
+                CdIntToPos(curLvl.XA->samples[sample].start + curLvl.XA->offset , &loc);
                 // Send CDROM read command
                 CdControlF(CdlReadS, (u_char *)&loc);
                 XATime = VSync(-1);
@@ -457,7 +423,7 @@ int main() {
         AddPrims(otdisc[db], ot[db] + OTLEN - 1, ot[db]);
         
         FntPrint("\n#Tri     : %d\n", triCount);
-        FntPrint("#RCnt    : %d %d %d\n", VSync(-1), XA_CDSPEED, dt);
+        FntPrint("#RCnt    : %d %d %d\n", VSync(-1), dt);
         FntPrint("CamAngle : %d\n", curCamAngle);
         FntFlush(-1);
         display( &disp[db], &draw[db], otdisc[db], primbuff[db], &nextpri, &db);

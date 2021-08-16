@@ -56,4 +56,5 @@ u_long setSPUtransfer(SpuVoiceAttr * voiceAttributes, VAGsound * sound);
 void playSFX(SpuVoiceAttr * voiceAttributes, VAGsound *  sound);
 // XA playback
 void XAsetup(void);
+void getXAoffset(LEVEL * level);
 void setXAsample(XAsound * sound, CdlFILTER * filter);

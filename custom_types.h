@@ -16,6 +16,8 @@ struct NODE;
 struct LEVEL;
 struct VAGsound;
 struct VAGbank;
+struct XAbank;
+struct XAsound;
 
 typedef struct BODY {
     VECTOR  gForce;
@@ -141,7 +143,7 @@ typedef struct XAsound {
 } XAsound;
 
 typedef struct XAbank {
-    char * name;
+    char name[16];
     u_int index;
     int offset;
     XAsound samples[];

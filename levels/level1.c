@@ -11073,8 +11073,6 @@ XAbank XABank1 = {
             {   1,  366752,   1,     1 ,    0,   ((366752/2336)-1) * XA_CHANNELS, -1 }, 
         }
 };
-// XA file to load
-//~ static char * loadXA1 = "\\INTER8.XA;1";
 
 LEVEL level1 = {
     &level1_BGc,
