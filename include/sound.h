@@ -17,6 +17,10 @@ typedef struct VAGsound {
     u_long spu_channel;      // SPU voice to playback to
     u_long spu_address;      // SPU address for memory freeing spu mem
     } VAGsound;
+typedef struct VAGbank {
+    u_int index;
+    VAGsound samples[];
+} VAGbank;
 // VAG header struct (see fileformat47.pdf, p.209)
 typedef struct VAGhdr {                // All the values in this header must be big endian
         char id[4];                    // VAGp         4 bytes -> 1 char * 4

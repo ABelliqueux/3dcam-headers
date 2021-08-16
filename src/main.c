@@ -123,23 +123,18 @@ extern u_char _binary_VAG_5_punc_vag_start;
 extern u_char _binary_VAG_7_wron_vag_start;
 extern u_char _binary_VAG_8_yooo_vag_start;
 // soundBank
-VAGsound VAGBank[VAG_NBR] = {
-      { &_binary_VAG_0_come_vag_start,
-        SPU_00CH, 0 },  
-      { &_binary_VAG_1_cuek_vag_start,
-        SPU_01CH, 0 },   
-      { &_binary_VAG_2_erro_vag_start,
-        SPU_02CH, 0 },   
-      { &_binary_VAG_3_hehe_vag_start,
-        SPU_03CH, 0 },   
-      { &_binary_VAG_4_m4a1_vag_start,
-        SPU_04CH, 0 },  
-      { &_binary_VAG_5_punc_vag_start,
-        SPU_05CH, 0 },   
-      { &_binary_VAG_7_wron_vag_start,
-        SPU_06CH, 0 },   
-      { &_binary_VAG_8_yooo_vag_start,
-        SPU_07CH, 0 }
+VAGbank VAGBank = {
+    8,
+    {
+        { &_binary_VAG_0_come_vag_start, SPU_00CH, 0 },  
+        { &_binary_VAG_1_cuek_vag_start, SPU_01CH, 0 },   
+        { &_binary_VAG_2_erro_vag_start, SPU_02CH, 0 },   
+        { &_binary_VAG_3_hehe_vag_start, SPU_03CH, 0 },   
+        { &_binary_VAG_4_m4a1_vag_start, SPU_04CH, 0 },  
+        { &_binary_VAG_5_punc_vag_start, SPU_05CH, 0 },   
+        { &_binary_VAG_7_wron_vag_start, SPU_06CH, 0 },   
+        { &_binary_VAG_8_yooo_vag_start, SPU_07CH, 0 }
+    }
 };
 // XA playback
 XAbank XABank = {
@@ -257,7 +252,7 @@ int main() {
     //~ spuCDsetup(&spuSettings);
     XAsetup();
     for (u_short vag = 0; vag < VAG_NBR; vag++ ){
-        VAGBank[vag].spu_address = setSPUtransfer(&voiceAttributes, &VAGBank[vag]);
+        VAGBank.samples[vag].spu_address = setSPUtransfer(&voiceAttributes, &VAGBank.samples[vag]);
     }
     sample = 0;
     setXAsample(&XABank.samples[sample], &filter);
@@ -344,14 +339,14 @@ int main() {
         // TODO : put in a function
         // Reset player/prop pos
         if(curLvl.actorPtr->pos.vy >= 200){
-            playSFX(&voiceAttributes, &VAGBank[6]);
+            playSFX(&voiceAttributes,  &VAGBank.samples[6]);
             copyVector(&curLvl.actorPtr->body->position, &actorStartPos );
             copyVector(&curLvl.actorPtr->rot, &actorStartRot );
             curLvl.curNode = actorStartNode;
             curLvl.levelPtr = curLvl.curNode->plane;
         }        
         if(curLvl.propPtr->pos.vy >= 200){
-            playSFX(&voiceAttributes, &VAGBank[3]);
+            playSFX(&voiceAttributes,  &VAGBank.samples[3]);
             copyVector(&curLvl.propPtr->body->position, &propStartPos );
             copyVector(&curLvl.propPtr->rot, &propStartRot );
             curLvl.propPtr->node = propStartNode;
@@ -553,7 +548,7 @@ void callback() {
         } else {
             curLvl.actorPtr->isPrism = 1;
         }
-        playSFX(&voiceAttributes, &VAGBank[0]);
+        playSFX(&voiceAttributes,  &VAGBank.samples[0]);
         //~ timer = 10;
         lastPad = PAD;
     }
@@ -561,7 +556,7 @@ void callback() {
         lastPad = PAD;
     }
     if ( PAD & Square && !( lastPad & Square ) ){
-        playSFX(&voiceAttributes, &VAGBank[7]);
+        playSFX(&voiceAttributes,  &VAGBank.samples[7]);
         //~ sample = 0;
         //~ setXAsample(&XABank.samples[sample], &filter);
         lastPad = PAD;
@@ -576,14 +571,14 @@ void callback() {
             curLvl.actorPtr->body->gForce.vy = -200;
         }
         timer = 10;
-        playSFX(&voiceAttributes, &VAGBank[4]);
+        playSFX(&voiceAttributes,  &VAGBank.samples[4]);
         lastPad = PAD;
     }
     if ( !(PAD & Cross) && lastPad & Cross ) {
         lastPad = PAD;
     }
     if ( PAD & Circle && !(PAD & lastPad) ){
-        playSFX(&voiceAttributes, &VAGBank[5]);
+        playSFX(&voiceAttributes,  &VAGBank.samples[5]);
         lastPad = PAD;
     }
     if ( !(PAD & Circle) && lastPad & Circle ) {
