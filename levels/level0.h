@@ -1,5 +1,7 @@
 #pragma once
 #include "../custom_types.h"
+#include "../include/defines.h"
+
 extern LEVEL level0;
 extern CVECTOR level0_BGc;
 extern VECTOR level0_BKc;
@@ -35,3 +37,6 @@ extern MESH * level0_propPtr;
 extern CAMANGLE * level0_camPtr;
 extern NODE * level0_curNode;
 extern NODE level0_nodePlane;
+extern VAGbank VAGBank0;
+extern XAbank XABank0;
+//~ extern char * loadXA0;

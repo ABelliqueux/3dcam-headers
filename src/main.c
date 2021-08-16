@@ -114,53 +114,40 @@ char spu_malloc_rec[SPU_MALLOC_RECSIZ * (2 + MALLOC_MAX + 1)];
 SpuCommonAttr spuSettings;          // structure for changing common voice attributes
 SpuVoiceAttr  voiceAttributes ;          // structure for changing individual voice attributes                       
 // extern VAG files
-extern u_char _binary_VAG_0_come_vag_start;
-extern u_char _binary_VAG_1_cuek_vag_start;
-extern u_char _binary_VAG_2_erro_vag_start;
-extern u_char _binary_VAG_3_hehe_vag_start;
-extern u_char _binary_VAG_4_m4a1_vag_start;
-extern u_char _binary_VAG_5_punc_vag_start;
-extern u_char _binary_VAG_7_wron_vag_start;
-extern u_char _binary_VAG_8_yooo_vag_start;
+//~ extern u_char _binary_VAG_0_come_vag_start;
+//~ extern u_char _binary_VAG_1_cuek_vag_start;
+//~ extern u_char _binary_VAG_2_erro_vag_start;
+//~ extern u_char _binary_VAG_3_hehe_vag_start;
+//~ extern u_char _binary_VAG_4_m4a1_vag_start;
+//~ extern u_char _binary_VAG_5_punc_vag_start;
+//~ extern u_char _binary_VAG_7_wron_vag_start;
+//~ extern u_char _binary_VAG_8_yooo_vag_start;
 // soundBank
-VAGbank VAGBank = {
-    8,
-    {
-        { &_binary_VAG_0_come_vag_start, SPU_00CH, 0 },  
-        { &_binary_VAG_1_cuek_vag_start, SPU_01CH, 0 },   
-        { &_binary_VAG_2_erro_vag_start, SPU_02CH, 0 },   
-        { &_binary_VAG_3_hehe_vag_start, SPU_03CH, 0 },   
-        { &_binary_VAG_4_m4a1_vag_start, SPU_04CH, 0 },  
-        { &_binary_VAG_5_punc_vag_start, SPU_05CH, 0 },   
-        { &_binary_VAG_7_wron_vag_start, SPU_06CH, 0 },   
-        { &_binary_VAG_8_yooo_vag_start, SPU_07CH, 0 }
-    }
-};
+//~ VAGbank VAGBank = {
+    //~ 8,
+    //~ {
+        //~ { &_binary_VAG_0_come_vag_start, SPU_00CH, 0 },  
+        //~ { &_binary_VAG_1_cuek_vag_start, SPU_01CH, 0 },   
+        //~ { &_binary_VAG_2_erro_vag_start, SPU_02CH, 0 },   
+        //~ { &_binary_VAG_3_hehe_vag_start, SPU_03CH, 0 },   
+        //~ { &_binary_VAG_4_m4a1_vag_start, SPU_04CH, 0 },  
+        //~ { &_binary_VAG_5_punc_vag_start, SPU_05CH, 0 },   
+        //~ { &_binary_VAG_7_wron_vag_start, SPU_06CH, 0 },   
+        //~ { &_binary_VAG_8_yooo_vag_start, SPU_07CH, 0 }
+    //~ }
+//~ };
 // XA playback
-XAbank XABank = {
-        8,
-        0,
-        {
-            //channel 0
-            {   0,  698464,   1,     0,     0,   ((698464/2336)-1) * XA_CHANNELS, -1 }, 
-            {   1,  366752,   1,     1 ,    0,   ((366752/2336)-1) * XA_CHANNELS, -1 }, 
-            //~ // channel 5
-            //~ // id   size   file  channel start end cursor
-            //~ {   0,  18688,   0,     5,     0,   56,  -1 }, 
-            //~ {   1,  44384,   0,     5 ,   144,  288, -1 }, 
-            //~ // channel 6                 
-            //~ {   2,  32704,   0,     6 ,   0,   104, -1  }, 
-            //~ {   3,  56064,   0,     6 ,   196, 380, -1  }, 
-            //~ {   4,  53728,   0,     6 ,   468, 644, -1  }, 
-            //~ // channel 7                               
-            //~ {   5,  84096,   0,     7 ,   0,   260, -1  }, 
-            //~ {   6,  16352,   0,     7 ,   368, 440, -1  }, 
-            //~ // channel 8                               
-            //~ {  7,  114464,   0,     8 ,   0,   384, -1  }
-        }
-};
-// XA file to load
-static char * loadXA = "\\INTER8.XA;1";
+//~ XAbank XABank = {
+        //~ 8,
+        //~ 0,
+        //~ {
+            //~ //channel 0
+            //~ {   0,  698464,   1,     0,     0,   ((698464/2336)-1) * XA_CHANNELS, -1 }, 
+            //~ {   1,  366752,   1,     1 ,    0,   ((366752/2336)-1) * XA_CHANNELS, -1 }, 
+        //~ }
+//~ };
+//~ // XA file to load
+//~ static char * loadXA = "\\INTER8.XA;1";
 // File informations : pos, size, name
 CdlFILE XAPos = {0};
 // CD filter
@@ -192,9 +179,9 @@ int main() {
         // Load level
         LoadLevelCD(overlayFile, &load_all_overlays_here);
         // Load XA file
-        CdSearchFile( &XAPos, loadXA);
+        CdSearchFile( &XAPos, curLvl.XA->name);
         // Set cd head to start of file
-        XABank.offset = CdPosToInt(&XAPos.pos);
+        curLvl.XA->offset = CdPosToInt(&XAPos.pos);
     #endif
     // TODO : Add switch case to get the correct pointers
     // Get needed pointers from level file
@@ -252,10 +239,11 @@ int main() {
     //~ spuCDsetup(&spuSettings);
     XAsetup();
     for (u_short vag = 0; vag < VAG_NBR; vag++ ){
-        VAGBank.samples[vag].spu_address = setSPUtransfer(&voiceAttributes, &VAGBank.samples[vag]);
+        //~ VAGBank.samples[vag].spu_address = setSPUtransfer(&voiceAttributes, &VAGBank.samples[vag]);
+        curLvl.VAG->samples[vag].spu_address = setSPUtransfer(&voiceAttributes, &curLvl.VAG->samples[vag]);
     }
     sample = 0;
-    setXAsample(&XABank.samples[sample], &filter);
+    setXAsample(&curLvl.XA->samples[sample], &filter);
     // Main loop
     while ( VSync(VSYNC) ) {
         dt = GetRCnt(RCntCNT1) - oldTime;
@@ -266,20 +254,20 @@ int main() {
             // TODO : Fix XA playback with VSYNC = 1
             // Begin XA file playback...
             // if sample's cursor is 0
-            if (XABank.samples[sample].cursor == 0){
+            if (curLvl.XA->samples[sample].cursor == 0){
                 // Convert sector number to CD position in min/second/frame and set CdlLOC accordingly.
-                CdIntToPos( XABank.samples[sample].start + XABank.offset , &loc);
+                CdIntToPos( curLvl.XA->samples[sample].start + curLvl.XA->offset , &loc);
                 // Send CDROM read command
                 CdControlF(CdlReadS, (u_char *)&loc);
                 XATime = VSync(-1);
                 // Set playing flag
             }
             // if sample's cursor is close to sample's end position, stop playback
-            if ((XABank.samples[sample].cursor += XA_CDSPEED) >= XABank.samples[sample].end - XABank.samples[sample].start  ){
+            if ((curLvl.XA->samples[sample].cursor += XA_CDSPEED) >= curLvl.XA->samples[sample].end - curLvl.XA->samples[sample].start  ){
                 //~ CdControlF(CdlStop,0);
-                XABank.samples[sample].cursor = -1;
+                curLvl.XA->samples[sample].cursor = -1;
                 //~ sample = !sample;
-                setXAsample(&XABank.samples[sample], &filter);
+                setXAsample(&curLvl.XA->samples[sample], &filter);
             }
         }
         // Check if level has changed
@@ -323,9 +311,9 @@ int main() {
             // Change XA track
             XAsetup();
             sample = !sample;
-            XABank.samples[sample].cursor = -1;
-            setXAsample(&XABank.samples[sample], &filter);
-            CdIntToPos( XABank.samples[sample].start + XABank.offset , &loc);
+            curLvl.XA->samples[sample].cursor = -1;
+            setXAsample(&curLvl.XA->samples[sample], &filter);
+            CdIntToPos( curLvl.XA->samples[sample].start + curLvl.XA->offset , &loc);
             // Send CDROM read command
             CdControlF(CdlReadS, (u_char *)&loc);
         }
@@ -339,14 +327,14 @@ int main() {
         // TODO : put in a function
         // Reset player/prop pos
         if(curLvl.actorPtr->pos.vy >= 200){
-            playSFX(&voiceAttributes,  &VAGBank.samples[6]);
+            playSFX(&voiceAttributes,  &curLvl.VAG->samples[6]);
             copyVector(&curLvl.actorPtr->body->position, &actorStartPos );
             copyVector(&curLvl.actorPtr->rot, &actorStartRot );
             curLvl.curNode = actorStartNode;
             curLvl.levelPtr = curLvl.curNode->plane;
         }        
         if(curLvl.propPtr->pos.vy >= 200){
-            playSFX(&voiceAttributes,  &VAGBank.samples[3]);
+            playSFX(&voiceAttributes,  &curLvl.VAG->samples[3]);
             copyVector(&curLvl.propPtr->body->position, &propStartPos );
             copyVector(&curLvl.propPtr->rot, &propStartRot );
             curLvl.propPtr->node = propStartNode;
@@ -468,7 +456,6 @@ int main() {
     // Add secondary OT to main OT
         AddPrims(otdisc[db], ot[db] + OTLEN - 1, ot[db]);
         
-        //~ FntPrint("\nTime   : %d\n", time);
         FntPrint("\n#Tri     : %d\n", triCount);
         FntPrint("#RCnt    : %d %d %d\n", VSync(-1), XA_CDSPEED, dt);
         FntPrint("CamAngle : %d\n", curCamAngle);
@@ -548,7 +535,7 @@ void callback() {
         } else {
             curLvl.actorPtr->isPrism = 1;
         }
-        playSFX(&voiceAttributes,  &VAGBank.samples[0]);
+        playSFX(&voiceAttributes,  &curLvl.VAG->samples[0]);
         //~ timer = 10;
         lastPad = PAD;
     }
@@ -556,7 +543,7 @@ void callback() {
         lastPad = PAD;
     }
     if ( PAD & Square && !( lastPad & Square ) ){
-        playSFX(&voiceAttributes,  &VAGBank.samples[7]);
+        playSFX(&voiceAttributes,  &curLvl.VAG->samples[7]);
         //~ sample = 0;
         //~ setXAsample(&XABank.samples[sample], &filter);
         lastPad = PAD;
@@ -571,14 +558,14 @@ void callback() {
             curLvl.actorPtr->body->gForce.vy = -200;
         }
         timer = 10;
-        playSFX(&voiceAttributes,  &VAGBank.samples[4]);
+        playSFX(&voiceAttributes,  &curLvl.VAG->samples[4]);
         lastPad = PAD;
     }
     if ( !(PAD & Cross) && lastPad & Cross ) {
         lastPad = PAD;
     }
     if ( PAD & Circle && !(PAD & lastPad) ){
-        playSFX(&voiceAttributes,  &VAGBank.samples[5]);
+        playSFX(&voiceAttributes,  &curLvl.VAG->samples[5]);
         lastPad = PAD;
     }
     if ( !(PAD & Circle) && lastPad & Circle ) {

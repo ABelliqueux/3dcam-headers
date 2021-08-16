@@ -1,6 +1,6 @@
 #pragma once
-
 #include "../custom_types.h"
+#include "../include/defines.h"
 
 extern LEVEL level1;
 extern CVECTOR level1_BGc;
@@ -176,3 +176,6 @@ extern NODE level1_nodegnd_001;
 extern NODE level1_nodegnd_003;
 extern NODE level1_nodegnd_002;
 extern NODE level1_nodegnd;
+extern VAGbank VAGBank1;
+extern XAbank XABank1;
+//~ extern char * loadXA1;

@@ -73,6 +73,7 @@ u_long setSPUtransfer(SpuVoiceAttr * voiceAttributes, VAGsound * sound){
         //~ return 1;
         //~ }
     //~ return transferred;
+    FntPrint("Tr: %", transferred);
     return spu_address;
 }
 void playSFX(SpuVoiceAttr * voiceAttributes, VAGsound *  sound){

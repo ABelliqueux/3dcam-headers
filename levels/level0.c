@@ -990,6 +990,43 @@ CAMANGLE * level0_camPtr =  &level0_camAngle_Camera;
 
 NODE * level0_curNode =  &level0_nodePlane;
 
+// extern VAG files
+extern u_char _binary_VAG_0_come_vag_start;
+extern u_char _binary_VAG_1_cuek_vag_start;
+extern u_char _binary_VAG_2_erro_vag_start;
+extern u_char _binary_VAG_3_hehe_vag_start;
+extern u_char _binary_VAG_4_m4a1_vag_start;
+extern u_char _binary_VAG_5_punc_vag_start;
+extern u_char _binary_VAG_7_wron_vag_start;
+extern u_char _binary_VAG_8_yooo_vag_start;
+// soundBank
+VAGbank VAGBank0 = {
+    8,
+    {
+        { &_binary_VAG_0_come_vag_start, SPU_00CH, 0 },  
+        { &_binary_VAG_1_cuek_vag_start, SPU_01CH, 0 },   
+        { &_binary_VAG_2_erro_vag_start, SPU_02CH, 0 },   
+        { &_binary_VAG_3_hehe_vag_start, SPU_03CH, 0 },   
+        { &_binary_VAG_4_m4a1_vag_start, SPU_04CH, 0 },  
+        { &_binary_VAG_5_punc_vag_start, SPU_05CH, 0 },   
+        { &_binary_VAG_7_wron_vag_start, SPU_06CH, 0 },   
+        { &_binary_VAG_8_yooo_vag_start, SPU_07CH, 0 }
+    }
+};
+
+XAbank XABank0 = {
+        "\\INTER8.XA;1",
+        8,
+        0,
+        {
+            //channel 0
+            {   0,  698464,   1,     0,     0,   ((698464/2336)-1) * XA_CHANNELS, -1 }, 
+            {   1,  366752,   1,     1 ,    0,   ((366752/2336)-1) * XA_CHANNELS, -1 }, 
+        }
+};
+// XA file to load
+//~ static char * loadXA0 = "\\INTER8.XA;1";
+
 LEVEL level0 = {
     &level0_BGc,
     &level0_BKc,
@@ -1004,4 +1041,6 @@ LEVEL level0 = {
     &level0_camPath,
     (CAMANGLE **)&level0_camAngles,
     &level0_nodePlane,
+    &VAGBank0,
+    &XABank0
 };

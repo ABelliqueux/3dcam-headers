@@ -11,7 +11,17 @@
 #define CLEAR_COLOR_B 0
 
 // Sound
+#define SPU_00CH (0x1L<< 0)
+#define SPU_01CH (0x1L<< 1)
+#define SPU_02CH (0x1L<< 2)
+#define SPU_03CH (0x1L<< 3)
+#define SPU_04CH (0x1L<< 4)
+#define SPU_05CH (0x1L<< 5)
+#define SPU_06CH (0x1L<< 6)
+#define SPU_07CH (0x1L<< 7)
+
 // CDDA / XA volume
+#define XA_CHANNELS 8
 #define MVOL_L 0x3fff
 #define MVOL_R 0x3fff
 #define CDVOL_L 0x7fff
@@ -23,11 +33,11 @@
 #define FNT_VRAM_X 960
 #define FNT_VRAM_Y 256
 #define FNT_SCR_X 16
-#define FNT_SCR_Y 192
+#define FNT_SCR_Y 32
 #define FNT_SCR_W 240
 #define FNT_SCR_H 48
 #define FNT_SCR_BG 0
-#define FNT_SCR_MAX_CHAR 256
+#define FNT_SCR_MAX_CHAR 512
 
 // Ordering table
 #define OT2LEN 8                 

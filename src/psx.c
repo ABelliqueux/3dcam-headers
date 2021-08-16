@@ -103,6 +103,8 @@ void LvlPtrSet(LEVEL * curLevel, LEVEL * level){
     curLevel->camPath  = level->camPath;
     curLevel->camAngles = level->camAngles;
     curLevel->curNode   = level->curNode; // Blank
+    curLevel->VAG   = level->VAG; // Blank
+    curLevel->XA   = level->XA; // Blank
     
     //~ curLevel->actorPtr->body = level->actorPtr->body;
     // Move these to drawPoly()
