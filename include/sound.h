@@ -4,7 +4,8 @@
 // XA
 // Sector offset for XA data 4: simple speed, 8: double speed
 #define XA_CHANNELS 8
-#define XA_CDSPEED (XA_CHANNELS >> VSYNC)
+#define XA_CDSPEED (XA_CHANNELS >> VSYNC) * ONE
+#define XA_RATE 380
 // Number of XA samples ( != # of XA files )
 #define XA_TRACKS 2
 // VAG

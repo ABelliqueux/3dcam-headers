@@ -1,5 +1,5 @@
 #define VMODE       0 // 0 == NTSC, 1 == PAL
-#define VSYNC       0
+#define VSYNC       1
 #define SCREENXRES 320
 #define SCREENYRES 240
 #define CENTERX     SCREENXRES/2

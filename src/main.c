@@ -211,13 +211,13 @@ int main() {
     sample = 0;
     setXAsample(&curLvl.XA->samples[sample], &filter);
     // Main loop
-    while ( VSync(VSYNC) ) {
+    //~ while ( VSync(VSYNC) ) {
+    while ( 1 ) {
         dt = GetRCnt(RCntCNT1) - oldTime;
         oldTime = GetRCnt(RCntCNT1);
         // XA playback
          // if sample is set
         if (sample != -1 ){
-            // TODO : Fix XA playback with VSYNC = 1
             // Begin XA file playback...
             // if sample's cursor is 0
             if (curLvl.XA->samples[sample].cursor == 0){
@@ -229,7 +229,10 @@ int main() {
                 // Set playing flag
             }
             // if sample's cursor is close to sample's end position, stop playback
-            if ((curLvl.XA->samples[sample].cursor += XA_CDSPEED) >= curLvl.XA->samples[sample].end - curLvl.XA->samples[sample].start  ){
+            //~ if ((curLvl.XA->samples[sample].cursor += XA_CDSPEED) >= curLvl.XA->samples[sample].end - curLvl.XA->samples[sample].start  ){
+            //~ if ((curLvl.XA->samples[sample].cursor += (XA_CDSPEED*4096)/((400/(dt+1)+1)) ) >= (curLvl.XA->samples[sample].end - curLvl.XA->samples[sample].start)*4096  ){
+            // XA playback has fixed rate
+            if ((curLvl.XA->samples[sample].cursor += XA_CDSPEED / ((XA_RATE/(dt+1)+1)) ) >= (curLvl.XA->samples[sample].end - curLvl.XA->samples[sample].start) * ONE  ){
                 //~ CdControlF(CdlStop,0);
                 curLvl.XA->samples[sample].cursor = -1;
                 //~ sample = !sample;
@@ -423,10 +426,14 @@ int main() {
         AddPrims(otdisc[db], ot[db] + OTLEN - 1, ot[db]);
         
         FntPrint("\n#Tri     : %d\n", triCount);
-        FntPrint("#RCnt    : %d %d %d\n", VSync(-1), dt);
+        FntPrint("#RCnt    : %d %d\n", VSync(-1), dt);
+        //~ FntPrint("Dt    : %d %d %d\n", 400/(dt+1), (XA_CDSPEED)/((400/(dt+1))+1), (curLvl.XA->samples[sample].end - curLvl.XA->samples[sample].start)<<12);
+        //~ FntPrint("XA    : %d\n", (XA_CDSPEED)/((400/(dt+1))+1) );
+        //~ FntPrint("XA    : %d\n", curLvl.XA->samples[sample].cursor );
         FntPrint("CamAngle : %d\n", curCamAngle);
         FntFlush(-1);
         display( &disp[db], &draw[db], otdisc[db], primbuff[db], &nextpri, &db);
+      
     }
     return 0;
 }
