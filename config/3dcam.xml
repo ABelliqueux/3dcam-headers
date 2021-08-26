@@ -16,7 +16,8 @@
             <file name="SCES_313.37"  type="data"   source="main.ps-exe"/>
             <file name="LEVEL0.bin"  type="data"   source="Overlay.lvl0" />
             <file name="LEVEL1.bin"  type="data"   source="Overlay.lvl1" />
-            <file name="INTER8.XA" type="xa" source="xa/inter8.xa"/>
+            <file name="INTER8.XA" type="xa" source="XA/inter8.xa"/>
+            <file name="INTER_0.XA" type="xa" source="/home/arthus/build/psxdev/3dcam-bak/XA/inter_0.xa"/>
              
             <dummy sectors="1024"/> 
         </directory_tree>

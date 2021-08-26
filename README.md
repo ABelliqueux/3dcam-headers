@@ -26,6 +26,7 @@ Real-time 3D / 8bpp background / 4bpp background
   * Up to 3 light sources
   * Use pre-rendered backgrounds (8bpp and 4bpp)
   * Basic collisions
+  * Sound effects (VAG/XA)
 
 ### Demo Controls
 
@@ -39,7 +40,6 @@ Real-time 3D / 8bpp background / 4bpp background
 ## Planned
 
   * Fix and improve all the things !
-  * Wall collisions
 
 # Compiling
 

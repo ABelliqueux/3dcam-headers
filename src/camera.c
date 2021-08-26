@@ -44,7 +44,7 @@ void setCameraMode(LEVEL * curLvl, CAMERA * camera, VECTOR * posToActor, VECTOR 
     switch (camMode){
         // Camera follows actor
         case 0 :
-            dist = 200;
+            dist = CAM_DIST_TO_ACT;
             setVector(dc_camPos, -(camera->x/ONE), -(camera->y/ONE), -(camera->z/ONE));
             angle->vy = -(curLvl->actorPtr->rot.vy / 2) + angleCam->vy;
             // Camera horizontal and vertical position
@@ -55,9 +55,9 @@ void setCameraMode(LEVEL * curLvl, CAMERA * camera, VECTOR * posToActor, VECTOR 
         // Camera rotates continuously around actor
         case 1 :
             // Set distance between cam and actor
-            dist = 150;
+            dist = CAM_DIST_TO_ACT;
             // Set camera position
-            setVector(dc_camPos, -(camera->x/ONE), 100, -(camera->z/ONE));
+            setVector(dc_camPos, -(camera->x/ONE), CAM_DIST_TO_GND, -(camera->z/ONE));
             // Find new camera position
             getCameraXZ(&camera->x, &camera->z, curLvl->actorPtr->pos.vx, curLvl->actorPtr->pos.vz, angle->vy, dist);
             // Set rotation amount
@@ -105,7 +105,7 @@ void setCameraMode(LEVEL * curLvl, CAMERA * camera, VECTOR * posToActor, VECTOR 
             // Using precalc sqrt
             dist = psqrt( (posToActor->vx * posToActor->vx ) + (posToActor->vz * posToActor->vz) );
             // Set camera position
-            setVector(dc_camPos, 190, 100, 180);
+            setVector(dc_camPos, 190, CAM_DIST_TO_GND, 180);
             break;
         // Flyby mode with LERP from camStart to camEnd
         case 4 :                        

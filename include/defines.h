@@ -10,7 +10,18 @@
 #define CLEAR_COLOR_G 0
 #define CLEAR_COLOR_B 0
 
+#define CAM_DIST_TO_ACT 200
+#define CAM_DIST_TO_GND 100
+
 // Sound
+// Sound engine
+#define SND_DIST_MIN 200
+#define SND_DIST_MAX 1200
+#define SND_ATTENUATION 6144
+#define SND_MAX_VOL 16383
+#define SND_RANGE (SND_DIST_MAX-SND_DIST_MIN)
+#define SND_NMALIZED (SND_RANGE*SND_ATTENUATION/SND_MAX_VOL)
+// SPU channels
 #define SPU_00CH (0x1L<< 0)
 #define SPU_01CH (0x1L<< 1)
 #define SPU_02CH (0x1L<< 2)
@@ -19,7 +30,23 @@
 #define SPU_05CH (0x1L<< 5)
 #define SPU_06CH (0x1L<< 6)
 #define SPU_07CH (0x1L<< 7)
+#define SPU_08CH (0x1L<< 8)
+#define SPU_09CH (0x1L<< 9)
+#define SPU_10CH (0x1L<<10)
+#define SPU_11CH (0x1L<<11)
+#define SPU_12CH (0x1L<<12)
+#define SPU_13CH (0x1L<<13)
+#define SPU_14CH (0x1L<<14)
+#define SPU_15CH (0x1L<<15)
+#define SPU_16CH (0x1L<<16)
+#define SPU_17CH (0x1L<<17)
+#define SPU_18CH (0x1L<<18)
+#define SPU_19CH (0x1L<<19)
 
+#define SPU_20CH (0x1L<<20)
+#define SPU_21CH (0x1L<<21)
+#define SPU_22CH (0x1L<<22)
+#define SPU_23CH (0x1L<<23)
 // CDDA / XA volume
 #define XA_CHANNELS 8
 #define MVOL_L 0x3fff

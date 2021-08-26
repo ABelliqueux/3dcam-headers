@@ -106,6 +106,7 @@ void LvlPtrSet(LEVEL * curLevel, LEVEL * level){
     curLevel->curNode   = level->curNode; // Blank
     curLevel->VAG   = level->VAG;
     curLevel->XA   = level->XA;
+    curLevel->levelSounds   = level->levelSounds;
     
     //~ curLevel->actorPtr->body = level->actorPtr->body;
     // Move these to drawPoly()

@@ -2,9 +2,8 @@
 #include "../include/space.h"
 
 // VAG playback
-void initSnd(SpuCommonAttr * spuSettings, char * spu_malloc_rec){
-    
-    SpuInitMalloc(MALLOC_MAX, spu_malloc_rec);                      // Maximum number of blocks, mem. management table address.
+void initSnd(SpuCommonAttr * spuSettings, char * spu_malloc_rec, u_int mallocMax){
+    SpuInitMalloc(mallocMax, spu_malloc_rec);                      // Maximum number of blocks, mem. management table address.
     spuSettings->mask = (SPU_COMMON_MVOLL | SPU_COMMON_MVOLR | SPU_COMMON_CDVOLL | SPU_COMMON_CDVOLR | SPU_COMMON_CDMIX );  // Mask which attributes to set
     spuSettings->mvol.left  = MVOL_L;                           // Master volume left
     spuSettings->mvol.right = MVOL_R;                           // see libref47.pdf, p.1058
@@ -12,7 +11,7 @@ void initSnd(SpuCommonAttr * spuSettings, char * spu_malloc_rec){
     spuSettings->cd.volume.right = CDVOL_R;
     // Enable CD input ON
     spuSettings->cd.mix = SPU_ON;
-    
+    // Apply settings
     SpuSetCommonAttr(spuSettings);                           
     // Set transfer mode 
     SpuSetTransferMode(SPU_TRANSFER_BY_DMA);
@@ -68,21 +67,19 @@ u_long setSPUtransfer(SpuVoiceAttr * voiceAttributes, VAGsound * sound){
     SpuSetTransferStartAddr(spu_address);                                       // Sets a starting address in the sound buffer
     transferred = sendVAGtoSPU(SWAP_ENDIAN32(VAGheader->dataSize), sound->VAGfile);
     setVoiceAttr(voiceAttributes, pitch, sound->spu_channel, spu_address); 
-    // Return 1 if ok, size transferred else.
-    //~ if (transferred == SWAP_ENDIAN32(VAGheader->dataSize)){
-        //~ return 1;
-        //~ }
-    //~ return transferred;
     return spu_address;
 }
-void playSFX(SpuVoiceAttr * voiceAttributes, VAGsound *  sound){
-    // Set voice volume to max
+void setVAGvolume(SpuVoiceAttr * voiceAttributes, VAGsound * sound, int volume){
     voiceAttributes->mask= ( SPU_VOICE_VOLL | SPU_VOICE_VOLR );
     voiceAttributes->voice        = sound->spu_channel;
     // Range 0 - 3fff
-    voiceAttributes->volume.left  = VOICEVOL_L;
-    voiceAttributes->volume.right = VOICEVOL_R;
-    SpuSetVoiceAttr(voiceAttributes);
+    voiceAttributes->volume.left  = volume;
+    voiceAttributes->volume.right = volume;
+    SpuSetVoiceAttr(voiceAttributes);    
+}
+void playSFX(SpuVoiceAttr * voiceAttributes, VAGsound *  sound, int volume){
+    // Set voice volume to sample volume
+    setVAGvolume(voiceAttributes, sound, volume);
     // Play voice
     SpuSetKey(SpuOn, sound->spu_channel);
 }
@@ -101,9 +98,11 @@ void XAsetup(void){
 void getXAoffset(LEVEL * level){
         CdlFILE XAPos = {0};
         // Load XA file
-        CdSearchFile(&XAPos, level->XA->name);
+        //~ CdSearchFile(&XAPos, level->XA->name);
+        CdSearchFile(&XAPos, level->XA->banks[0]->name);
         // Set cd head to start of file
-        level->XA->offset = CdPosToInt(&XAPos.pos);
+        //~ level->XA->offset = CdPosToInt(&XAPos.pos);
+        level->XA->banks[0]->offset = CdPosToInt(&XAPos.pos);
 };
 void setXAsample(XAsound * sound, CdlFILTER * filter){
     filter->chan = sound->channel;
