@@ -18,14 +18,14 @@ void initSnd(SpuCommonAttr * spuSettings, char * spu_malloc_rec, u_int mallocMax
     SpuSetIRQ(SPU_OFF);
     // Mute all voices
     SpuSetKey(SpuOff, SPU_ALLCH);
-}
+};
 u_long sendVAGtoSPU(unsigned int VAG_data_size, u_char *VAG_data){
     u_long transferred;
     SpuSetTransferMode(SpuTransByDMA);                              // DMA transfer; can do other processing during transfer
     transferred = SpuWrite (VAG_data + sizeof(VAGhdr), VAG_data_size);     // transfer VAG_data_size bytes from VAG_data  address to sound buffer
     SpuIsTransferCompleted (SPU_TRANSFER_WAIT);                     // Checks whether transfer is completed and waits for completion
     return transferred;
-}
+};
 void setVoiceAttr(SpuVoiceAttr * voiceAttributes, u_int pitch, long channel, u_long soundAddr ){
     voiceAttributes->mask=                                   //~ Attributes (bit string, 1 bit per attribute)
     (
@@ -56,7 +56,7 @@ void setVoiceAttr(SpuVoiceAttr * voiceAttributes, u_int pitch, long channel, u_l
     voiceAttributes->sr           = 0x0;                     //~ Sustain rate
     voiceAttributes->sl           = 0xf;                     //~ Sustain level
     SpuSetVoiceAttr(voiceAttributes);                      // set attributes
-}
+};
 u_long setSPUtransfer(SpuVoiceAttr * voiceAttributes, VAGsound * sound){
     // Return spu_address
     u_long transferred, spu_address;
@@ -68,21 +68,68 @@ u_long setSPUtransfer(SpuVoiceAttr * voiceAttributes, VAGsound * sound){
     transferred = sendVAGtoSPU(SWAP_ENDIAN32(VAGheader->dataSize), sound->VAGfile);
     setVoiceAttr(voiceAttributes, pitch, sound->spu_channel, spu_address); 
     return spu_address;
-}
-void setVAGvolume(SpuVoiceAttr * voiceAttributes, VAGsound * sound, int volume){
+};
+void setVAGvolume(SpuVoiceAttr * voiceAttributes, VAGsound * sound, int volumeL,int volumeR ){
     voiceAttributes->mask= ( SPU_VOICE_VOLL | SPU_VOICE_VOLR );
     voiceAttributes->voice        = sound->spu_channel;
     // Range 0 - 3fff
-    voiceAttributes->volume.left  = volume;
-    voiceAttributes->volume.right = volume;
+    voiceAttributes->volume.left  = volumeL;
+    voiceAttributes->volume.right = volumeR;
     SpuSetVoiceAttr(voiceAttributes);    
-}
-void playSFX(SpuVoiceAttr * voiceAttributes, VAGsound *  sound, int volume){
+};
+void setLvlVAG(LEVEL * level, SpuCommonAttr * spuSettings, SpuVoiceAttr * voiceAttributes, char spu_malloc_rec[]){
+    if (level->VAG != 0){
+        // Free SPU mem
+        for (u_short vag = 0; vag < level->VAG->index; vag++ ){
+            if(level->VAG->samples[vag].spu_address != 0){
+                SpuFree(level->VAG->samples[vag].spu_address);
+            }
+        }
+        // Init sound settings
+        initSnd(spuSettings, spu_malloc_rec, level->VAG->index );
+        for (u_short vag = 0; vag < level->VAG->index; vag++ ){
+            level->VAG->samples[vag].spu_address = setSPUtransfer(voiceAttributes, &level->VAG->samples[vag]);
+        }
+    }
+};
+void playSFX(SpuVoiceAttr * voiceAttributes, VAGsound *  sound, int volumeL, int volumeR ){
     // Set voice volume to sample volume
-    setVAGvolume(voiceAttributes, sound, volume);
+    setVAGvolume(voiceAttributes, sound, volumeL, volumeR);
     // Play voice
     SpuSetKey(SpuOn, sound->spu_channel);
-}
+};
+VECTOR setSFXdist(LEVEL * level, CAMERA * camera, int camMode ){
+    VECTOR output;
+    //long long phi = 0;
+    if (level->levelSounds != 0){
+        //~ for(int snd = 0; snd < level0_sounds.index; snd++){
+        for(int snd = 0; snd < level->levelSounds->index; snd++){
+            // TODO : move in playSFX()
+            // update sound location if sound has a parent
+            u_int r;
+
+            // If parent is actor, 
+            if (level->levelSounds->sounds[snd]->parent == level->actorPtr && camMode <= 1){
+                r = CAM_DIST_TO_ACT;
+            } else if ( level->levelSounds->sounds[snd]->parent != 0){
+                VECTOR dist;
+                copyVector(&level->levelSounds->sounds[snd]->location, &level->levelSounds->sounds[snd]->parent->pos);
+                // Get distance between sound source and camera
+                addVector2(camera->pos, &level->levelSounds->sounds[snd]->location, &dist);
+                r = psqrt((dist.vx * dist.vx) + (dist.vz * dist.vz));
+                // Get angle between sound source and camera
+                //phi = patan( level->levelSounds->sounds[snd]->location.vx, level->levelSounds->sounds[snd]->location.vz );
+                //phi = ( phi >> 4 );
+            } 
+            level->levelSounds->sounds[snd]->volumeL = level->levelSounds->sounds[snd]->volumeR = (level->levelSounds->sounds[snd]->volume_max/r) * SND_NMALIZED > SND_MAX_VOL ? SND_MAX_VOL : 
+                                                      (level->levelSounds->sounds[snd]->volume_max/r) * SND_NMALIZED < 0 ? 0 :
+                                                      (level->levelSounds->sounds[snd]->volume_max/r) * SND_NMALIZED;
+            //TODO : use screen coordinates
+            worldToScreen(&level->levelSounds->sounds[snd]->location, &output);
+        }
+    }
+    return output;
+};
 void XAsetup(void){   
     u_char param[4];
     // ORing the parameters we need to set ; drive speed,  ADPCM play, Subheader filter, sector size
@@ -94,8 +141,9 @@ void XAsetup(void){
     CdControlB(CdlSetmode, param, 0);
     // Pause at current pos
     CdControlF(CdlPause,0);
-}
+};
 void getXAoffset(LEVEL * level){
+        // TODO : Only works for first XA file
         CdlFILE XAPos = {0};
         // Load XA file
         //~ CdSearchFile(&XAPos, level->XA->name);
@@ -111,4 +159,48 @@ void setXAsample(XAsound * sound, CdlFILTER * filter){
     CdControlF(CdlSetfilter, (u_char *)filter);
     // Reset sample's cursor
     sound->cursor = 0;
-}
+};
+void setLvlXA(LEVEL * level, int sample){
+    if(sample >= 0){
+        // CD filter
+        CdlFILTER filter;
+        // File position in m/s/f
+        CdlLOC  loc;
+        if (level->XA != 0){
+            // Change XA track
+            XAsetup();
+            //~ sample = !sample;
+            level->XA->banks[0]->samples[sample].cursor = -1;
+            getXAoffset(level);
+            setXAsample(&level->XA->banks[0]->samples[sample], &filter);
+            CdIntToPos(level->XA->banks[0]->samples[sample].start + level->XA->banks[0]->offset , &loc);
+            // Send CDROM read command
+            CdControlF(CdlReadS, (u_char *)&loc);
+        }
+    }
+};
+void XAplayback(LEVEL * level, int sample, long dt){
+    if (sample != -1 ){
+        // CD filter
+        CdlFILTER filter;
+        // File position in m/s/f
+        CdlLOC  loc;
+        // Begin XA file playback...
+        // if sample's cursor is 0
+        if (level->XA->banks[0]->samples[sample].cursor == 0){
+            // Convert sector number to CD position in min/second/frame and set CdlLOC accordingly.
+            CdIntToPos(level->XA->banks[0]->samples[sample].start + level->XA->banks[0]->offset , &loc);
+            // Send CDROM read command
+            CdControlF(CdlReadS, (u_char *)&loc);
+            //~ *XATime = VSync(-1);
+            // Set playing flag
+        }
+        // if sample's cursor is close to sample's end position, stop playback
+        // XA playback has fixed rate
+        if ((level->XA->banks[0]->samples[sample].cursor += XA_CDSPEED / ((XA_RATE/(dt+1)+1)) ) >= (level->XA->banks[0]->samples[sample].end - level->XA->banks[0]->samples[sample].start) * ONE  ){
+            //~ CdControlF(CdlStop,0);
+            level->XA->banks[0]->samples[sample].cursor = -1;
+            setXAsample(&level->XA->banks[0]->samples[sample], &filter);
+        }
+    }
+};

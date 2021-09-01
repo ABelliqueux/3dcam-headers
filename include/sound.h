@@ -1,5 +1,7 @@
 #pragma once
 #include "../include/psx.h"
+#include "../include/camera.h"
+#include "../include/math.h"
 #include "../include/macros.h"
 // XA
 // Sector offset for XA data 4: simple speed, 8: double speed
@@ -26,9 +28,13 @@ void initSnd(SpuCommonAttr * spuSettings, char * spu_malloc_rec, u_int mallocMax
 u_long sendVAGtoSPU(unsigned int VAG_data_size, u_char *VAG_data);
 void setVoiceAttr(SpuVoiceAttr * voiceAttributes, u_int pitch, long channel, u_long soundAddr );
 u_long setSPUtransfer(SpuVoiceAttr * voiceAttributes, VAGsound * sound);
-void setVAGvolume(SpuVoiceAttr * voiceAttributes, VAGsound *  sound, int volume);
-void playSFX(SpuVoiceAttr * voiceAttributes, VAGsound *  sound, int volume);
+void setVAGvolume(SpuVoiceAttr * voiceAttributes, VAGsound * sound, int volumeL,int volumeR);
+void setLvlVAG(LEVEL * level, SpuCommonAttr * spuSettings, SpuVoiceAttr * voiceAttributes, char spu_malloc_rec[]);
+void playSFX(SpuVoiceAttr * voiceAttributes, VAGsound *  sound, int volumeL, int volumeR );
+VECTOR setSFXdist(LEVEL * level, CAMERA * camera, int camMode);
 // XA playback
 void XAsetup(void);
 void getXAoffset(LEVEL * level);
 void setXAsample(XAsound * sound, CdlFILTER * filter);
+void setLvlXA(LEVEL * level, int sample);
+void XAplayback(LEVEL * level, int sample, long dt);

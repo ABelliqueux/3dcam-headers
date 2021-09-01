@@ -18,3 +18,4 @@ void   ResolveCollision( BODY * one, BODY * two );
 VECTOR angularMom(BODY body);
 void applyAcceleration(BODY * actor, int dt);
 u_int jump(BODY * actor, int dt);
+void respawnMesh(LEVEL * level, MESH * mesh, VECTOR * rot, VECTOR * pos, NODE * node);

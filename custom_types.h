@@ -161,7 +161,7 @@ typedef struct XAfiles {
 
 typedef struct SOUND_OBJECT {
 	VECTOR location;
-	int volume, volume_min, volume_max;
+	int volumeL, volumeR, volume_min, volume_max;
 	VAGsound * VAGsample;
 	XAsound * XAsample;
 	MESH * parent;

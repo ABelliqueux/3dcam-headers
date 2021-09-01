@@ -6,7 +6,7 @@ VECTOR level0_BKc = { 173, 173, 173, 0 };
 
 CAMPOS level0_camPos_Camera = {
 	{ -770,459,623 },
-	{ 301,531,0 }
+	{ 301,-4096,0 }
 };
 
 CAMPATH level0_camPath = {
@@ -1026,7 +1026,7 @@ XAfiles level0_XAFiles = {
 };
 SOUND_OBJECT level0_Speaker = {
 	{102,32,210},
-	16383, 0, 16383,
+	16383, 16383, 0, 16383,
 	&level0_VAGBank.samples[0],
 	0,
 	&level0_meshCube
@@ -1034,7 +1034,7 @@ SOUND_OBJECT level0_Speaker = {
 
 SOUND_OBJECT level0_Speaker_001 = {
 	{-82,28,210},
-	16383, 0, 16383,
+	16383, 16383, 0, 16383,
 	&level0_VAGBank.samples[1],
 	0,
 	&level0_meshCube
@@ -1042,7 +1042,7 @@ SOUND_OBJECT level0_Speaker_001 = {
 
 SOUND_OBJECT level0_Speaker_002 = {
 	{-267,432,-146},
-	16383, 0, 16383,
+	16383, 16383, 0, 16383,
 	&level0_VAGBank.samples[2],
 	0,
 	0
@@ -1050,7 +1050,7 @@ SOUND_OBJECT level0_Speaker_002 = {
 
 SOUND_OBJECT level0_Speaker_003 = {
 	{-101,156,253},
-	16383, 0, 16383,
+	16383, 16383, 0, 16383,
 	&level0_VAGBank.samples[3],
 	0,
 	&level0_meshCube
@@ -1058,7 +1058,7 @@ SOUND_OBJECT level0_Speaker_003 = {
 
 SOUND_OBJECT level0_Speaker_004 = {
 	{83,161,253},
-	16383, 0, 16383,
+	16383, 16383, 0, 16383,
 	&level0_VAGBank.samples[4],
 	0,
 	&level0_meshCube
@@ -1066,7 +1066,7 @@ SOUND_OBJECT level0_Speaker_004 = {
 
 SOUND_OBJECT level0_Speaker_005 = {
 	{76,-39,188},
-	16383, 0, 16383,
+	16383, 16383, 0, 16383,
 	&level0_VAGBank.samples[5],
 	0,
 	&level0_meshCube
@@ -1074,7 +1074,7 @@ SOUND_OBJECT level0_Speaker_005 = {
 
 SOUND_OBJECT level0_Speaker_006 = {
 	{-108,-43,188},
-	16383, 0, 16383,
+	16383, 16383, 0, 16383,
 	&level0_VAGBank.samples[6],
 	0,
 	&level0_meshCube
@@ -1082,7 +1082,7 @@ SOUND_OBJECT level0_Speaker_006 = {
 
 SOUND_OBJECT level0_Speaker_007 = {
 	{-352,55,234},
-	16383, 0, 16383,
+	16383, 16383, 0, 16383,
 	&level0_VAGBank.samples[7],
 	0,
 	&level0_meshCube
@@ -1090,7 +1090,7 @@ SOUND_OBJECT level0_Speaker_007 = {
 
 SOUND_OBJECT level0_Speaker_008 = {
 	{-168,60,234},
-	16383, 0, 16383,
+	16383, 16383, 0, 16383,
 	&level0_VAGBank.samples[8],
 	0,
 	&level0_meshCube
@@ -1098,7 +1098,7 @@ SOUND_OBJECT level0_Speaker_008 = {
 
 SOUND_OBJECT level0_Speaker_009 = {
 	{188,-156,143},
-	16383, 0, 16383,
+	16383, 16383, 0, 16383,
 	0,
 	&level0_XABank_0.samples[0],
 	&level0_meshCube
@@ -1106,7 +1106,7 @@ SOUND_OBJECT level0_Speaker_009 = {
 
 SOUND_OBJECT level0_Speaker_010 = {
 	{4,-160,143},
-	16383, 0, 16383,
+	16383, 16383, 0, 16383,
 	&level0_VAGBank.samples[9],
 	0,
 	&level0_meshCube

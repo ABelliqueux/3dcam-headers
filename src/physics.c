@@ -231,3 +231,14 @@ u_int jump(BODY * actor, int dt){
                     );
     return vt;
 };
+void respawnMesh(LEVEL * level, MESH * mesh, VECTOR * rot, VECTOR * pos, NODE * node){
+    // Actor
+    if( mesh->isActor ){
+        level->curNode = node;
+        level->levelPtr = level->curNode->plane;
+    } else {
+        level->propPtr->node = node;
+    }
+    copyVector(&mesh->body->position, pos );
+    copyVector(&mesh->rot, rot );
+};

@@ -79,9 +79,9 @@ int dist      = 150;
 int lerping    = 0;
 short curCamAngle = 0;
 // Actor's forward vector (used for dualshock)
-VECTOR fVecActor = {0,0,0,0};
+VECTOR fVecActor;
 u_long triCount = 0;
-LEVEL curLvl = {0};
+LEVEL curLvl;
 LEVEL * loadLvl;
 // Actor start position
 VECTOR actorStartPos = {0};
@@ -95,7 +95,6 @@ NODE * propStartNode;
 void callback();
 // variable FPS 
 long oldTime = 0;
-long XATime = 0;
 long dt = 0;
 // Physics/collisions
 short physics = 1;
@@ -113,10 +112,6 @@ char spu_malloc_rec[SPU_MALLOC_RECSIZ * (2 + MALLOC_MAX + 1)];
 // SPU settings
 SpuCommonAttr spuSettings;          // structure for changing common voice attributes
 SpuVoiceAttr  voiceAttributes ;          // structure for changing individual voice attributes
-// CD filter
-CdlFILTER filter;
-// File position in m/s/f
-CdlLOC  loc;
 // Keep track of XA Sample currently playing
 int sample = -1;
 
@@ -149,13 +144,6 @@ int main() {
     } else if ( level == 1) {
         LvlPtrSet( &curLvl, &level1);
     } 
-    #ifdef USECD
-        getXAoffset(&curLvl);
-        //~ // Load XA file
-        //~ CdSearchFile(&XAPos, curLvl.XA->name);
-        //~ // Set cd head to start of file
-        //~ curLvl.XA->offset = CdPosToInt(&XAPos.pos);
-    #endif
     levelWas = level;
     // Copy light matrices / vector to scratchpad
     setDCLightEnv(curLvl.cmat, curLvl.lgtmat, &lgtang);
@@ -200,49 +188,18 @@ int main() {
     oldTime = GetRCnt(RCntCNT1);
     // Sound
     SpuInit();    
-    //~ spuCDsetup(&spuSettings);
-    XAsetup();
-    if (curLvl.VAG != 0){
-        // Init sound settings
-        initSnd(&spuSettings, spu_malloc_rec, curLvl.VAG->index );
-        for (u_short vag = 0; vag < curLvl.VAG->index; vag++ ){
-            curLvl.VAG->samples[vag].spu_address = setSPUtransfer(&voiceAttributes, &curLvl.VAG->samples[vag]);
-        }
-    }
-    if ( curLvl.XA != 0 ){
-        sample = 0;
-        setXAsample(&curLvl.XA->banks[1]->samples[sample], &filter);
-    }
-    
+    // Load level's VAGs to SPU
+    setLvlVAG(&curLvl, &spuSettings, &voiceAttributes, spu_malloc_rec);
+    // Set XA sample
+    sample = 0;
+    setLvlXA(&curLvl, sample);
     // Main loop
     //~ while ( VSync(VSYNC) ) {
     while ( 1 ) {
         dt = GetRCnt(RCntCNT1) - oldTime;
         oldTime = GetRCnt(RCntCNT1);
-        // XA playback
-         // if sample is set
-        if (sample != -1 ){
-            // Begin XA file playback...
-            // if sample's cursor is 0
-            if (curLvl.XA->banks[0]->samples[sample].cursor == 0){
-                // Convert sector number to CD position in min/second/frame and set CdlLOC accordingly.
-                CdIntToPos(curLvl.XA->banks[0]->samples[sample].start + curLvl.XA->banks[0]->offset , &loc);
-                // Send CDROM read command
-                CdControlF(CdlReadS, (u_char *)&loc);
-                XATime = VSync(-1);
-                // Set playing flag
-            }
-            // if sample's cursor is close to sample's end position, stop playback
-            //~ if ((curLvl.XA->samples[sample].cursor += XA_CDSPEED) >= curLvl.XA->samples[sample].end - curLvl.XA->samples[sample].start  ){
-            //~ if ((curLvl.XA->samples[sample].cursor += (XA_CDSPEED*4096)/((400/(dt+1)+1)) ) >= (curLvl.XA->samples[sample].end - curLvl.XA->samples[sample].start)*4096  ){
-            // XA playback has fixed rate
-            if ((curLvl.XA->banks[0]->samples[sample].cursor += XA_CDSPEED / ((XA_RATE/(dt+1)+1)) ) >= (curLvl.XA->banks[0]->samples[sample].end - curLvl.XA->banks[0]->samples[sample].start) * ONE  ){
-                //~ CdControlF(CdlStop,0);
-                curLvl.XA->banks[0]->samples[sample].cursor = -1;
-                //~ sample = !sample;
-                setXAsample(&curLvl.XA->banks[0]->samples[sample], &filter);
-            }
-        }
+        // XA playback (keep track of playback and loop XA)
+        XAplayback(&curLvl, sample, dt);
         // Check if level has changed
         // TODO : Proper level system / loader
         if ( levelWas != level ){
@@ -281,32 +238,10 @@ int main() {
             // Set level lighting
             setLightEnv(draw, curLvl.BGc, curLvl.BKc);
             levelWas = level;
-            // TODO : move to functions
-            if (curLvl.VAG != 0) {
-                // Free SPU mem
-                for (u_short vag = 0; vag < curLvl.VAG->index; vag++ ){
-                    //~ VAGBank.samples[vag].spu_address = setSPUtransfer(&voiceAttributes, &VAGBank.samples[vag]);
-                    SpuFree(curLvl.VAG->samples[vag].spu_address);
-                }
-                // Reinit SPU
-                initSnd(&spuSettings, spu_malloc_rec, curLvl.VAG->index );
-                // Load level VAGs
-                for (u_short vag = 0; vag < curLvl.VAG->index; vag++ ){
-                    //~ //VAGBank.samples[vag].spu_address = setSPUtransfer(&voiceAttributes, &VAGBank.samples[vag]);
-                    curLvl.VAG->samples[vag].spu_address = setSPUtransfer(&voiceAttributes, &curLvl.VAG->samples[vag]);
-                }
-            }
-            if (curLvl.XA != 0){
-                // Change XA track
-                XAsetup();
-                //~ sample = !sample;
-                curLvl.XA->banks[0]->samples[sample].cursor = -1;
-                getXAoffset(&curLvl);
-                setXAsample(&curLvl.XA->banks[0]->samples[sample], &filter);
-                CdIntToPos( curLvl.XA->banks[0]->samples[sample].start + curLvl.XA->banks[0]->offset , &loc);
-                // Send CDROM read command
-                CdControlF(CdlReadS, (u_char *)&loc);
-            }
+            // Load level's VAGs to SPU
+            setLvlVAG(&curLvl, &spuSettings, &voiceAttributes, spu_malloc_rec);
+            // Set 
+            setLvlXA(&curLvl, sample);
         }
         //~ FntPrint("Ovl:%s\nLvl : %x\nLvl: %d %d \n%x", overlayFile, &level, level, levelWas, loadLvl);
         // atime is used for animations timing
@@ -318,41 +253,17 @@ int main() {
         // TODO : put in a function
         // Reset player/prop pos
         if(curLvl.actorPtr->pos.vy >= 200){
-            playSFX(&voiceAttributes,  curLvl.levelSounds->sounds[6]->VAGsample, curLvl.levelSounds->sounds[6]->volume);
-            copyVector(&curLvl.actorPtr->body->position, &actorStartPos );
-            copyVector(&curLvl.actorPtr->rot, &actorStartRot );
-            curLvl.curNode = actorStartNode;
-            curLvl.levelPtr = curLvl.curNode->plane;
+            playSFX(&voiceAttributes,  curLvl.levelSounds->sounds[6]->VAGsample, curLvl.levelSounds->sounds[6]->volumeL, curLvl.levelSounds->sounds[6]->volumeR);
+            respawnMesh(&curLvl, curLvl.actorPtr, &actorStartRot, &actorStartPos, actorStartNode );
         }        
         if(curLvl.propPtr->pos.vy >= 200){
-            playSFX(&voiceAttributes,  curLvl.levelSounds->sounds[3]->VAGsample, curLvl.levelSounds->sounds[3]->volume);
-            copyVector(&curLvl.propPtr->body->position, &propStartPos );
-            copyVector(&curLvl.propPtr->rot, &propStartRot );
-            curLvl.propPtr->node = propStartNode;
+            playSFX(&voiceAttributes,  curLvl.levelSounds->sounds[3]->VAGsample, curLvl.levelSounds->sounds[3]->volumeL, curLvl.levelSounds->sounds[3]->volumeR);
+            respawnMesh(&curLvl, curLvl.propPtr, &propStartRot, &propStartPos, propStartNode );
         }
-    // Sound 
-    if (curLvl.levelSounds != 0){
-        //~ for(int snd = 0; snd < level0_sounds.index; snd++){
-        for(int snd = 0; snd < curLvl.levelSounds->index; snd++){
-            // TODO : move in playSFX()
-            // update sound location if sound has a parent
-            u_int r;
-            // If parent is actor, 
-            if (curLvl.levelSounds->sounds[snd]->parent == curLvl.actorPtr && camMode <= 1){
-                r = CAM_DIST_TO_ACT;
-            } else if ( curLvl.levelSounds->sounds[snd]->parent != 0){
-                VECTOR dist;
-                copyVector(&curLvl.levelSounds->sounds[snd]->location, &curLvl.levelSounds->sounds[snd]->parent->pos);
-                // Get distance between sound source and camera
-                addVector2(camera.pos, &curLvl.levelSounds->sounds[snd]->location, &dist);
-                r = psqrt((dist.vx * dist.vx) + (dist.vz * dist.vz));
-            }        
-            curLvl.levelSounds->sounds[snd]->volume = (curLvl.levelSounds->sounds[snd]->volume_max/r) * SND_NMALIZED > SND_MAX_VOL ? SND_MAX_VOL : 
-                                                      (curLvl.levelSounds->sounds[snd]->volume_max/r) * SND_NMALIZED < 0 ? 0 :
-                                                      (curLvl.levelSounds->sounds[snd]->volume_max/r) * SND_NMALIZED;
-            //~ FntPrint("Vol %d\n", curLvl.levelSounds->sounds[snd]->volume);            
-        }
-    }
+    // Spatialize Sound 
+    // TODO : Use L/R to spatialize further
+    VECTOR screenPos;
+    screenPos = setSFXdist(&curLvl, &camera, camMode);
     // Spatial partitioning
         if (curLvl.curNode){
             for ( int msh = 0; msh < curLvl.curNode->siblings->index; msh ++ ) {
@@ -476,7 +387,10 @@ int main() {
         //~ FntPrint("XA    : %d\n", (XA_CDSPEED)/((400/(dt+1))+1) );
         //~ FntPrint("XA    : %d\n", curLvl.XA->samples[sample].cursor );
         FntPrint("CamAngle : %d\n", curCamAngle);
-        FntPrint("XA: %x", curLvl.XA);
+        FntPrint("XA: %x\n", curLvl.XA);
+        FntPrint("Ofst: %d\n", curLvl.XA->banks[0]->offset);
+        FntPrint("Vol: %d %d", curLvl.levelSounds->sounds[0]->volumeL, curLvl.levelSounds->sounds[0]->volumeR );
+        FntPrint("Screenpos: %d %d", screenPos.vx, screenPos.vy );
         FntFlush(-1);
         display( &disp[db], &draw[db], otdisc[db], primbuff[db], &nextpri, &db);
       
@@ -554,7 +468,7 @@ void callback() {
         } else {
             curLvl.actorPtr->isPrism = 1;
         }
-        playSFX(&voiceAttributes,  curLvl.levelSounds->sounds[0]->VAGsample, curLvl.levelSounds->sounds[0]->volume );
+        playSFX(&voiceAttributes,  curLvl.levelSounds->sounds[0]->VAGsample, curLvl.levelSounds->sounds[0]->volumeL, curLvl.levelSounds->sounds[0]->volumeR );
         //~ timer = 10;
         lastPad = PAD;
     }
@@ -562,7 +476,7 @@ void callback() {
         lastPad = PAD;
     }
     if ( PAD & Square && !( lastPad & Square ) ){
-        playSFX(&voiceAttributes,  curLvl.levelSounds->sounds[7]->VAGsample, curLvl.levelSounds->sounds[7]->volume);
+        playSFX(&voiceAttributes,  curLvl.levelSounds->sounds[7]->VAGsample, curLvl.levelSounds->sounds[7]->volumeL, curLvl.levelSounds->sounds[7]->volumeR);
         //~ sample = 0;
         //~ setXAsample(&XABank.samples[sample], &filter);
         lastPad = PAD;
@@ -576,14 +490,14 @@ void callback() {
             curLvl.actorPtr->body->gForce.vy = -200;
         }
         timer = 10;
-        playSFX(&voiceAttributes,  curLvl.levelSounds->sounds[4]->VAGsample, curLvl.levelSounds->sounds[4]->volume);
+        playSFX(&voiceAttributes,  curLvl.levelSounds->sounds[4]->VAGsample, curLvl.levelSounds->sounds[4]->volumeL, curLvl.levelSounds->sounds[4]->volumeR );
         lastPad = PAD;
     }
     if ( !(PAD & Cross) && lastPad & Cross ) {
         lastPad = PAD;
     }
     if ( PAD & Circle && !(PAD & lastPad) ){
-        playSFX(&voiceAttributes,  curLvl.levelSounds->sounds[5]->VAGsample, curLvl.levelSounds->sounds[5]->volume);
+        playSFX(&voiceAttributes,  curLvl.levelSounds->sounds[5]->VAGsample, curLvl.levelSounds->sounds[5]->volumeL, curLvl.levelSounds->sounds[5]->volumeR );
         lastPad = PAD;
     }
     if ( !(PAD & Circle) && lastPad & Circle ) {
