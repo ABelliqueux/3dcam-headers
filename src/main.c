@@ -37,7 +37,7 @@ u_long overlaySize = 0;
 #include "../levels/level1.h"
 
 // Levels
-u_char level = 0;
+u_char level = 1;
 u_short levelWas = 0;
 u_short levelHasChanged = 0;
 // Overlay
@@ -261,9 +261,7 @@ int main() {
             respawnMesh(&curLvl, curLvl.propPtr, &propStartRot, &propStartPos, propStartNode );
         }
     // Spatialize Sound 
-    // TODO : Use L/R to spatialize further
-    VECTOR screenPos;
-    screenPos = setSFXdist(&curLvl, &camera, camMode);
+    setSFXdist(&curLvl, &camera, camMode);
     // Spatial partitioning
         if (curLvl.curNode){
             for ( int msh = 0; msh < curLvl.curNode->siblings->index; msh ++ ) {
@@ -362,7 +360,7 @@ int main() {
         // Angle between camera and actor
         applyVector( dc_actorRot,
                      (patan(dist, posToActor.vy) >> 4 ) - 256,
-                     (patan(-posToActor.vx, -posToActor.vz) / 16) - 3076,
+                     (patan(-posToActor.vx, -posToActor.vz) / 16) + 1024,
                      0,
                      =
                    );
@@ -389,8 +387,7 @@ int main() {
         FntPrint("CamAngle : %d\n", curCamAngle);
         FntPrint("XA: %x\n", curLvl.XA);
         FntPrint("Ofst: %d\n", curLvl.XA->banks[0]->offset);
-        FntPrint("Vol: %d %d", curLvl.levelSounds->sounds[0]->volumeL, curLvl.levelSounds->sounds[0]->volumeR );
-        FntPrint("Screenpos: %d %d", screenPos.vx, screenPos.vy );
+        FntPrint("Vol: %d %d\n", curLvl.levelSounds->sounds[0]->volumeL, curLvl.levelSounds->sounds[0]->volumeR );
         FntFlush(-1);
         display( &disp[db], &draw[db], otdisc[db], primbuff[db], &nextpri, &db);
       

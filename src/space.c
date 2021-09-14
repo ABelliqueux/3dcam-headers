@@ -13,9 +13,9 @@ void worldToScreen( VECTOR * worldPos, VECTOR * screenPos ) {
     // Get world translation vectors from rot and add to screenPos vx, vy, vz
     applyVector(screenPos, curRot.t[0], curRot.t[1], curRot.t[2], +=);
     // Correct perspective
-    screenPos -> vx = screenPos -> vx * distToScreen / ( screenPos -> vz + 1 ) ; // Add 1 to avoid division by 0
-    screenPos -> vy = screenPos -> vy * distToScreen / ( screenPos -> vz + 1 ) ; 
-    screenPos -> vz = distToScreen ;
+    //~ screenPos -> vx = screenPos -> vx * distToScreen / ( screenPos -> vz + 1 ) ; // Add 1 to avoid division by 0
+    //~ screenPos -> vy = screenPos -> vy * distToScreen / ( screenPos -> vz + 1 ) ; 
+    //~ screenPos -> vz = distToScreen ;
 };
 void screenToWorld( VECTOR * screenPos, VECTOR * worldPos ) {
     int distToScreen;           // corresponds to FOV

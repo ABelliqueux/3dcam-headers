@@ -31,7 +31,7 @@ u_long setSPUtransfer(SpuVoiceAttr * voiceAttributes, VAGsound * sound);
 void setVAGvolume(SpuVoiceAttr * voiceAttributes, VAGsound * sound, int volumeL,int volumeR);
 void setLvlVAG(LEVEL * level, SpuCommonAttr * spuSettings, SpuVoiceAttr * voiceAttributes, char spu_malloc_rec[]);
 void playSFX(SpuVoiceAttr * voiceAttributes, VAGsound *  sound, int volumeL, int volumeR );
-VECTOR setSFXdist(LEVEL * level, CAMERA * camera, int camMode);
+void setSFXdist(LEVEL * level, CAMERA * camera, int camMode);
 // XA playback
 void XAsetup(void);
 void getXAoffset(LEVEL * level);

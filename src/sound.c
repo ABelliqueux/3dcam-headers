@@ -98,37 +98,36 @@ void playSFX(SpuVoiceAttr * voiceAttributes, VAGsound *  sound, int volumeL, int
     // Play voice
     SpuSetKey(SpuOn, sound->spu_channel);
 };
-VECTOR setSFXdist(LEVEL * level, CAMERA * camera, int camMode ){
-    VECTOR output;
-    //long long phi = 0;
+void setSFXdist(LEVEL * level, CAMERA * camera, int camMode ){
+    VECTOR sndPos2D = {0};
     if (level->levelSounds != 0){
-        //~ for(int snd = 0; snd < level0_sounds.index; snd++){
         for(int snd = 0; snd < level->levelSounds->index; snd++){
-            // TODO : move in playSFX()
-            // update sound location if sound has a parent
             u_int r;
-
             // If parent is actor, 
             if (level->levelSounds->sounds[snd]->parent == level->actorPtr && camMode <= 1){
                 r = CAM_DIST_TO_ACT;
+            // update sound location if sound has a parent and it's not actor
             } else if ( level->levelSounds->sounds[snd]->parent != 0){
                 VECTOR dist;
                 copyVector(&level->levelSounds->sounds[snd]->location, &level->levelSounds->sounds[snd]->parent->pos);
                 // Get distance between sound source and camera
-                addVector2(camera->pos, &level->levelSounds->sounds[snd]->location, &dist);
+                dist.vx = -camera->pos->vx - level->levelSounds->sounds[snd]->location.vx;
+                dist.vz = -camera->pos->vz - level->levelSounds->sounds[snd]->location.vz;
                 r = psqrt((dist.vx * dist.vx) + (dist.vz * dist.vz));
-                // Get angle between sound source and camera
-                //phi = patan( level->levelSounds->sounds[snd]->location.vx, level->levelSounds->sounds[snd]->location.vz );
-                //phi = ( phi >> 4 );
+                // Get snd screen coordinates
+                // Range -1024 0 == screen left, 0 +1024 == screen right 
+                worldToScreen(&level->levelSounds->sounds[snd]->location, &sndPos2D);
             } 
-            level->levelSounds->sounds[snd]->volumeL = level->levelSounds->sounds[snd]->volumeR = (level->levelSounds->sounds[snd]->volume_max/r) * SND_NMALIZED > SND_MAX_VOL ? SND_MAX_VOL : 
-                                                      (level->levelSounds->sounds[snd]->volume_max/r) * SND_NMALIZED < 0 ? 0 :
-                                                      (level->levelSounds->sounds[snd]->volume_max/r) * SND_NMALIZED;
-            //TODO : use screen coordinates
-            worldToScreen(&level->levelSounds->sounds[snd]->location, &output);
+            // Find volume base on dist
+            u_int volumeBase = (level->levelSounds->sounds[snd]->volume_max/r) * SND_NMALIZED > SND_MAX_VOL ? SND_MAX_VOL : 
+                               (level->levelSounds->sounds[snd]->volume_max/r) * SND_NMALIZED < 0 ? 0 :
+                               (level->levelSounds->sounds[snd]->volume_max/r) * SND_NMALIZED;
+            // Avoid value of 0
+            sndPos2D.vx = sndPos2D.vx == 0 || sndPos2D.vx == -0 ? 1 : sndPos2D.vx;
+            level->levelSounds->sounds[snd]->volumeL = volumeBase / ( (sndPos2D.vx >  SND_DZ ? (    sndPos2D.vx - SND_DZ   >> 7) + 1 : 1) ); 
+            level->levelSounds->sounds[snd]->volumeR = volumeBase / ( (sndPos2D.vx < -SND_DZ ? ( ( -sndPos2D.vx - SND_DZ ) >> 7) + 1 : 1) );
         }
     }
-    return output;
 };
 void XAsetup(void){   
     u_char param[4];

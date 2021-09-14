@@ -5,8 +5,8 @@ CVECTOR level0_BGc = { 134, 231, 229, 0 };
 VECTOR level0_BKc = { 173, 173, 173, 0 };
 
 CAMPOS level0_camPos_Camera = {
-	{ -770,459,623 },
-	{ 301,-4096,0 }
+	{ -370,359,323 },
+	{ 301,531,0 }
 };
 
 CAMPATH level0_camPath = {
@@ -992,21 +992,19 @@ NODE * level0_curNode =  &level0_nodePlane;
 
 extern u_char _binary_VAG_1_cuek_vag_start;
 extern u_char _binary_VAG_3_hehe_vag_start;
-extern u_char _binary_VAG_7_wron_vag_start;
 
 VAGbank level0_VAGBank = {
-	10,
+	9,
 	{
 		{ &_binary_VAG_1_cuek_vag_start, SPU_00CH, 0 },
 		{ &_binary_VAG_3_hehe_vag_start, SPU_01CH, 0 },
-		{ &_binary_VAG_7_wron_vag_start, SPU_02CH, 0 },
-		{ &_binary_VAG_3_hehe_vag_start, SPU_03CH, 0 },
+		{ &_binary_VAG_3_hehe_vag_start, SPU_02CH, 0 },
+		{ &_binary_VAG_1_cuek_vag_start, SPU_03CH, 0 },
 		{ &_binary_VAG_1_cuek_vag_start, SPU_04CH, 0 },
-		{ &_binary_VAG_1_cuek_vag_start, SPU_05CH, 0 },
+		{ &_binary_VAG_3_hehe_vag_start, SPU_05CH, 0 },
 		{ &_binary_VAG_3_hehe_vag_start, SPU_06CH, 0 },
-		{ &_binary_VAG_3_hehe_vag_start, SPU_07CH, 0 },
-		{ &_binary_VAG_1_cuek_vag_start, SPU_08CH, 0 },
-		{ &_binary_VAG_3_hehe_vag_start, SPU_09CH, 0 }
+		{ &_binary_VAG_1_cuek_vag_start, SPU_07CH, 0 },
+		{ &_binary_VAG_3_hehe_vag_start, SPU_08CH, 0 }
 	}
 };
 
@@ -1040,18 +1038,10 @@ SOUND_OBJECT level0_Speaker_001 = {
 	&level0_meshCube
 };
 
-SOUND_OBJECT level0_Speaker_002 = {
-	{-267,432,-146},
-	16383, 16383, 0, 16383,
-	&level0_VAGBank.samples[2],
-	0,
-	0
-};
-
 SOUND_OBJECT level0_Speaker_003 = {
 	{-101,156,253},
 	16383, 16383, 0, 16383,
-	&level0_VAGBank.samples[3],
+	&level0_VAGBank.samples[2],
 	0,
 	&level0_meshCube
 };
@@ -1059,7 +1049,7 @@ SOUND_OBJECT level0_Speaker_003 = {
 SOUND_OBJECT level0_Speaker_004 = {
 	{83,161,253},
 	16383, 16383, 0, 16383,
-	&level0_VAGBank.samples[4],
+	&level0_VAGBank.samples[3],
 	0,
 	&level0_meshCube
 };
@@ -1067,7 +1057,7 @@ SOUND_OBJECT level0_Speaker_004 = {
 SOUND_OBJECT level0_Speaker_005 = {
 	{76,-39,188},
 	16383, 16383, 0, 16383,
-	&level0_VAGBank.samples[5],
+	&level0_VAGBank.samples[4],
 	0,
 	&level0_meshCube
 };
@@ -1075,7 +1065,7 @@ SOUND_OBJECT level0_Speaker_005 = {
 SOUND_OBJECT level0_Speaker_006 = {
 	{-108,-43,188},
 	16383, 16383, 0, 16383,
-	&level0_VAGBank.samples[6],
+	&level0_VAGBank.samples[5],
 	0,
 	&level0_meshCube
 };
@@ -1083,7 +1073,7 @@ SOUND_OBJECT level0_Speaker_006 = {
 SOUND_OBJECT level0_Speaker_007 = {
 	{-352,55,234},
 	16383, 16383, 0, 16383,
-	&level0_VAGBank.samples[7],
+	&level0_VAGBank.samples[6],
 	0,
 	&level0_meshCube
 };
@@ -1091,7 +1081,7 @@ SOUND_OBJECT level0_Speaker_007 = {
 SOUND_OBJECT level0_Speaker_008 = {
 	{-168,60,234},
 	16383, 16383, 0, 16383,
-	&level0_VAGBank.samples[8],
+	&level0_VAGBank.samples[7],
 	0,
 	&level0_meshCube
 };
@@ -1107,17 +1097,16 @@ SOUND_OBJECT level0_Speaker_009 = {
 SOUND_OBJECT level0_Speaker_010 = {
 	{4,-160,143},
 	16383, 16383, 0, 16383,
-	&level0_VAGBank.samples[9],
+	&level0_VAGBank.samples[8],
 	0,
 	&level0_meshCube
 };
 
 LEVEL_SOUNDS level0_sounds = {
-	11,
+	10,
 	{
 		&level0_Speaker,
 		&level0_Speaker_001,
-		&level0_Speaker_002,
 		&level0_Speaker_003,
 		&level0_Speaker_004,
 		&level0_Speaker_005,

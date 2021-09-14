@@ -11086,7 +11086,7 @@ SOUND_OBJECT level1_Speaker = {
     16383, 16383, 0, 16383,
     &level1_VAGBank.samples[0],
     0,
-    &level1_meshCube
+    &level1_meshSphere
 };
 
 SOUND_OBJECT level1_Speaker_001 = {
@@ -11094,7 +11094,7 @@ SOUND_OBJECT level1_Speaker_001 = {
     16383, 16383, 0, 16383,
     &level1_VAGBank.samples[1],
     0,
-    &level1_meshCube
+    &level1_meshSphere
 };
 
 SOUND_OBJECT level1_Speaker_002 = {
@@ -11110,7 +11110,7 @@ SOUND_OBJECT level1_Speaker_003 = {
     16383, 16383, 0, 16383,
     &level1_VAGBank.samples[3],
     0,
-    &level1_meshCube
+    &level1_meshSphere_001
 };
 
 SOUND_OBJECT level1_Speaker_004 = {
@@ -11126,7 +11126,7 @@ SOUND_OBJECT level1_Speaker_005 = {
     16383, 16383, 0, 16383,
     &level1_VAGBank.samples[5],
     0,
-    &level1_meshCube
+    &level1_meshSphere
 };
 
 SOUND_OBJECT level1_Speaker_006 = {
@@ -11134,7 +11134,7 @@ SOUND_OBJECT level1_Speaker_006 = {
     16383, 16383, 0, 16383,
     &level1_VAGBank.samples[6],
     0,
-    &level1_meshCube
+    &level1_meshSphere
 };
 
 SOUND_OBJECT level1_Speaker_007 = {
@@ -11142,7 +11142,7 @@ SOUND_OBJECT level1_Speaker_007 = {
     16383, 16383, 0, 16383,
     &level1_VAGBank.samples[7],
     0,
-    &level1_meshCube
+    &level1_meshSphere
 };
 
 SOUND_OBJECT level1_Speaker_008 = {
@@ -11150,7 +11150,7 @@ SOUND_OBJECT level1_Speaker_008 = {
     16383, 16383, 0, 16383,
     &level1_VAGBank.samples[8],
     0,
-    &level1_meshCube
+    &level1_meshSphere
 };
 
 SOUND_OBJECT level1_Speaker_009 = {
@@ -11158,7 +11158,7 @@ SOUND_OBJECT level1_Speaker_009 = {
     16383, 16383, 0, 16383,
     0,
     &level1_XABank_0.samples[0],
-    &level1_meshCube
+    &level1_meshSphere
 };
 
 LEVEL_SOUNDS level1_sounds = {

@@ -41,7 +41,6 @@ extern XAbank level0_XABank_0;
 extern XAfiles level0_XAFiles;
 extern SOUND_OBJECT level0_Speaker;
 extern SOUND_OBJECT level0_Speaker_001;
-extern SOUND_OBJECT level0_Speaker_002;
 extern SOUND_OBJECT level0_Speaker_003;
 extern SOUND_OBJECT level0_Speaker_004;
 extern SOUND_OBJECT level0_Speaker_005;
