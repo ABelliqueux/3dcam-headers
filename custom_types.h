@@ -5,6 +5,7 @@
 
 struct BODY;
 struct VANIM;
+struct MESH_ANIMS_TRACKS;
 struct PRIM;
 struct MESH;
 struct CAMPOS;
@@ -37,12 +38,19 @@ typedef struct BODY {
 typedef struct VANIM { 
 	int nframes;    // number of frames e.g   20
 	int nvert;      // number of vertices e.g 21
-	int cursor;     // anim cursor
+	int cursor;     // anim cursor : -1 == not playing, n>=0 == current frame number
 	int lerpCursor; // anim cursor
+	int loop;       // loop anim : -1 == infinite, n>0  == play n times
 	int dir;        // playback direction (1 or -1)
+	int pingpong;   // ping pong animation (A>B>A)
 	int interpolate; // use lerp to interpolate keyframes
 	SVECTOR data[]; // vertex pos as SVECTORs e.g 20 * 21 SVECTORS
 	} VANIM;
+
+typedef struct MESH_ANIMS_TRACKS {
+	u_short index;
+	VANIM * strips[];
+} MESH_ANIMS_TRACKS;
 
 typedef struct PRIM {
 	VECTOR order;
@@ -73,7 +81,8 @@ typedef struct MESH {
 	long        p;
 	long        OTz;
 	BODY     *  body;
-	VANIM    *  anim;
+	MESH_ANIMS_TRACKS    *  anim_tracks;
+	VANIM *     currentAnim;
 	struct NODE   *    node;
 	VECTOR      pos2D;
 	} MESH;

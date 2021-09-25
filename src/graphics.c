@@ -51,40 +51,54 @@ void set3VertexLerPos(MESH * mesh, long t){
     // TODO : Pre-calculate lerp positions at runtime (for i in nframes, do calc)
     // Fixed point math precision
     short precision = 12;
-    // Vertex 1
-    mesh->tmesh->v[ mesh->index[ t ].order.vx ].vx = lerpD( mesh->anim->data[mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[t].order.vx].vx << precision , mesh->anim->data[(mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[t].order.vx].vx  << precision, mesh->anim->cursor << precision)  >> precision;
-    mesh->tmesh->v[ mesh->index[ t ].order.vx ].vz = lerpD( mesh->anim->data[mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[t].order.vx].vz << precision , mesh->anim->data[(mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[t].order.vx].vz  << precision, mesh->anim->cursor << precision)  >> precision;
-    mesh->tmesh->v[ mesh->index[ t ].order.vx ].vy = lerpD( mesh->anim->data[mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[t].order.vx].vy << precision , mesh->anim->data[(mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[t].order.vx].vy  << precision, mesh->anim->cursor << precision)  >> precision;
-    // Vertex 2
-    mesh->tmesh->v[ mesh->index[ t ].order.vz ].vx = lerpD( mesh->anim->data[mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[t].order.vz].vx << precision , mesh->anim->data[(mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[t].order.vz].vx  << precision, mesh->anim->cursor << precision)  >> precision;
-    mesh->tmesh->v[ mesh->index[ t ].order.vz ].vz = lerpD( mesh->anim->data[mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[t].order.vz].vz << precision , mesh->anim->data[(mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[t].order.vz].vz  << precision, mesh->anim->cursor << precision)  >> precision;
-    mesh->tmesh->v[ mesh->index[ t ].order.vz ].vy = lerpD( mesh->anim->data[mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[t].order.vz].vy << precision , mesh->anim->data[(mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[t].order.vz].vy  << precision, mesh->anim->cursor << precision)  >> precision;
-    // Vertex 3
-    mesh->tmesh->v[ mesh->index[ t ].order.vy ].vx = lerpD( mesh->anim->data[mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[t].order.vy].vx << precision , mesh->anim->data[(mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[t].order.vy].vx  << precision, mesh->anim->cursor << precision)  >> precision;
-    mesh->tmesh->v[ mesh->index[ t ].order.vy ].vz = lerpD( mesh->anim->data[mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[t].order.vy].vz << precision , mesh->anim->data[(mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[t].order.vy].vz  << precision, mesh->anim->cursor << precision)  >> precision;
-    mesh->tmesh->v[ mesh->index[ t ].order.vy ].vy = lerpD( mesh->anim->data[mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[t].order.vy].vy << precision , mesh->anim->data[(mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[t].order.vy].vy  << precision, mesh->anim->cursor << precision)  >> precision;
-    mesh->anim->cursor += 24 * mesh->anim->dir;
+    //~ mesh->tmesh->v[ mesh->index[ t ].order.vx ].vx = round(lerpD( mesh->currentAnim->data[mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[t].order.vx].vx << precision , mesh->currentAnim->data[(mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[t].order.vx].vx  << precision, mesh->currentAnim->cursor << precision)) >> precision;
+    //~ mesh->tmesh->v[ mesh->index[ t ].order.vx ].vz = round(lerpD( mesh->currentAnim->data[mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[t].order.vx].vz << precision , mesh->currentAnim->data[(mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[t].order.vx].vz  << precision, mesh->currentAnim->cursor << precision)) >> precision;
+    //~ mesh->tmesh->v[ mesh->index[ t ].order.vx ].vy = round(lerpD( mesh->currentAnim->data[mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[t].order.vx].vy << precision , mesh->currentAnim->data[(mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[t].order.vx].vy  << precision, mesh->currentAnim->cursor << precision)) >> precision;
+    //~ // Vertex 2
+    //~ mesh->tmesh->v[ mesh->index[ t ].order.vz ].vx = round(lerpD( mesh->currentAnim->data[mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[t].order.vz].vx << precision , mesh->currentAnim->data[(mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[t].order.vz].vx  << precision, mesh->currentAnim->cursor << precision)) >> precision;
+    //~ mesh->tmesh->v[ mesh->index[ t ].order.vz ].vz = round(lerpD( mesh->currentAnim->data[mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[t].order.vz].vz << precision , mesh->currentAnim->data[(mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[t].order.vz].vz  << precision, mesh->currentAnim->cursor << precision)) >> precision;
+    //~ mesh->tmesh->v[ mesh->index[ t ].order.vz ].vy = round(lerpD( mesh->currentAnim->data[mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[t].order.vz].vy << precision , mesh->currentAnim->data[(mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[t].order.vz].vy  << precision, mesh->currentAnim->cursor << precision)) >> precision;
+    //~ // Vertex 3
+    //~ mesh->tmesh->v[ mesh->index[ t ].order.vy ].vx = round(lerpD( mesh->currentAnim->data[mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[t].order.vy].vx << precision , mesh->currentAnim->data[(mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[t].order.vy].vx  << precision, mesh->currentAnim->cursor << precision)) >> precision;
+    //~ mesh->tmesh->v[ mesh->index[ t ].order.vy ].vz = round(lerpD( mesh->currentAnim->data[mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[t].order.vy].vz << precision , mesh->currentAnim->data[(mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[t].order.vy].vz  << precision, mesh->currentAnim->cursor << precision)) >> precision;
+    //~ mesh->tmesh->v[ mesh->index[ t ].order.vy ].vy = round(lerpD( mesh->currentAnim->data[mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[t].order.vy].vy << precision , mesh->currentAnim->data[(mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[t].order.vy].vy  << precision, mesh->currentAnim->cursor << precision)) >> precision;
+    
+    mesh->tmesh->v[ mesh->index[ t ].order.vx ].vx = (lerpD( mesh->currentAnim->data[mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[t].order.vx].vx << precision , mesh->currentAnim->data[(mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[t].order.vx].vx  << precision, mesh->currentAnim->cursor << precision)) >> precision;
+    mesh->tmesh->v[ mesh->index[ t ].order.vx ].vz = (lerpD( mesh->currentAnim->data[mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[t].order.vx].vz << precision , mesh->currentAnim->data[(mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[t].order.vx].vz  << precision, mesh->currentAnim->cursor << precision)) >> precision;
+    mesh->tmesh->v[ mesh->index[ t ].order.vx ].vy = (lerpD( mesh->currentAnim->data[mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[t].order.vx].vy << precision , mesh->currentAnim->data[(mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[t].order.vx].vy  << precision, mesh->currentAnim->cursor << precision)) >> precision;
+    // Vertex 2                                      
+    mesh->tmesh->v[ mesh->index[ t ].order.vz ].vx = (lerpD( mesh->currentAnim->data[mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[t].order.vz].vx << precision , mesh->currentAnim->data[(mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[t].order.vz].vx  << precision, mesh->currentAnim->cursor << precision)) >> precision;
+    mesh->tmesh->v[ mesh->index[ t ].order.vz ].vz = (lerpD( mesh->currentAnim->data[mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[t].order.vz].vz << precision , mesh->currentAnim->data[(mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[t].order.vz].vz  << precision, mesh->currentAnim->cursor << precision)) >> precision;
+    mesh->tmesh->v[ mesh->index[ t ].order.vz ].vy = (lerpD( mesh->currentAnim->data[mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[t].order.vz].vy << precision , mesh->currentAnim->data[(mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[t].order.vz].vy  << precision, mesh->currentAnim->cursor << precision)) >> precision;
+    // Vertex 3                                      
+    mesh->tmesh->v[ mesh->index[ t ].order.vy ].vx = (lerpD( mesh->currentAnim->data[mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[t].order.vy].vx << precision , mesh->currentAnim->data[(mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[t].order.vy].vx  << precision, mesh->currentAnim->cursor << precision)) >> precision;
+    mesh->tmesh->v[ mesh->index[ t ].order.vy ].vz = (lerpD( mesh->currentAnim->data[mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[t].order.vy].vz << precision , mesh->currentAnim->data[(mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[t].order.vy].vz  << precision, mesh->currentAnim->cursor << precision)) >> precision;
+    mesh->tmesh->v[ mesh->index[ t ].order.vy ].vy = (lerpD( mesh->currentAnim->data[mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[t].order.vy].vy << precision , mesh->currentAnim->data[(mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[t].order.vy].vy  << precision, mesh->currentAnim->cursor << precision)) >> precision;
+    
+    mesh->currentAnim->cursor += 24 * mesh->currentAnim->dir;
 };
 void set4VertexLerPos(MESH * mesh, long t){
     // Find and set 4 interpolated vertex value
-    short precision = 12;
-    // Vertex 1
-    mesh->tmesh->v[ mesh->index[ t ].order.vx ].vx = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.vx ].vx << precision , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.vx ].vx  << precision, mesh->anim->cursor << precision)  >> precision;
-    mesh->tmesh->v[ mesh->index[ t ].order.vx ].vz = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.vx ].vz << precision , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.vx ].vz  << precision, mesh->anim->cursor << precision)  >> precision;
-    mesh->tmesh->v[ mesh->index[ t ].order.vx ].vy = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.vx ].vy << precision , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.vx ].vy  << precision, mesh->anim->cursor << precision)  >> precision;
+    short precision = 12;     
+    mesh->tmesh->v[ mesh->index[ t ].order.vx ].vx = lerpD( mesh->currentAnim->data[ mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[ t ].order.vx ].vx << precision , 
+                                                            mesh->currentAnim->data[ (mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[ t ].order.vx ].vx  << precision,
+                                                            mesh->currentAnim->cursor << precision)  >> precision;
+    mesh->tmesh->v[ mesh->index[ t ].order.vx ].vz = lerpD( mesh->currentAnim->data[ mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[ t ].order.vx ].vz << precision , mesh->currentAnim->data[ (mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[ t ].order.vx ].vz  << precision, mesh->currentAnim->cursor << precision)  >> precision;
+    mesh->tmesh->v[ mesh->index[ t ].order.vx ].vy = lerpD( mesh->currentAnim->data[ mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[ t ].order.vx ].vy << precision , mesh->currentAnim->data[ (mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[ t ].order.vx ].vy  << precision, mesh->currentAnim->cursor << precision)  >> precision;
     // Vertex 2
-    mesh->tmesh->v[ mesh->index[ t ].order.vz ].vx = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.vz ].vx << precision , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.vz ].vx  << precision, mesh->anim->cursor << precision)  >> precision;
-    mesh->tmesh->v[ mesh->index[ t ].order.vz ].vz = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.vz ].vz << precision , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.vz ].vz  << precision, mesh->anim->cursor << precision)  >> precision;
-    mesh->tmesh->v[ mesh->index[ t ].order.vz ].vy = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.vz ].vy << precision , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.vz ].vy  << precision, mesh->anim->cursor << precision)  >> precision;
+    mesh->tmesh->v[ mesh->index[ t ].order.vz ].vx = lerpD( mesh->currentAnim->data[ mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[ t ].order.vz ].vx << precision , mesh->currentAnim->data[ (mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[ t ].order.vz ].vx  << precision, mesh->currentAnim->cursor << precision)  >> precision;
+    mesh->tmesh->v[ mesh->index[ t ].order.vz ].vz = lerpD( mesh->currentAnim->data[ mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[ t ].order.vz ].vz << precision , mesh->currentAnim->data[ (mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[ t ].order.vz ].vz  << precision, mesh->currentAnim->cursor << precision)  >> precision;
+    mesh->tmesh->v[ mesh->index[ t ].order.vz ].vy = lerpD( mesh->currentAnim->data[ mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[ t ].order.vz ].vy << precision , mesh->currentAnim->data[ (mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[ t ].order.vz ].vy  << precision, mesh->currentAnim->cursor << precision)  >> precision;
     // Vertex 3
-    mesh->tmesh->v[ mesh->index[ t ].order.vy ].vx = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.vy ].vx << precision , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.vy ].vx  << precision, mesh->anim->cursor << precision)  >> precision;
-    mesh->tmesh->v[ mesh->index[ t ].order.vy ].vz = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.vy ].vz << precision , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.vy ].vz  << precision, mesh->anim->cursor << precision)  >> precision;
-    mesh->tmesh->v[ mesh->index[ t ].order.vy ].vy = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.vy ].vy << precision , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.vy ].vy  << precision, mesh->anim->cursor << precision)  >> precision;
+    mesh->tmesh->v[ mesh->index[ t ].order.vy ].vx = lerpD( mesh->currentAnim->data[ mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[ t ].order.vy ].vx << precision , mesh->currentAnim->data[ (mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[ t ].order.vy ].vx  << precision, mesh->currentAnim->cursor << precision)  >> precision;
+    mesh->tmesh->v[ mesh->index[ t ].order.vy ].vz = lerpD( mesh->currentAnim->data[ mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[ t ].order.vy ].vz << precision , mesh->currentAnim->data[ (mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[ t ].order.vy ].vz  << precision, mesh->currentAnim->cursor << precision)  >> precision;
+    mesh->tmesh->v[ mesh->index[ t ].order.vy ].vy = lerpD( mesh->currentAnim->data[ mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[ t ].order.vy ].vy << precision , mesh->currentAnim->data[ (mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[ t ].order.vy ].vy  << precision, mesh->currentAnim->cursor << precision)  >> precision;
     // Vertex 4
-    mesh->tmesh->v[ mesh->index[ t ].order.pad ].vx = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.pad ].vx << precision , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.pad ].vx  << precision, mesh->anim->cursor << precision) >> precision;
-    mesh->tmesh->v[ mesh->index[ t ].order.pad ].vz = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.pad ].vz << precision , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.pad ].vz  << precision, mesh->anim->cursor << precision) >> precision;
-    mesh->tmesh->v[ mesh->index[ t ].order.pad ].vy = lerpD( mesh->anim->data[ mesh->anim->lerpCursor * mesh->anim->nvert + mesh->index[ t ].order.pad ].vy << precision , mesh->anim->data[ (mesh->anim->lerpCursor + 1) * mesh->anim->nvert + mesh->index[ t ].order.pad ].vy  << precision, mesh->anim->cursor << precision) >> precision;
-    mesh->anim->cursor += 2 * mesh->anim->dir;
+    mesh->tmesh->v[ mesh->index[ t ].order.pad ].vx = lerpD( mesh->currentAnim->data[ mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[ t ].order.pad ].vx << precision , mesh->currentAnim->data[ (mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[ t ].order.pad ].vx  << precision, mesh->currentAnim->cursor << precision) >> precision;
+    mesh->tmesh->v[ mesh->index[ t ].order.pad ].vz = lerpD( mesh->currentAnim->data[ mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[ t ].order.pad ].vz << precision , mesh->currentAnim->data[ (mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[ t ].order.pad ].vz  << precision, mesh->currentAnim->cursor << precision) >> precision;
+    mesh->tmesh->v[ mesh->index[ t ].order.pad ].vy = lerpD( mesh->currentAnim->data[ mesh->currentAnim->lerpCursor * mesh->currentAnim->nvert + mesh->index[ t ].order.pad ].vy << precision , mesh->currentAnim->data[ (mesh->currentAnim->lerpCursor + 1) * mesh->currentAnim->nvert + mesh->index[ t ].order.pad ].vy  << precision, mesh->currentAnim->cursor << precision) >> precision;
+    
+    mesh->currentAnim->cursor += 24 * mesh->currentAnim->dir;
 }
 long interpolateTri(POLY_GT3 * poly, MESH * mesh, long t){
     long Flag, nclip = 0;
@@ -93,16 +107,16 @@ long interpolateTri(POLY_GT3 * poly, MESH * mesh, long t){
      //~ //   mesh->anim->dir *= -1;
      //~ //}
      // Find next keyframe 
-     if (mesh->anim->cursor > (1 << 12)) {
+     if (mesh->currentAnim->cursor > (1 << 12)) {
         // There are still keyframes to interpolate between
-        if ( mesh->anim->lerpCursor < mesh->anim->nframes - 1 ) {
-            mesh->anim->lerpCursor ++;
-            mesh->anim->cursor = 0;
+        if ( mesh->currentAnim->lerpCursor < mesh->currentAnim->nframes - 1 ) {
+            mesh->currentAnim->lerpCursor ++;
+            mesh->currentAnim->cursor = 0;
         }
         // We've reached last frame, go back to first frame
-        if ( mesh->anim->lerpCursor == mesh->anim->nframes - 1 ) {
-            mesh->anim->lerpCursor = 0;
-            mesh->anim->cursor = 0;
+        if ( mesh->currentAnim->lerpCursor == mesh->currentAnim->nframes - 1 ) {
+            mesh->currentAnim->lerpCursor = 0;
+            mesh->currentAnim->cursor = 0;
         }
      }
     // Find and set interpolated vertex value
@@ -127,14 +141,15 @@ long interpolateQuad(POLY_GT4 * poly4, MESH * mesh, long t){
        //~ mesh->anim->dir *= -1;
     //~ }
     short precision = 12;
-    if ( mesh->anim->cursor > 1<<precision ) {
-        if ( mesh->anim->lerpCursor < mesh->anim->nframes - 1 ) {
-            mesh->anim->lerpCursor ++;
-            mesh->anim->cursor = 0;
+    //~ if ( mesh->anim->cursor > 1<<precision ) {
+    if (  mesh->currentAnim->cursor > (1 << 12) ) {
+        if ( mesh->currentAnim->lerpCursor < mesh->currentAnim->nframes - 1 ) {
+            mesh->currentAnim->lerpCursor ++;
+            mesh->currentAnim->cursor = 0;
         }
-        if ( mesh->anim->lerpCursor == mesh->anim->nframes - 1 ) {
-            mesh->anim->lerpCursor = 0;
-            mesh->anim->cursor = 0;
+        if ( mesh->currentAnim->lerpCursor == mesh->currentAnim->nframes - 1 ) {
+            mesh->currentAnim->lerpCursor = 0;
+            mesh->currentAnim->cursor = 0;
         }
     }
     // Find and set interpolated vertex value
@@ -346,17 +361,18 @@ long drawQuad(MESH * mesh, int atime, int * camMode, char ** nextpri, u_long * o
             poly4 = (POLY_GT4 *)*nextpri;
             
             // Vertex Anim 
-            if (mesh->isAnim){
+            if (mesh->isAnim && mesh->currentAnim){
                 // with interpolation
-                if ( mesh->anim->interpolate ){
-                    interpolateQuad(poly4, mesh, t);
+                if ( mesh->anim_tracks->strips[0]->interpolate ){
+                    nclip = interpolateQuad(poly4, mesh, t);
                 } else {
+                    // TODO : write playAnim()
                     // No interpolation, use all vertices coordinates in anim data
                     gte_RotAverageNclip4(
-                                &mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.pad ],
-                                &mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.vz ],
-                                &mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.vx ],
-                                &mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.vy ],
+                                &mesh->currentAnim->data[ atime % mesh->anim_tracks->strips[0]->nframes * mesh->anim_tracks->strips[0]->nvert + mesh->index[t].order.pad ],
+                                &mesh->currentAnim->data[ atime % mesh->anim_tracks->strips[0]->nframes * mesh->anim_tracks->strips[0]->nvert + mesh->index[t].order.vz ],
+                                &mesh->currentAnim->data[ atime % mesh->anim_tracks->strips[0]->nframes * mesh->anim_tracks->strips[0]->nvert + mesh->index[t].order.vx ],
+                                &mesh->currentAnim->data[ atime % mesh->anim_tracks->strips[0]->nframes * mesh->anim_tracks->strips[0]->nvert + mesh->index[t].order.vy ],
                                 ( long* )&poly4->x0, ( long* )&poly4->x1, ( long* )&poly4->x2, ( long* )&poly4->x3,
                                 &mesh->p,
                                 &mesh->OTz,
@@ -364,7 +380,7 @@ long drawQuad(MESH * mesh, int atime, int * camMode, char ** nextpri, u_long * o
                                 &nclip
                             );
                 }
-            } else {                        
+            } else {   
                 // Mesh is sprite
                 if (mesh->isSprite){
                     // Find inverse rotation matrix so that sprite always faces camera
@@ -429,17 +445,17 @@ long drawTri(MESH * mesh, int atime, int * camMode, char ** nextpri, u_long * ot
         if ( !( mesh->isBG ) || *camMode != 2) {
             poly = (POLY_GT3 *)*nextpri;
             // If Vertex Anim flag is set, use it
-            if (mesh->isAnim){
+            if (mesh->isAnim && mesh->currentAnim){
                 // If interpolation flag is set, use it
-                if(mesh->anim->interpolate){
+                if(mesh->anim_tracks->strips[0]->interpolate){
                     nclip = interpolateTri(poly, mesh, t);
                 } else { 
                 // No interpolation
                     // Use the pre-calculated vertices coordinates from the animation data
                     gte_RotAverageNclip3(
-                        &mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.vx ],
-                        &mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.vz ],
-                        &mesh->anim->data[ atime % mesh->anim->nframes * mesh->anim->nvert + mesh->index[t].order.vy ],
+                        &mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vx ],
+                        &mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vz ],
+                        &mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vy ],
                         ( long* ) &poly->x0, ( long* ) &poly->x1, ( long* ) &poly->x2,
                         &mesh->p,
                         &mesh->OTz,
@@ -598,4 +614,28 @@ void renderScene(LEVEL * curLvl, CAMERA * camera, int * camMode, char ** nextpri
         }
     }
     updateLight();
+};
+
+void playAnim(MESH * mesh, VANIM * anim, int loop){
+    if (mesh->isAnim){
+            // Set looping (-1 : infinite, n > 0 : loop n times ) 
+            if (mesh->currentAnim->loop == 0){
+                mesh->currentAnim->loop = loop;
+            }
+            // If anim not is not playing yet
+            if (mesh->currentAnim->cursor == -1){
+                // if cursor is -1, set to 0, start playback
+                mesh->currentAnim->cursor = 0;
+            } else {
+            
+            }
+        // Anim is already playing
+        } else if (mesh->currentAnim == anim){
+            // If we're not in an infinite loop (-1)
+            if (mesh->currentAnim->loop > 0){
+                // Add loop iterations ?
+                mesh->currentAnim->loop = loop;
+            }
+        }
+    
 };

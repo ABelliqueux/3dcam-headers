@@ -33,3 +33,5 @@ long long easeIn(long long i);
 int easeOut(int i);
 //~ int easeInOut(int i, int div);
 VECTOR getVectorTo(VECTOR actor, VECTOR target);
+
+int32_t round( int32_t n);

@@ -13,9 +13,11 @@ void generateTable(void){
     m_cosTable[0] = 16777216;               // 2^24 * cos(0 * 2pi / 2048) => 2^24 * 1 = 2^24 : here, 2^24 defines the precision we want after the decimal point
     static const long long C = 16777137;    // 2^24 * cos(1 * 2pi / 2048) = C = f(1);
     m_cosTable[1] = C;
-    for (int i = 2; i < 512; i++){
+    for (int i = 2; i < 511; i++){
         m_cosTable[i] = ((C * m_cosTable[i - 1]) >> 23) - m_cosTable[i - 2];
-        m_cosTable[511] = 0;
+    }
+    for (int i = 0; i < 512; i++){
+        m_cosTable[i] >>= 12;
     }
 };
 int ncos(unsigned int t) {
@@ -30,7 +32,7 @@ int ncos(unsigned int t) {
     } else {
         r = m_cosTable[DC_2PI - 1 - t];
     };
-    return r >> 12;
+    return r;
 };
 // sin(x) = cos(x - pi / 2)
 int nsin(unsigned int t) {
@@ -106,7 +108,8 @@ int32_t lerpS(int32_t start, int32_t dest, unsigned pos) {
 // precision = 2^24 - 2^x
 // << x : 0 < pos < precision
 // https://discord.com/channels/642647820683444236/646765703143227394/811318550978494505
-// my angles are between 0 and 2048 (full circle), so 2^11 for the range of angles; with numbers on a 8.24 representation, a 1.0 angle (or 2pi) means it's 2^24, so to "convert" my angles from 8.24 to my internal discrete cos, I only have to shift by 13
+// my angles are between 0 and 2048 (full circle), so 2^11 for the range of angles; with numbers on a 8.24 representation, 
+// a 1.0 angle (or 2pi) means it's 2^24, so to "convert" my angles from 8.24 to my internal discrete cos, I only have to shift by 13
 int32_t lerpD(int32_t start, int32_t dest, int32_t pos) {
      return dMul(start, 16777216 - pos) + dMul(dest, pos);
 };
@@ -143,4 +146,37 @@ VECTOR getVectorTo( VECTOR actor, VECTOR target ) {
     direction.pad = psqrt(distSq);
     VectorNormal(&direction, &Ndirection);
     return Ndirection ;
+};
+
+int32_t round( int32_t n){
+    // GRS - Action
+    // 0xx - round down = do nothing (x means any bit value, 0 or 1)
+    // 100 - this is a tie: round up if the mantissa's bit just before G is 1, else round down=do nothing
+    // 101 - round up
+    // 110 - round up
+    // 111 - round up
+    // source : https://stackoverflow.com/a/8984135
+    // e.g : n == 106 150 == 0000 0000 0000 0001 1001 1110 1010 0110
+    // Get GRS bits
+    // 0xe00 ==                                  0000 1110 0000 0000
+    int8_t grs = ( n & 0xe00) >> 8 ;       //         1110 0000 0000 >> 8
+    // GRS == 111(0)
+    // Get G value - 0x8 == 1000
+    if (grs & 0x8){
+        // GRS = 1xx
+        if ( // Get R value - 0x4 == 0100
+             // GRS == 11x ; round up
+             grs & 0x4 ||
+             // Get S value - 0x2 == 0010
+             // GRS == 101 ; round up
+             ( !(grs & 0x4) && grs & 0x2) 
+        ) {
+            n += 0x800;
+        } else if ( !(n & 0x1000) ) {
+            // Get mantissa lsb - 0x1000 == 0001 0000 0000
+            // GRS == 100 ; tie, round up if mantissa lsb is 1
+            n += 0x800;
+        }
+    }
+    return n;
 };

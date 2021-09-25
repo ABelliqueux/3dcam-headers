@@ -37,7 +37,7 @@ u_long overlaySize = 0;
 #include "../levels/level1.h"
 
 // Levels
-u_char level = 1;
+u_char level = 0;
 u_short levelWas = 0;
 u_short levelHasChanged = 0;
 // Overlay
@@ -129,7 +129,7 @@ int main() {
     } else if ( level == 1) {
         overlayFile = "\\level1.bin;1";
         overlaySize = __lvl1_end;
-        loadLvl     = &level1;
+        //~ loadLvl     = &level1;
     }
     // Load overlay from cd
     #ifdef USECD
@@ -142,7 +142,7 @@ int main() {
     if ( level == 0 ) {
         LvlPtrSet( &curLvl, &level0);
     } else if ( level == 1) {
-        LvlPtrSet( &curLvl, &level1);
+        //~ LvlPtrSet( &curLvl, &level1);
     } 
     levelWas = level;
     // Copy light matrices / vector to scratchpad
@@ -214,7 +214,7 @@ int main() {
                 case 1:
                     overlayFile = "\\level1.bin;1";
                     overlaySize = __lvl1_end;
-                    loadLvl     = &level1;
+                    //~ loadLvl     = &level1;
                     // Copy light matrices / vector to scratchpad
 
                     break;
@@ -250,7 +250,6 @@ int main() {
         if (time % timediv == 0){
             atime ++;
         }
-        // TODO : put in a function
         // Reset player/prop pos
         if(curLvl.actorPtr->pos.vy >= 200){
             playSFX(&voiceAttributes,  curLvl.levelSounds->sounds[6]->VAGsample, curLvl.levelSounds->sounds[6]->volumeL, curLvl.levelSounds->sounds[6]->volumeR);
@@ -388,6 +387,7 @@ int main() {
         FntPrint("XA: %x\n", curLvl.XA);
         FntPrint("Ofst: %d\n", curLvl.XA->banks[0]->offset);
         FntPrint("Vol: %d %d\n", curLvl.levelSounds->sounds[0]->volumeL, curLvl.levelSounds->sounds[0]->volumeR );
+        FntPrint("Curanim : %x", curLvl.meshes[1]->currentAnim);
         FntFlush(-1);
         display( &disp[db], &draw[db], otdisc[db], primbuff[db], &nextpri, &db);
       
@@ -474,6 +474,16 @@ void callback() {
     }
     if ( PAD & Square && !( lastPad & Square ) ){
         playSFX(&voiceAttributes,  curLvl.levelSounds->sounds[7]->VAGsample, curLvl.levelSounds->sounds[7]->volumeL, curLvl.levelSounds->sounds[7]->volumeR);
+        if ( curLvl.meshes[1]->currentAnim == 0 ||
+             curLvl.meshes[1]->currentAnim == curLvl.meshes[1]->anim_tracks->strips[0]
+            ){
+            if (curLvl.meshes[1]->anim_tracks->index > 1) {
+                curLvl.meshes[1]->currentAnim = curLvl.meshes[1]->anim_tracks->strips[1];
+            }
+        } else {
+            //~ curLvl.meshes[1]->anim_tracks->strips[0]->interpolate = 1;
+            curLvl.meshes[1]->currentAnim = curLvl.meshes[1]->anim_tracks->strips[0];
+        }
         //~ sample = 0;
         //~ setXAsample(&XABank.samples[sample], &filter);
         lastPad = PAD;
@@ -500,17 +510,13 @@ void callback() {
     if ( !(PAD & Circle) && lastPad & Circle ) {
         lastPad = PAD;
     }
-    if ( PAD & PadLeft && !(lastPad & PadLeft) ) {
-        if (curLvl.actorPtr->anim->interpolate){
-            curLvl.actorPtr->anim->interpolate = 0;
-        } else {
-            curLvl.actorPtr->anim->interpolate = 1;
-        }
-        lastPad = PAD;
-    }
-    if ( !(PAD & PadLeft) && lastPad & PadLeft ) {
-        lastPad = PAD;
-    }
+    //~ if ( PAD & PadLeft && !(lastPad & PadLeft) ) {
+
+        //~ lastPad = PAD;
+    //~ }
+    //~ if ( !(PAD & PadLeft) && lastPad & PadLeft ) {
+        //~ lastPad = PAD;
+    //~ }
     if (theControllers[0].type == 0x73){
         // Analog stick L up
         if ( theControllers[0].analog3 >= 0 && theControllers[0].analog3 < (128 - DS_DZ/2)) {

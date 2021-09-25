@@ -21,6 +21,9 @@ TIM/bg_camPath_002.tim \
 TIM/bg_camPath_003.tim \
 TIM/bg_camPath_004.tim \
 TIM/bg_camPath_005.tim \
+TIM/ground.tim \
+TIM/trees.tim \
+TIM/woods.tim \
 VAG/hello.vag \
 VAG/poly.vag \
 VAG/0_come.vag \

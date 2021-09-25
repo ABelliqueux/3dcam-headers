@@ -25,3 +25,5 @@ long interpolateQuad(POLY_GT4 * poly4, MESH * mesh, long t);
 void drawBG(CAMANGLE * camPtr, char ** nextpri, u_long * otdisc, char * db);
 // Rendering
 void renderScene(LEVEL * curLvl, CAMERA * camera, int * camMode, char ** nextpri,  u_long * ot, u_long * otdisc,  char * db, DRAWENV * draw, short curCamAngle, int atime);
+// Animation
+void playAnim(MESH * mesh, VANIM * anim, int loop);
