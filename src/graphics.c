@@ -77,6 +77,12 @@ void set3VertexLerPos(MESH * mesh, long t){
     
     mesh->currentAnim->cursor += 24 * mesh->currentAnim->dir;
 };
+void set3VertexPos(MESH * mesh, long t, int atime){
+    // Set vertices according to anim
+    mesh->tmesh->v[ mesh->index[ t ].order.vx ] = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vx ];
+    mesh->tmesh->v[ mesh->index[ t ].order.vz ] = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vz ];
+    mesh->tmesh->v[ mesh->index[ t ].order.vy ] = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vy ];
+}
 void set4VertexLerPos(MESH * mesh, long t){
     // Find and set 4 interpolated vertex value
     short precision = 12;     
@@ -100,7 +106,14 @@ void set4VertexLerPos(MESH * mesh, long t){
     
     mesh->currentAnim->cursor += 24 * mesh->currentAnim->dir;
 }
-long interpolateTri(POLY_GT3 * poly, MESH * mesh, long t){
+void set4VertexPos(MESH * mesh, long t, int atime){
+    // Set vertices according to anim
+    mesh->tmesh->v[ mesh->index[ t ].order.vx ] = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vx ];
+    mesh->tmesh->v[ mesh->index[ t ].order.vz ] = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vz ];
+    mesh->tmesh->v[ mesh->index[ t ].order.vy ] = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vy ];
+    mesh->tmesh->v[ mesh->index[ t ].order.pad ] = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.pad ];
+}
+void interpolateTri(POLY_GT3 * poly, MESH * mesh, long t){
     long Flag, nclip = 0;
      // Ping pong 
      //~ //if (mesh->anim->cursor > 4096 || mesh->anim->cursor < 0){
@@ -121,20 +134,8 @@ long interpolateTri(POLY_GT3 * poly, MESH * mesh, long t){
      }
     // Find and set interpolated vertex value
     set3VertexLerPos(mesh, t);
-    // Coord transformation from world space to screen space
-    gte_RotAverageNclip3(
-                &mesh->tmesh->v[ mesh->index[t].order.vx ],  
-                &mesh->tmesh->v[ mesh->index[t].order.vz ],
-                &mesh->tmesh->v[ mesh->index[t].order.vy ],
-                ( long* ) &poly->x0, ( long* ) &poly->x1, ( long* ) &poly->x2,
-                &mesh->p,
-                &mesh->OTz,
-                &Flag,
-                &nclip
-            );
-    return nclip;
 };
-long interpolateQuad(POLY_GT4 * poly4, MESH * mesh, long t){
+void interpolateQuad(POLY_GT4 * poly4, MESH * mesh, long t){
     long Flag, nclip = 0;
     // ping pong
     //~ if (mesh->anim->cursor > 4096 || mesh->anim->cursor < 0){
@@ -154,19 +155,6 @@ long interpolateQuad(POLY_GT4 * poly4, MESH * mesh, long t){
     }
     // Find and set interpolated vertex value
     set4VertexLerPos(mesh, t);
-    // Coord transformations
-    gte_RotAverageNclip4(
-                &mesh->tmesh->v[ mesh->index[t].order.pad ],  
-                &mesh->tmesh->v[ mesh->index[t].order.vz],
-                &mesh->tmesh->v[ mesh->index[t].order.vx ],
-                &mesh->tmesh->v[ mesh->index[t].order.vy ],
-                ( long* )&poly4->x0, ( long* )&poly4->x1, ( long* )&poly4->x2, ( long* )&poly4->x3,
-                &mesh->p,
-                &mesh->OTz,
-                &Flag,
-                &nclip
-            );
-    return nclip;
 };
 void set3Prism(POLY_GT3 * poly, MESH * mesh, DRAWENV * draw, char * db, int i, int t){
     // Transparency effect :
@@ -364,46 +352,37 @@ long drawQuad(MESH * mesh, int atime, int * camMode, char ** nextpri, u_long * o
             if (mesh->isAnim && mesh->currentAnim){
                 // with interpolation
                 if ( mesh->currentAnim->interpolate ){
-                    nclip = interpolateQuad(poly4, mesh, t);
+                    //~ nclip = interpolateQuad(poly4, mesh, t);
+                    interpolateQuad(poly4, mesh, t);
                 } else {
                     // TODO : write playAnim()
                     // No interpolation, use all vertices coordinates in anim data
-                    gte_RotAverageNclip4(
-                                &mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.pad ],
-                                &mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vz ],
-                                &mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vx ],
-                                &mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vy ],
-                                ( long* )&poly4->x0, ( long* )&poly4->x1, ( long* )&poly4->x2, ( long* )&poly4->x3,
-                                &mesh->p,
-                                &mesh->OTz,
-                                &Flag,
-                                &nclip
-                            );
+                    set4VertexPos(mesh, t, atime);
                 }
-            } else {   
-                // Mesh is sprite
-                if (mesh->isSprite){
-                    // Find inverse rotation matrix so that sprite always faces camera
-                    MATRIX rot, invRot;
-                    gte_ReadRotMatrix(&rot);
-                    TransposeMatrix(&rot, &invRot);
-                    //~ SetMulRotMatrix(&invRot);
-                    gte_MulMatrix0(&rot, &invRot, &invRot);
-                    gte_SetRotMatrix(&invRot);
-                }
-                // Use regular vertex coords
-                gte_RotAverageNclip4(
-                            &mesh->tmesh->v[ mesh->index[t].order.pad ],  
-                            &mesh->tmesh->v[ mesh->index[t].order.vz],
-                            &mesh->tmesh->v[ mesh->index[t].order.vx ],
-                            &mesh->tmesh->v[ mesh->index[t].order.vy ],
-                            (long*)&poly4->x0, (long*)&poly4->x1, (long*)&poly4->x2, (long*)&poly4->x3,
-                            &mesh->p,
-                            &mesh->OTz,
-                            &Flag,
-                            &nclip
-                        );
+            } 
+            // Mesh is sprite
+            if (mesh->isSprite){
+                // Find inverse rotation matrix so that sprite always faces camera
+                MATRIX rot, invRot;
+                gte_ReadRotMatrix(&rot);
+                TransposeMatrix(&rot, &invRot);
+                //~ SetMulRotMatrix(&invRot);
+                gte_MulMatrix0(&rot, &invRot, &invRot);
+                gte_SetRotMatrix(&invRot);
             }
+            // Apply rtp
+            gte_RotAverageNclip4(
+                        &mesh->tmesh->v[ mesh->index[t].order.pad ],  
+                        &mesh->tmesh->v[ mesh->index[t].order.vz],
+                        &mesh->tmesh->v[ mesh->index[t].order.vx ],
+                        &mesh->tmesh->v[ mesh->index[t].order.vy ],
+                        (long*)&poly4->x0, (long*)&poly4->x1, (long*)&poly4->x2, (long*)&poly4->x3,
+                        &mesh->p,
+                        &mesh->OTz,
+                        &Flag,
+                        &nclip
+                    );
+                    
             if (nclip > 0 && mesh->OTz > 0 && (mesh->p < 4096)) {
                 SetPolyGT4(poly4);
                 if (mesh->tim){
@@ -426,7 +405,7 @@ long drawQuad(MESH * mesh, int atime, int * camMode, char ** nextpri, u_long * o
                     set4Tex(poly4, mesh, draw, t, i);
                 }
                 if ( (mesh->OTz > 0) /*&& (*mesh->OTz < OTLEN)*/ && (mesh->p < 4096) ) {
-                    AddPrim( &ot[ mesh->OTz-3 ], poly4 );      
+                    AddPrim( &ot[ mesh->OTz-5 ], poly4 );      
                 }
                 *nextpri += sizeof( POLY_GT4 );
             }
@@ -448,45 +427,35 @@ long drawTri(MESH * mesh, int atime, int * camMode, char ** nextpri, u_long * ot
             if (mesh->isAnim && mesh->currentAnim){
                 // If interpolation flag is set, use it
                 if(mesh->currentAnim->interpolate){
-                    nclip = interpolateTri(poly, mesh, t);
+                    interpolateTri(poly, mesh, t);
                 } else { 
                 // No interpolation
-                    // Use the pre-calculated vertices coordinates from the animation data
-                    gte_RotAverageNclip3(
-                        &mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vx ],
-                        &mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vz ],
-                        &mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vy ],
-                        ( long* ) &poly->x0, ( long* ) &poly->x1, ( long* ) &poly->x2,
+                // Use the pre-calculated vertices coordinates from the animation data
+                    set3VertexPos(mesh, t, atime);
+                }
+            } 
+            // No animation
+            if (mesh->isSprite){
+                // Find inverse rotation matrix so that sprite always faces camera
+                //~ MATRIX rot, invRot;
+                // Use scratchpad dc_wrkmatp and dc_retmatp
+                gte_ReadRotMatrix(dc_wrkmatp);
+                TransposeMatrix(dc_wrkmatp, dc_retmatp);
+                //~ SetMulRotMatrix(&invRot);
+                gte_MulMatrix0(dc_wrkmatp, dc_retmatp, dc_retmatp);
+                gte_SetRotMatrix(dc_retmatp);
+            }
+            // Use model's regular vertex coordinates
+            gte_RotAverageNclip3(
+                        &mesh->tmesh->v[ mesh->index[t].order.vx ],  
+                        &mesh->tmesh->v[ mesh->index[t].order.vz ],
+                        &mesh->tmesh->v[ mesh->index[t].order.vy ],
+                        ( long * ) &poly->x0, ( long * ) &poly->x1, ( long * ) &poly->x2,
                         &mesh->p,
                         &mesh->OTz,
                         &Flag,
                         &nclip
-                    );
-                }
-            } else {
-            // No animation
-                if (mesh->isSprite){
-                    // Find inverse rotation matrix so that sprite always faces camera
-                    //~ MATRIX rot, invRot;
-                    // Use scratchpad dc_wrkmatp and dc_retmatp
-                    gte_ReadRotMatrix(dc_wrkmatp);
-                    TransposeMatrix(dc_wrkmatp, dc_retmatp);
-                    //~ SetMulRotMatrix(&invRot);
-                    gte_MulMatrix0(dc_wrkmatp, dc_retmatp, dc_retmatp);
-                    gte_SetRotMatrix(dc_retmatp);
-                }
-                // Use model's regular vertex coordinates
-                gte_RotAverageNclip3(
-                            &mesh->tmesh->v[ mesh->index[t].order.vx ],  
-                            &mesh->tmesh->v[ mesh->index[t].order.vz ],
-                            &mesh->tmesh->v[ mesh->index[t].order.vy ],
-                            ( long * ) &poly->x0, ( long * ) &poly->x1, ( long * ) &poly->x2,
-                            &mesh->p,
-                            &mesh->OTz,
-                            &Flag,
-                            &nclip
                         );
-            }
             // Do not draw invisible meshes 
             if ( nclip > 0 && mesh->OTz > 0 && (mesh->p < 4096) ) {
                 SetPolyGT3( poly );
