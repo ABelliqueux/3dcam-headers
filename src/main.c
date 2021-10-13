@@ -245,9 +245,9 @@ int main() {
         }
         //~ FntPrint("Ovl:%s\nLvl : %x\nLvl: %d %d \n%x", overlayFile, &level, level, levelWas, loadLvl);
         // atime is used for animations timing
-        timediv = 1;
+        timediv = 2;
         // If timediv is > 1, animation time will be slower 
-        if (time % timediv == 0){
+        if (time++ % timediv == 0){
             atime ++;
         }
         // Reset player/prop pos
@@ -384,10 +384,11 @@ int main() {
         //~ FntPrint("XA    : %d\n", (XA_CDSPEED)/((400/(dt+1))+1) );
         //~ FntPrint("XA    : %d\n", curLvl.XA->samples[sample].cursor );
         FntPrint("CamAngle : %d\n", curCamAngle);
-        FntPrint("XA: %x\n", curLvl.XA);
-        FntPrint("Ofst: %d\n", curLvl.XA->banks[0]->offset);
-        FntPrint("Vol: %d %d\n", curLvl.levelSounds->sounds[0]->volumeL, curLvl.levelSounds->sounds[0]->volumeR );
-        FntPrint("Curanim : %x", curLvl.meshes[1]->currentAnim);
+        //~ FntPrint("XA: %x\n", curLvl.XA);
+        //~ FntPrint("Ofst: %d\n", curLvl.XA->banks[0]->offset);
+        //~ FntPrint("Vol: %d %d\n", curLvl.levelSounds->sounds[0]->volumeL, curLvl.levelSounds->sounds[0]->volumeR );
+        FntPrint("Curanim : %x\n", curLvl.meshes[1]->currentAnim);
+        //~ FntPrint("Anims : %x %x", curLvl.meshes[1]->anim_tracks->strips[3], curLvl.meshes[1]->anim_tracks->strips[4]);
         FntFlush(-1);
         display( &disp[db], &draw[db], otdisc[db], primbuff[db], &nextpri, &db);
       
@@ -478,7 +479,7 @@ void callback() {
              curLvl.meshes[1]->currentAnim == curLvl.meshes[1]->anim_tracks->strips[0]
             ){
             if (curLvl.meshes[1]->anim_tracks->index > 1) {
-                curLvl.meshes[1]->currentAnim = curLvl.meshes[1]->anim_tracks->strips[1];
+                curLvl.meshes[1]->currentAnim = curLvl.meshes[1]->anim_tracks->strips[4];
             }
         } else {
             //~ curLvl.meshes[1]->anim_tracks->strips[0]->interpolate = 1;

@@ -148,35 +148,44 @@ VECTOR getVectorTo( VECTOR actor, VECTOR target ) {
     return Ndirection ;
 };
 
-int32_t round( int32_t n){
-    // GRS - Action
-    // 0xx - round down = do nothing (x means any bit value, 0 or 1)
-    // 100 - this is a tie: round up if the mantissa's bit just before G is 1, else round down=do nothing
-    // 101 - round up
-    // 110 - round up
-    // 111 - round up
-    // source : https://stackoverflow.com/a/8984135
-    // e.g : n == 106 150 == 0000 0000 0000 0001 1001 1110 1010 0110
-    // Get GRS bits
-    // 0xe00 ==                                  0000 1110 0000 0000
-    int8_t grs = ( n & 0xe00) >> 8 ;       //         1110 0000 0000 >> 8
-    // GRS == 111(0)
-    // Get G value - 0x8 == 1000
-    if (grs & 0x8){
-        // GRS = 1xx
-        if ( // Get R value - 0x4 == 0100
-             // GRS == 11x ; round up
-             grs & 0x4 ||
-             // Get S value - 0x2 == 0010
-             // GRS == 101 ; round up
-             ( !(grs & 0x4) && grs & 0x2) 
-        ) {
-            n += 0x800;
-        } else if ( !(n & 0x1000) ) {
-            // Get mantissa lsb - 0x1000 == 0001 0000 0000
-            // GRS == 100 ; tie, round up if mantissa lsb is 1
-            n += 0x800;
-        }
-    }
-    return n;
+// 20.12 fixed point to 20.12 fixed point rounding
+int32_t round(int32_t n) {
+  return (n + 2048) & 0xfffff000;
 };
+
+// 20.12 fixed point to int, rounding first
+static inline int32_t toint(int32_t n) {
+  return (n + 2048) >> 12;
+};
+//~ int32_t round( int32_t n){
+    //~ // GRS - Action
+    //~ // 0xx - round down = do nothing (x means any bit value, 0 or 1)
+    //~ // 100 - this is a tie: round up if the mantissa's bit just before G is 1, else round down=do nothing
+    //~ // 101 - round up
+    //~ // 110 - round up
+    //~ // 111 - round up
+    //~ // source : https://stackoverflow.com/a/8984135
+    //~ // e.g : n == 106 150 == 0000 0000 0000 0001 1001 1110 1010 0110
+    //~ // Get GRS bits
+    //~ // 0xe00 ==                                  0000 1110 0000 0000
+    //~ int8_t grs = ( n & 0xe00) >> 8 ;       //         1110 0000 0000 >> 8
+    //~ // GRS == 111(0)
+    //~ // Get G value - 0x8 == 1000
+    //~ if (grs & 0x8){
+        //~ // GRS = 1xx
+        //~ if ( // Get R value - 0x4 == 0100
+             //~ // GRS == 11x ; round up
+             //~ grs & 0x4 ||
+             //~ // Get S value - 0x2 == 0010
+             //~ // GRS == 101 ; round up
+             //~ ( !(grs & 0x4) && grs & 0x2) 
+        //~ ) {
+            //~ n += 0x800;
+        //~ } else if ( !(n & 0x1000) ) {
+            //~ // Get mantissa lsb - 0x1000 == 0001 0000 0000
+            //~ // GRS == 100 ; tie, round up if mantissa lsb is 1
+            //~ n += 0x800;
+        //~ }
+    //~ }
+    //~ return n;
+//~ };

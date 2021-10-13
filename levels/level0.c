@@ -8,9 +8,9 @@ MESH_ANIMS_TRACKS level0_modelCube_001_anims = {
 	5,
 	{
 		&level0_modelCube_001_anim_KeyAction,
-		&level0_modelCube_001_anim_KeyAction_001,
-		&level0_modelCube_001_anim_KeyAction_003,
 		&level0_modelCube_001_anim_KeyAction_004,
+		&level0_modelCube_001_anim_KeyAction_003,
+		&level0_modelCube_001_anim_KeyAction_001,
 		&level0_modelCube_001_anim_KeyAction_002
 	}
 };
@@ -23,8 +23,8 @@ VANIM  level0_modelCube_001_anim_KeyAction = {
 	0,  // loop : if -1 , infinite loop, if n > 0, loop n times
 	1,  // playback direction (1 or -1)
 	0,  // ping pong animation (A>B>A)
-	1, // use lerp to interpolate keyframes
-	{   // vertex pos as SVECTORs e.g 20 * 21 SVECTORS
+	0, // use lerp to interpolate keyframes
+	{   // vertex pos as BVECTORs e.g 20 * 21 BVECTORS
 		//Frame 0
 		{ -6,33,-6 },
 		{ -27,-19,-27 },
@@ -176,7 +176,7 @@ VANIM  level0_modelCube_001_anim_KeyAction_004 = {
 	1,  // playback direction (1 or -1)
 	0,  // ping pong animation (A>B>A)
 	0, // use lerp to interpolate keyframes
-	{   // vertex pos as SVECTORs e.g 20 * 21 SVECTORS
+	{   // vertex pos as BVECTORs e.g 20 * 21 BVECTORS
 		//Frame 0
 		{ -6,33,-6 },
 		{ -27,-19,-27 },
@@ -298,7 +298,7 @@ VANIM  level0_modelCube_001_anim_KeyAction_003 = {
 	1,  // playback direction (1 or -1)
 	0,  // ping pong animation (A>B>A)
 	0, // use lerp to interpolate keyframes
-	{   // vertex pos as SVECTORs e.g 20 * 21 SVECTORS
+	{   // vertex pos as BVECTORs e.g 20 * 21 BVECTORS
 		//Frame 0
 		{ -6,33,-6 },
 		{ -27,-19,-27 },
@@ -400,7 +400,7 @@ VANIM  level0_modelCube_001_anim_KeyAction_001 = {
 	1,  // playback direction (1 or -1)
 	0,  // ping pong animation (A>B>A)
 	0, // use lerp to interpolate keyframes
-	{   // vertex pos as SVECTORs e.g 20 * 21 SVECTORS
+	{   // vertex pos as BVECTORs e.g 20 * 21 BVECTORS
 		//Frame 0
 		{ -9,33,-9 },
 		{ -25,-19,-25 },
@@ -582,7 +582,7 @@ VANIM  level0_modelCube_001_anim_KeyAction_002 = {
 	1,  // playback direction (1 or -1)
 	0,  // ping pong animation (A>B>A)
 	0, // use lerp to interpolate keyframes
-	{   // vertex pos as SVECTORs e.g 20 * 21 SVECTORS
+	{   // vertex pos as BVECTORs e.g 20 * 21 BVECTORS
 		//Frame 0
 		{ -9,33,-9 },
 		{ -25,-19,-25 },
@@ -941,7 +941,7 @@ MESH level0_meshCube_001 = {
 	0, // otz
 	&level0_modelCube_001_body,
 	&level0_modelCube_001_anims, // Mesh anim tracks
-	&level0_modelCube_001_anim_KeyAction, // Current VANIM
+	0, // Current VANIM
 	&level0_nodePlane,
 	0 // Screen space coordinates
 };
@@ -5032,11 +5032,11 @@ SIBLINGS level0_nodePlane_siblings = {
 CHILDREN level0_nodePlane_objects = {
 	5,
 	{
+		&level0_meshCube_001,
+		&level0_meshPlane_000,
 		&level0_meshPlane_005,
 		&level0_meshPlane_002,
-		&level0_meshPlane_006,
-		&level0_meshCube_001,
-		&level0_meshPlane_000
+		&level0_meshPlane_006
 	}
 };
 

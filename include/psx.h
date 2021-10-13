@@ -11,6 +11,7 @@
 #include <inline_n.h>
 #include <gtemac.h>
 #include "../include/defines.h"
+#include <stdint.h>
 #include "../custom_types.h"
 
 // PSX setup

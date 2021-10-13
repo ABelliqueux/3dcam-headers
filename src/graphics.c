@@ -363,16 +363,16 @@ long drawQuad(MESH * mesh, int atime, int * camMode, char ** nextpri, u_long * o
             // Vertex Anim 
             if (mesh->isAnim && mesh->currentAnim){
                 // with interpolation
-                if ( mesh->anim_tracks->strips[0]->interpolate ){
+                if ( mesh->currentAnim->interpolate ){
                     nclip = interpolateQuad(poly4, mesh, t);
                 } else {
                     // TODO : write playAnim()
                     // No interpolation, use all vertices coordinates in anim data
                     gte_RotAverageNclip4(
-                                &mesh->currentAnim->data[ atime % mesh->anim_tracks->strips[0]->nframes * mesh->anim_tracks->strips[0]->nvert + mesh->index[t].order.pad ],
-                                &mesh->currentAnim->data[ atime % mesh->anim_tracks->strips[0]->nframes * mesh->anim_tracks->strips[0]->nvert + mesh->index[t].order.vz ],
-                                &mesh->currentAnim->data[ atime % mesh->anim_tracks->strips[0]->nframes * mesh->anim_tracks->strips[0]->nvert + mesh->index[t].order.vx ],
-                                &mesh->currentAnim->data[ atime % mesh->anim_tracks->strips[0]->nframes * mesh->anim_tracks->strips[0]->nvert + mesh->index[t].order.vy ],
+                                &mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.pad ],
+                                &mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vz ],
+                                &mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vx ],
+                                &mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vy ],
                                 ( long* )&poly4->x0, ( long* )&poly4->x1, ( long* )&poly4->x2, ( long* )&poly4->x3,
                                 &mesh->p,
                                 &mesh->OTz,
@@ -447,7 +447,7 @@ long drawTri(MESH * mesh, int atime, int * camMode, char ** nextpri, u_long * ot
             // If Vertex Anim flag is set, use it
             if (mesh->isAnim && mesh->currentAnim){
                 // If interpolation flag is set, use it
-                if(mesh->anim_tracks->strips[0]->interpolate){
+                if(mesh->currentAnim->interpolate){
                     nclip = interpolateTri(poly, mesh, t);
                 } else { 
                 // No interpolation
