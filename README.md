@@ -43,7 +43,7 @@ Real-time 3D / 8bpp background / 4bpp background
 
 # Compiling
 
-You need to install [mkpsxiso](https://github.com/Lameguy64/mkpsxiso) and the [Nugget+PsyQ SDK](https://github.com/ABelliqueux/nolibgs_hello_worlds/tree/newtree#installation) before
+You need to install [mkpsxiso](https://github.com/Lameguy64/mkpsxiso) and the [Nugget+PsyQ SDK](https://github.com/ABelliqueux/nolibgs_hello_worlds#installation) before
 you can build the engine. Put `mkpsxiso` and `pcsx-redux` in your $PATH and you should be good to go.
 
   1. Clone this repo in your nugget+PsyQ folder as a new project :
