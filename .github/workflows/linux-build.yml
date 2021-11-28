@@ -40,5 +40,5 @@ jobs:
       with: 
         name: 3dcam-latest
         path: |
-          ${{github.workspace}}/3dcam-headers/3dcam.bin
-          ${{github.workspace}}/3dcam-headers/3dcam.cue
+          ${{github.workspace}}/3dcam.bin
+          ${{github.workspace}}/3dcam.cue
