@@ -1,8 +1,8 @@
-#include "../include/psx.h"
-#include "../include/camera.h"
-#include "../include/math.h"
-#include "../include/physics.h"
-#include "../include/space.h"
+#include <psx.h>
+#include <camera.h>
+#include <math.h>
+#include <physics.h>
+#include <space.h>
 
 void getCameraXZ(int * x, int * z, int actorX, int actorZ, int angle, int distance) {
     // Using Nic's Costable : https://github.com/grumpycoders/Balau/blob/master/tests/test-Handles.cc#L20-L102

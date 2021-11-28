@@ -1,4 +1,4 @@
-#include "../include/pad.h"
+#include <pad.h>
 
 void get_digital_direction( Controller_Data *c, int buttondata ) // get analog stick values
 {

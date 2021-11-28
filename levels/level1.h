@@ -1,6 +1,6 @@
 #pragma once
-#include "../custom_types.h"
-#include "../include/defines.h"
+#include <custom_types.h>
+#include <defines.h>
 
 extern LEVEL level1;
 extern CVECTOR level1_BGc;

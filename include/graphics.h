@@ -1,7 +1,7 @@
 #pragma once
-#include "../include/camera.h"
-#include "../include/physics.h"
-#include "../include/defines.h"
+#include <camera.h>
+#include <physics.h>
+#include <defines.h>
 
 // Drawing
 void updateLight(void);

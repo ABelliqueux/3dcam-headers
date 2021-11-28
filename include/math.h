@@ -3,10 +3,9 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <libgte.h>
-#include "../include/macros.h"
-
+#include <macros.h>
 // Precalculated arctan values
-#include "../src/atan.c"
+#include <atan.h>
 
 // fixed point math
 int32_t dMul(int32_t a, int32_t b);

@@ -3,16 +3,18 @@
 #include <libgte.h>
 #include <libetc.h>
 #include <libgpu.h>
-#include "../include/defines.h"
-#include "../include/math.h"
-#include "../include/macros.h"
-#include "../custom_types.h"
+#include <defines.h>
+#include <math.h>
+#include <macros.h>
+#include <custom_types.h>
+#include "../thirdparty/nugget/common/syscalls/syscalls.h"
+#define printf ramsyscall_printf
 
 short checkLineW( VECTOR * pointA, VECTOR * pointB, MESH * mesh );
 short checkLineS( VECTOR * pointA, VECTOR * pointB, MESH * mesh );
 VECTOR getIntCollision(BODY one, BODY two);
 VECTOR getExtCollision(BODY one, BODY two);
-void checkBodyCol(BODY * one, BODY * two);
+VECTOR checkBodyCol(BODY * one, BODY * two);
 void applyAngMom(LEVEL curLvl );
 void   ResolveCollision( BODY * one, BODY * two );
 VECTOR angularMom(BODY body);

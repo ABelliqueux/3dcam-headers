@@ -1,4 +1,4 @@
-#include "../include/physics.h"
+#include <physics.h>
 
 short checkLineW( VECTOR * pointA, VECTOR * pointB, MESH * mesh ) {
     long val1 = ( ( mesh->body->position.vx + mesh->body->min.vx ) - pointA->vx ) * ( pointB->vy - pointA->vy ) - ( ( mesh->body->position.vz  + mesh->body->min.vy ) - pointA->vy ) * ( pointB->vx - pointA->vx ) ;
@@ -87,7 +87,7 @@ VECTOR getIntCollision(BODY one, BODY two){
     d2.vy = (two.position.vy + two.max.vy) - (one.position.vy + one.min.vy);
     d2.vz = (two.position.vz + two.max.vz) - (one.position.vz - one.max.vz);
     col.vx = !(d1.vx > 0 && d2.vx > 0);
-    col.vy = d1.vy > 0 && d2.vy > 0;
+    col.vy = !(d1.vy > 0 && d2.vy > 0);
     col.vz = !(d1.vz > 0 && d2.vz > 0);
     return col;
 };
@@ -104,20 +104,39 @@ VECTOR getExtCollision(BODY one, BODY two){
     col.vz = d1.vz > 0 && d2.vz > 0;
     return col;
 };
-void checkBodyCol(BODY * one, BODY * two){
-    VECTOR colInt, colExt;
+VECTOR checkBodyCol(BODY * one, BODY * two){
+    VECTOR colInt;
     colInt = getIntCollision( *one , *two );
-    //~ colExt = getExtCollision( *one , *two );
     // If collisiton on Y axis, 
-    if ( colInt.vy ) {
+    if ( !(colInt.vy) ) {
         // and above plane
         if ( !colInt.vx && !colInt.vz ) {
             // collide
-            one->position.vy =  two->max.vy - one->max.vy ;
+            short slopeX = two->normal.vx > 0 ? 1 : -1;
+            //~ short slopeZ = two->normal.vz > 0 ? 1 : -1;
+            long o = two->max.vy - two->min.vy ;
+            long a = two->max.vx - two->min.vx;
+            long aa = (two->position.vx + two->min.vx) - (one->position.vx + one->min.vx) ;
+            //~ long b = two->max.vz - two->min.vz;
+            //~ long ab = (two->position.vz + two->min.vz) - (one->position.vz + one->min.vz) ;
+            // Avoid div/0
+            if (a){
+                long y = (( (slopeX * o) * ONE) / a) * aa;
+                // long y = (( (slopeZ * o) * ONE) / b) * ab;
+                // FntPrint("sly: %d", y >> 12);
+                if (y) {
+                    one->position.vy = (y >> 12) - ( slopeX < 0 ? 128 : 0 );
+                    // one->position.vy = (y >> 12) - ( slopeZ < 0 ? 64 : 0 )  ;
+                } else {
+                    one->position.vy = two->max.vy - one->max.vy;
+                }
+            }
             one->velocity.vy = 0;
             two->velocity.vy = 0;
+            //~ FntPrint("col: %d %d %d %d\nY: %d, Z: %d, X: %d\nSlope: %d", o, a, aa, ab, one->position.vy, one->position.vz, one->position.vx, slopeX);
         }
     }
+    return colInt;
 };
 void applyAngMom(LEVEL curLvl ){
     if (curLvl.propPtr->isRound){

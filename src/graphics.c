@@ -1,7 +1,7 @@
-#include "../include/psx.h"
-#include "../include/graphics.h"
-#include "../include/math.h"
-#include "../include/CPUMAC.H"
+#include <psx.h>
+#include <graphics.h>
+#include <math.h>
+#include <CPUMAC.H>
 
 void updateLight(void){
     RotMatrix_gte(dc_lgtangp, dc_lgtmatp);
@@ -79,9 +79,18 @@ void set3VertexLerPos(MESH * mesh, long t){
 };
 void set3VertexPos(MESH * mesh, long t, int atime){
     // Set vertices according to anim
-    mesh->tmesh->v[ mesh->index[ t ].order.vx ] = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vx ];
-    mesh->tmesh->v[ mesh->index[ t ].order.vz ] = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vz ];
-    mesh->tmesh->v[ mesh->index[ t ].order.vy ] = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vy ];
+    mesh->tmesh->v[ mesh->index[ t ].order.vx ].vx = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vx ].vx;
+    mesh->tmesh->v[ mesh->index[ t ].order.vx ].vy = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vx ].vy;
+    mesh->tmesh->v[ mesh->index[ t ].order.vx ].vz = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vx ].vz;
+    
+    mesh->tmesh->v[ mesh->index[ t ].order.vz ].vx = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vz ].vx;
+    mesh->tmesh->v[ mesh->index[ t ].order.vz ].vy = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vz ].vy;
+    mesh->tmesh->v[ mesh->index[ t ].order.vz ].vz = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vz ].vz;
+    
+    mesh->tmesh->v[ mesh->index[ t ].order.vy ].vx = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vy ].vx;
+    mesh->tmesh->v[ mesh->index[ t ].order.vy ].vy = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vy ].vy;
+    mesh->tmesh->v[ mesh->index[ t ].order.vy ].vz = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vy ].vz;
+    
 }
 void set4VertexLerPos(MESH * mesh, long t){
     // Find and set 4 interpolated vertex value
@@ -108,10 +117,31 @@ void set4VertexLerPos(MESH * mesh, long t){
 }
 void set4VertexPos(MESH * mesh, long t, int atime){
     // Set vertices according to anim
-    mesh->tmesh->v[ mesh->index[ t ].order.vx ] = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vx ];
-    mesh->tmesh->v[ mesh->index[ t ].order.vz ] = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vz ];
-    mesh->tmesh->v[ mesh->index[ t ].order.vy ] = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vy ];
-    mesh->tmesh->v[ mesh->index[ t ].order.pad ] = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.pad ];
+    // TODO : fix using delta animation
+    //~ SVECTOR x, y, z, pad;
+    //~ addVector2(&mesh->tmesh->v[ mesh->index[ t ].order.vx ], &mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vx ], &x );
+    //~ addVector2(&mesh->tmesh->v[ mesh->index[ t ].order.vz ], &mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vz ], &z );
+    //~ addVector2(&mesh->tmesh->v[ mesh->index[ t ].order.vy ], &mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vy ], &y );
+    //~ addVector2(&mesh->tmesh->v[ mesh->index[ t ].order.pad ], &mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.pad ], &pad );
+    //~ mesh->tmesh->v[ mesh->index[ t ].order.vx ] = x;
+    //~ mesh->tmesh->v[ mesh->index[ t ].order.vz ] = z;
+    //~ mesh->tmesh->v[ mesh->index[ t ].order.vy ] = y;
+    //~ mesh->tmesh->v[ mesh->index[ t ].order.pad ] = pad;
+    mesh->tmesh->v[ mesh->index[ t ].order.vx ].vx = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vx ].vx;
+    mesh->tmesh->v[ mesh->index[ t ].order.vx ].vy = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vx ].vy;
+    mesh->tmesh->v[ mesh->index[ t ].order.vx ].vz = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vx ].vz;
+    
+    mesh->tmesh->v[ mesh->index[ t ].order.vz ].vx = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vz ].vx;
+    mesh->tmesh->v[ mesh->index[ t ].order.vz ].vy = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vz ].vy;
+    mesh->tmesh->v[ mesh->index[ t ].order.vz ].vz = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vz ].vz;
+    
+    mesh->tmesh->v[ mesh->index[ t ].order.vy ].vx = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vy ].vx;
+    mesh->tmesh->v[ mesh->index[ t ].order.vy ].vy = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vy ].vy;
+    mesh->tmesh->v[ mesh->index[ t ].order.vy ].vz = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.vy ].vz;
+    
+    mesh->tmesh->v[ mesh->index[ t ].order.pad ].vx = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.pad ].vx;
+    mesh->tmesh->v[ mesh->index[ t ].order.pad ].vy = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.pad ].vy;
+    mesh->tmesh->v[ mesh->index[ t ].order.pad ].vz = mesh->currentAnim->data[ atime % mesh->currentAnim->nframes * mesh->currentAnim->nvert + mesh->index[t].order.pad ].vz;
 }
 void interpolateTri(POLY_GT3 * poly, MESH * mesh, long t){
     long Flag, nclip = 0;

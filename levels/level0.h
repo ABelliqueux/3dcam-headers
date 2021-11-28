@@ -1,16 +1,16 @@
 #pragma once
-#include "../custom_types.h"
-#include "../include/defines.h"
+#include <custom_types.h>
+#include <defines.h>
 
 extern LEVEL level0;
 extern CVECTOR level0_BGc;
 extern VECTOR level0_BKc;
 extern MESH_ANIMS_TRACKS level0_modelCube_001_anims;
-extern VANIM level0_modelCube_001_anim_KeyAction;
-extern VANIM level0_modelCube_001_anim_KeyAction_004;
 extern VANIM level0_modelCube_001_anim_KeyAction_003;
 extern VANIM level0_modelCube_001_anim_KeyAction_001;
 extern VANIM level0_modelCube_001_anim_KeyAction_002;
+extern VANIM level0_modelCube_001_anim_KeyAction;
+extern VANIM level0_modelCube_001_anim_KeyAction_004;
 extern CAMPOS level0_camPos_Camera;
 extern CAMPATH level0_camPath;
 extern MATRIX level0_lgtmat;

@@ -1,5 +1,5 @@
-#include "../include/psx.h"
-#include "../include/sound.h"
+#include <psx.h>
+#include <sound.h>
 
 
 void setDCLightEnv(MATRIX * curLevelCMat, MATRIX * curLevelLgtMat, SVECTOR * curLevelLgtAng){

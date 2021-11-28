@@ -10,9 +10,11 @@
 #include <string.h>
 #include <inline_n.h>
 #include <gtemac.h>
-#include "../include/defines.h"
+#include <defines.h>
 #include <stdint.h>
-#include "../custom_types.h"
+#include <custom_types.h>
+#include "../thirdparty/nugget/common/syscalls/syscalls.h"
+#define printf ramsyscall_printf
 
 // PSX setup
 void setDCLightEnv(MATRIX * curLevelCMat, MATRIX * curLevelLgtMat, SVECTOR * curLevelLgtAng);

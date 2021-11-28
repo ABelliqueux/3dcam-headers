@@ -61,7 +61,7 @@
 #define FNT_VRAM_X 960
 #define FNT_VRAM_Y 256
 #define FNT_SCR_X 16
-#define FNT_SCR_Y 128
+#define FNT_SCR_Y 150
 #define FNT_SCR_W 240
 #define FNT_SCR_H 88
 #define FNT_SCR_BG 0

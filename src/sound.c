@@ -1,5 +1,5 @@
-#include "../include/sound.h"
-#include "../include/space.h"
+#include <sound.h>
+#include <space.h>
 
 // VAG playback
 void initSnd(SpuCommonAttr * spuSettings, char * spu_malloc_rec, u_int mallocMax){

@@ -2607,8 +2607,8 @@ BODY level1_modelCube_body = {
 	0,899,0, 0,
 	5,
 	ONE/5,
-	-45,-23,-27, 0,
-	42,31,26, 0,
+	-35,-13,-17, 0,
+	32,21,16, 0,
 	1024,
 	};
 
@@ -2984,8 +2984,8 @@ BODY level1_modelCylindre_body = {
 	0,0,0, 0,
 	20,
 	ONE/20,
-	-38,-30,-36, 0,
-	39,35,41, 0,
+	-28,-20,-26, 0,
+	29,35,31, 0,
 	0,
 	};
 
@@ -10744,7 +10744,7 @@ PRIM level1_modelSphere_index[] = {
 
 BODY level1_modelSphere_body = {
 	{0, 0, 0, 0},
-	-495,-129,16, 0,
+	-405,-109,16, 0,
 	0,0,0, 0,
 	10,
 	ONE/10,
@@ -10768,7 +10768,7 @@ MESH level1_meshSphere = {
 	&level1_tim_home,
 	_binary_TIM_home_tim_start,
 	{0}, // Matrix
-	{-495,-129,16, 0}, // position
+	{-405,-109,16, 0}, // position
 	{0,0,0, 0}, // rotation
 	0, // isProp
 	1, // isRigidBody
@@ -11211,7 +11211,7 @@ PRIM level1_modelSphere_001_index[] = {
 
 BODY level1_modelSphere_001_body = {
 	{0, 0, 0, 0},
-	44,-73,92, 0,
+	144,-73,92, 0,
 	0,0,0, 0,
 	5,
 	ONE/5,
@@ -11235,7 +11235,7 @@ MESH level1_meshSphere_001 = {
 	&level1_tim_home,
 	_binary_TIM_home_tim_start,
 	{0}, // Matrix
-	{44,-73,92, 0}, // position
+	{144,-73,92, 0}, // position
 	{0,0,0, 0}, // rotation
 	1, // isProp
 	1, // isRigidBody

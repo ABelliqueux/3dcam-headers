@@ -1,8 +1,8 @@
 #pragma once
-#include "../include/psx.h"
-#include "../include/camera.h"
-#include "../include/math.h"
-#include "../include/macros.h"
+#include <psx.h>
+#include <camera.h>
+#include <math.h>
+#include <macros.h>
 // XA
 // Sector offset for XA data 4: simple speed, 8: double speed
 #define XA_CHANNELS 8

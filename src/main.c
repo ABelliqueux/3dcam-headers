@@ -16,15 +16,16 @@
  *                   eye        */
 // Blender debug mode
 // bpy. app. debug = True 
-#include "../include/psx.h"
-#include "../include/pad.h"
-#include "../include/math.h"
-#include "../include/camera.h"
-#include "../include/physics.h"
-#include "../include/graphics.h"
-#include "../include/space.h"
-#include "../include/sound.h"
-
+#include <psx.h>
+#include <pad.h>
+#include <math.h>
+#include <camera.h>
+#include <physics.h>
+#include <graphics.h>
+#include <space.h>
+#include <sound.h>
+//~ #include "../thirdparty/nugget/common/syscalls/syscalls.h"
+//~ #define printf ramsyscall_printf
 #define USECD
 
 // START OVERLAY
@@ -196,6 +197,7 @@ int main() {
     // Main loop
     //~ while ( VSync(VSYNC) ) {
     while ( 1 ) {
+        printf("Let's go!");
         dt = GetRCnt(RCntCNT1) - oldTime;
         oldTime = GetRCnt(RCntCNT1);
         // XA playback (keep track of playback and loop XA)
@@ -251,11 +253,11 @@ int main() {
             atime ++;
         }
         // Reset player/prop pos
-        if(curLvl.actorPtr->pos.vy >= 200){
+        if(curLvl.actorPtr->pos.vy >= curLvl.levelPtr->body->max.vy + 200){
             playSFX(&voiceAttributes,  curLvl.levelSounds->sounds[6]->VAGsample, curLvl.levelSounds->sounds[6]->volumeL, curLvl.levelSounds->sounds[6]->volumeR);
             respawnMesh(&curLvl, curLvl.actorPtr, &actorStartRot, &actorStartPos, actorStartNode );
         }        
-        if(curLvl.propPtr->pos.vy >= 200){
+        if(curLvl.propPtr->pos.vy >= curLvl.levelPtr->body->max.vy + 200){
             playSFX(&voiceAttributes,  curLvl.levelSounds->sounds[3]->VAGsample, curLvl.levelSounds->sounds[3]->volumeL, curLvl.levelSounds->sounds[3]->volumeR);
             respawnMesh(&curLvl, curLvl.propPtr, &propStartRot, &propStartPos, propStartNode );
         }
@@ -308,26 +310,37 @@ int main() {
                     // Get col between actor and level
                     if ( curLvl.meshes[k]->isActor ){
                         // Check col
-                        checkBodyCol( curLvl.meshes[k]->body , curLvl.levelPtr->body );
+                        VECTOR colLvl = checkBodyCol( curLvl.meshes[k]->body , curLvl.levelPtr->body );
+                        FntPrint("ColLvl: %d %d %d\n", colLvl.vz, colLvl.vx, colLvl.vy);  
                         // Get col between actor and current node's walls
                         // Loop on current node's objects
                         for (short obj=0; obj < curLvl.curNode->objects->index; obj++){
+                            VECTOR col = getExtCollision( *curLvl.meshes[k]->body, *curLvl.curNode->objects->list[obj]->body );
                             // If isWall, check collision
-                            if ( curLvl.curNode->objects->list[obj]->isWall ){
-                                if( getExtCollision( *curLvl.meshes[k]->body, *curLvl.curNode->objects->list[obj]->body ).vz &&
-                                    getExtCollision( *curLvl.meshes[k]->body, *curLvl.curNode->objects->list[obj]->body ).vx) {
-                                    curLvl.meshes[k]->body->position.vz = curLvl.meshes[k]->body->position.vz - curLvl.meshes[k]->body->velocity.vz ;
-                                    curLvl.meshes[k]->body->position.vx = curLvl.meshes[k]->body->position.vx - curLvl.meshes[k]->body->velocity.vx ;
+                            //~ if ( curLvl.curNode->objects->list[obj]->isWall){
+                                //~ if( col.vz && col.vx) {
+                                    //~ curLvl.meshes[k]->body->position.vz = curLvl.meshes[k]->body->position.vz - curLvl.meshes[k]->body->velocity.vz ;
+                                    //~ curLvl.meshes[k]->body->position.vx = curLvl.meshes[k]->body->position.vx - curLvl.meshes[k]->body->velocity.vx ;
+                                //~ }
+                            //~ }
+                            if ( curLvl.curNode->objects->list[obj]->isStaticBody ){
+                                FntPrint("Col   : %d %d %d\n", col.vz, col.vx, col.vy);  
+                                if( col.vz && col.vx && col.vy ) {
+                                    if (!colLvl.vy) {
+                                        curLvl.meshes[k]->body->position.vz = curLvl.meshes[k]->body->position.vz - curLvl.meshes[k]->body->velocity.vz ;
+                                        curLvl.meshes[k]->body->position.vx = curLvl.meshes[k]->body->position.vx - curLvl.meshes[k]->body->velocity.vx ;
+                                    }
+                                    curLvl.meshes[k]->body->position.vy = curLvl.meshes[k]->body->position.vy - curLvl.meshes[k]->body->velocity.vy ;
                                 }
-                            }
+                            }                            
                         }
                     }
                    
                     // Only evaluate collision if actor is on same plane as prop
                     if ( curLvl.curNode == curLvl.propPtr->node ){
                         // Get col between actor and props
-                        col = getExtCollision( *curLvl.meshes[k]->body, *curLvl.propPtr->body );
-                        if (col.vx && col.vz && canMove == 1 ) {
+                        VECTOR col = getExtCollision( *curLvl.meshes[k]->body, *curLvl.propPtr->body );
+                        if (col.vx && col.vz && col.vy && canMove == 1 ) {
                             setVector( &curLvl.propPtr->body->velocity,
                                        curLvl.meshes[k]->body->velocity.vx,
                                        0,
@@ -374,7 +387,8 @@ int main() {
                     curLvl.actorPtr->pos.vy, 
                     curLvl.actorPtr->pos.vz - (ncos(curLvl.actorPtr->rot.vy/2))
                 );
-
+        curLvl.levelPtr->body->normal = curLvl.levelPtr->tmesh->n[0];
+        
     // Add secondary OT to main OT
         AddPrims(otdisc[db], ot[db] + OTLEN - 1, ot[db]);
         
@@ -383,11 +397,13 @@ int main() {
         //~ FntPrint("Dt    : %d %d %d\n", 400/(dt+1), (XA_CDSPEED)/((400/(dt+1))+1), (curLvl.XA->samples[sample].end - curLvl.XA->samples[sample].start)<<12);
         //~ FntPrint("XA    : %d\n", (XA_CDSPEED)/((400/(dt+1))+1) );
         //~ FntPrint("XA    : %d\n", curLvl.XA->samples[sample].cursor );
-        FntPrint("CamAngle : %d\n", curCamAngle);
+        FntPrint("CamAngle : %d\n", curCamAngle );
+        FntPrint("fVector : %d %d %d\n", fVecActor.vx, fVecActor.vy, fVecActor.vz );
         //~ FntPrint("XA: %x\n", curLvl.XA);
         //~ FntPrint("Ofst: %d\n", curLvl.XA->banks[0]->offset);
         //~ FntPrint("Vol: %d %d\n", curLvl.levelSounds->sounds[0]->volumeL, curLvl.levelSounds->sounds[0]->volumeR );
         FntPrint("Curanim : %x\n", curLvl.meshes[1]->currentAnim);
+        FntPrint("Gforce: %d", curLvl.actorPtr->body->gForce.vy);
         //~ FntPrint("Anims : %x %x", curLvl.meshes[1]->anim_tracks->strips[3], curLvl.meshes[1]->anim_tracks->strips[4]);
         FntFlush(-1);
         display( &disp[db], &draw[db], otdisc[db], primbuff[db], &nextpri, &db);
@@ -493,9 +509,10 @@ void callback() {
         lastPad = PAD;
     }
     if ( PAD & Cross && !(lastPad & Cross) ){
-        if (curLvl.actorPtr->body->gForce.vy == 0 && (curLvl.actorPtr->body->position.vy - curLvl.actorPtr->body->min.vy) == curLvl.levelPtr->body->min.vy ){
+        //~ if (curLvl.actorPtr->body->gForce.vy == 0 && (curLvl.actorPtr->body->position.vy - curLvl.actorPtr->body->min.vy) == curLvl.levelPtr->body->min.vy ){
+        if (curLvl.actorPtr->body->gForce.vy == 0){
             // Use delta to find jump force
-            curLvl.actorPtr->body->gForce.vy = -200;
+            curLvl.actorPtr->body->gForce.vy = -300;
         }
         timer = 10;
         playSFX(&voiceAttributes,  curLvl.levelSounds->sounds[4]->VAGsample, curLvl.levelSounds->sounds[4]->volumeL, curLvl.levelSounds->sounds[4]->volumeR );

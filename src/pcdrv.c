@@ -1,4 +1,4 @@
-#include "../include/pcdrv.h"
+#include <pcdrv.h>
 
 int waitForSIODone( int * flag ){
     // This should wait for a signal from the SIO to tell when it's done 

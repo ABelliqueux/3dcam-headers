@@ -1,4 +1,4 @@
-#include "../include/space.h"
+#include <space.h>
 
 // From 'psyq/addons/graphics/ZIMEN/CLIP.C'
 void worldToScreen( VECTOR * worldPos, VECTOR * screenPos ) {

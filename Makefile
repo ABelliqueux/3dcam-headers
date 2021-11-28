@@ -1,6 +1,15 @@
-TARGET = main
-TYPE = ps-exe
+TARGET = 3dcam
 
+.PHONY: all cleansub
+
+all:
+	mkpsxiso -y ./config/3dcam.xml
+
+cleansub:
+	$(MAKE) clean
+	rm -f $(TARGET).cue $(TARGET).bin
+	rm -f *.mcd *.frag *.lua *.vert
+	
 SRCS = src/main.c \
 src/pad.c \
 src/math.c \
