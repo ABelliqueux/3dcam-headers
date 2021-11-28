@@ -1,8 +1,8 @@
-1 xa /home/arthus/build/psxdev/blender_io_export_psx_mesh/XA/3_hehe.xa 0 0
-1 xa /home/arthus/build/psxdev/blender_io_export_psx_mesh/XA/3_hehe.xa 0 1
-1 xa /home/arthus/build/psxdev/blender_io_export_psx_mesh/XA/1_cuek.xa 0 2
-1 xa /home/arthus/build/psxdev/blender_io_export_psx_mesh/XA/1_cuek.xa 0 3
-1 xa /home/arthus/build/psxdev/blender_io_export_psx_mesh/XA/1_cuek.xa 0 4
-1 xa /home/arthus/build/psxdev/blender_io_export_psx_mesh/XA/3_hehe.xa 0 5
+1 xa XA/3_hehe.xa 0 0
+1 xa XA/3_hehe.xa 0 1
+1 xa XA/1_cuek.xa 0 2
+1 xa XA/1_cuek.xa 0 3
+1 xa XA/1_cuek.xa 0 4
+1 xa XA/3_hehe.xa 0 5
 1 null
 1 null
