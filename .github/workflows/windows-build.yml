@@ -17,8 +17,11 @@ jobs:
         C:\msys64\usr\bin\wget.exe http://static.grumpycoder.net/pixel/mips/g++-mipsel-none-elf-11.2.0.zip
         C:\msys64\usr\bin\wget.exe http://lameguy64.github.io/mkpsxiso/mkpsxiso-1.20.zip
         C:\msys64\usr\bin\wget.exe http://psx.arthus.net/sdk/Psy-Q/psyq-4.7-converted-full.7z
+        echo "Extracting to $GITHUB_WORKSPACE/mipsel..."
         7z.exe x g++-mipsel-none-elf-11.2.0.zip -o"$GITHUB_WORKSPACE/mipsel"
+        echo "Extracting to $GITHUB_WORKSPACE/mkpsxiso..."
         7z.exe x mkpsxiso-1.20.zip -o"$GITHUB_WORKSPACE/mkpsxiso"
+        echo "Extracting to $GITHUB_WORKSPACE/psyq..."
         7z.exe x psyq-4.7-converted-full.7z -o"$GITHUB_WORKSPACE/psyq"
         echo "$GITHUB_WORKSPACE/mipsel/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         echo "$GITHUB_WORKSPACE/mkpsxiso" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
