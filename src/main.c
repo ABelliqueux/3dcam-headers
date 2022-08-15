@@ -50,7 +50,7 @@ DRAWENV draw[2];
 u_long otdisc[2][OT2LEN] = {0};
 // Main OT
 u_long      ot[2][OTLEN]  = {0};                // Ordering table (contains addresses to primitives)
-char    primbuff[2][PRIMBUFFLEN];         // Primitive list // That's our prim buffer
+char    primbuff[2][PRIMBUFFLEN] = {0};         // Primitive list // That's our prim buffer
 int         primcnt=0;                      // Primitive counter
 char * nextpri = primbuff[0];                   // Primitive counter
 char            db  = 0;                        // Current buffer counter
